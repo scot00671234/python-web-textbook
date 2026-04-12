@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { SITE_NAME } from "../lib/site";
 import { SiteSearch } from "./SiteSearch";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -16,16 +17,19 @@ export function SiteHeader() {
           className="group flex shrink-0 items-center gap-3 no-underline"
           end
         >
-          <span className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 text-sm font-bold text-white shadow-md ring-2 ring-white/30 transition group-hover:shadow-lg dark:ring-black/20">
-            Py
-          </span>
+          <img
+            src="/favicon.svg"
+            width={40}
+            height={40}
+            alt=""
+            className="h-10 w-10 shrink-0 rounded-2xl shadow-md ring-2 ring-white/30 transition group-hover:shadow-lg dark:ring-black/20"
+            decoding="async"
+          />
           <div className="leading-tight">
-            <div className="text-sm font-semibold tracking-tight text-[var(--text)]">
-              Python Web Textbook
+            <div className="font-semibold tracking-tight text-[var(--text)] [font-variant-ligatures:none]">
+              <span className="text-base lowercase">{SITE_NAME}</span>
             </div>
-            <div className="text-xs text-[var(--muted)]">
-              Beginner path · type small programs often
-            </div>
+            <div className="text-xs text-[var(--muted)]">Beginner Python · structured lessons</div>
           </div>
         </NavLink>
 

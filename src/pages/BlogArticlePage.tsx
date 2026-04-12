@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Seo } from "../components/Seo";
 import { getBlogArticleBySlug } from "../content/blogArticles";
-import { getCanonicalBase } from "../lib/site";
+import { getCanonicalBase, SITE_NAME } from "../lib/site";
 import { organizationJsonLd } from "../lib/structuredData";
 
 function formatDate(iso: string) {
@@ -32,7 +32,7 @@ export function BlogArticlePage() {
     }
     const orgRef = base
       ? { "@id": `${base}/#organization` }
-      : { "@type": "Organization", name: "Python Web Textbook" };
+      : { "@type": "Organization", name: SITE_NAME };
     graph.push({
       "@context": "https://schema.org",
       "@type": "BlogPosting",

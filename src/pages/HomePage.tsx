@@ -35,7 +35,7 @@ export function HomePage() {
       <Seo
         title="Learn Python from the first click"
         description={DEFAULT_DESCRIPTION}
-        keywords="learn Python, Python tutorial, free Python course, Python for beginners, online Python textbook, Python flashcards"
+        keywords="pylearn, learn Python, Python tutorial, free Python course, Python for beginners, online Python textbook, Python flashcards"
         jsonLd={jsonLd}
       />
       <section className="hero-grid border-b border-[var(--border)]">

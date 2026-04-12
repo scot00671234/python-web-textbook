@@ -27,7 +27,7 @@ export function SearchPage() {
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
       <Seo
         title={q ? `Search: ${q}` : "Search"}
-        description="Search lessons, flashcards, plain-English cards, and blog posts in this Python web textbook."
+        description="Search lessons, flashcards, plain-English cards, and blog posts on pylearn."
         noIndex
       />
       <h1 className="font-serif text-3xl font-semibold tracking-tight text-[var(--text)]">Search</h1>

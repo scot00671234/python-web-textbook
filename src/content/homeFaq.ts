@@ -7,7 +7,7 @@ export type HomeFaqItem = {
 
 export const HOME_FAQ_ITEMS: HomeFaqItem[] = [
   {
-    question: "Is Python Web Textbook really free?",
+    question: "Is pylearn really free?",
     answer:
       "Yes. The lessons, flashcards, plain-English cards, and blog are free to read in your browser, and you do not need an account. Optional typing checks compare your text to the lesson’s example snippet; they are not a paid tutoring service.",
   },

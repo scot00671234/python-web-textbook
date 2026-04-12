@@ -1,6 +1,6 @@
-# Python web textbook (site)
+# pylearn (site)
 
-Static-first **Vite + React + TypeScript** app. Run everything from this folder (repo root).
+Static-first **Vite + React + TypeScript** app for **pylearn**. Run everything from this folder (repo root).
 
 ## Scripts
 

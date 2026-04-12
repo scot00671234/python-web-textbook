@@ -4,7 +4,7 @@ import { Seo } from "../components/Seo";
 export function NotFoundPage() {
   return (
     <div className="mx-auto w-full max-w-2xl px-6 py-20">
-      <Seo title="Page not found" description="That URL is not part of this Python web textbook." noIndex />
+      <Seo title="Page not found" description="That URL is not part of pylearn." noIndex />
       <p className="text-sm font-medium text-[var(--muted)]">404</p>
       <h1 className="mt-2 font-serif text-4xl font-semibold tracking-tight">
         Page not found

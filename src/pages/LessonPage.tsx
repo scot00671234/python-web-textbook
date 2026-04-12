@@ -52,7 +52,7 @@ export function LessonPage() {
       <div className="max-w-read py-10">
         <Seo
           title="Missing lesson"
-          description="That lesson URL is not part of this Python web textbook."
+          description="That lesson URL is not part of pylearn."
           noIndex
         />
         <p className="text-sm font-semibold tracking-wide text-[var(--muted)] uppercase">

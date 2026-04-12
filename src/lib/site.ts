@@ -1,9 +1,9 @@
 /** Visible site name (header, titles, Open Graph). */
-export const SITE_NAME = "Python Web Textbook";
+export const SITE_NAME = "pylearn";
 
 /** Default meta description when a page omits its own. */
 export const DEFAULT_DESCRIPTION =
-  "Free, browser-based Python lessons in order—like a textbook—with flashcards, plain-English readings, and typing practice. No account required.";
+  "pylearn: free, browser-based Python lessons in order, with flashcards, plain-English readings, and typing practice. No account required.";
 
 /**
  * Canonical / absolute URL base for SEO (Open Graph, JSON-LD).
