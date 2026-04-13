@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CodeRetypePractice } from "../components/CodeRetypePractice";
+import { RichText } from "../components/DictionaryRichText";
 import { Seo } from "../components/Seo";
 import { getCanonicalBase } from "../lib/site";
 import { breadcrumbJsonLd } from "../lib/structuredData";
@@ -114,7 +115,9 @@ function CodeAndEnglish({
               className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]"
               aria-hidden
             />
-            <span className="min-w-0 text-[var(--text)]">{b}</span>
+            <span className="min-w-0 text-[var(--text)]">
+              <RichText text={b} />
+            </span>
           </li>
         ))}
       </ul>
@@ -737,7 +740,7 @@ export function PythonInPlainEnglishPage() {
                   key={card.id}
                   onClick={(e) => onArticleBackgroundClick(globalIndex, e)}
                   className={[
-                    "cursor-pointer overflow-hidden rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-sm transition-shadow dark:ring-white/10",
+                    "cursor-pointer rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-sm transition-shadow dark:ring-white/10",
                     isBrowseActive
                       ? "ring-2 ring-[var(--accent)] ring-offset-2 ring-offset-[var(--bg)] dark:ring-offset-[var(--bg)]"
                       : "ring-1 ring-black/5 hover:ring-[var(--accent)]/25",
@@ -837,7 +840,7 @@ export function PythonInPlainEnglishPage() {
 
               <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
                 <div className="mx-auto flex min-h-full w-full max-w-7xl items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
-                  <article className="w-full max-w-6xl overflow-hidden rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-lg ring-1 ring-black/5 dark:ring-white/10">
+                  <article className="w-full max-w-6xl rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-lg ring-1 ring-black/5 dark:ring-white/10">
                     <div className="border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 sm:px-5">
                       <p className="font-mono text-xs font-semibold text-[var(--accent)]">
                         {String(flatItems[browseIndex].number).padStart(2, "0")}
@@ -950,7 +953,7 @@ export function PythonInPlainEnglishPage() {
               <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
                 <div className="mx-auto flex min-h-full w-full max-w-5xl items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
                   <article
-                    className="w-full overflow-hidden rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-lg ring-1 ring-black/5 dark:ring-white/10"
+                    className="w-full rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-lg ring-1 ring-black/5 dark:ring-white/10"
                     style={{ maxWidth: `${animationPanelMaxWidthPx}px` }}
                   >
                     <p className="border-b border-[var(--border)] bg-[var(--surface-2)]/80 px-5 py-3 text-sm font-bold tracking-wide text-[var(--muted)] uppercase sm:px-6">
@@ -1260,7 +1263,7 @@ export function PythonInPlainEnglishPage() {
               </header>
               <div className="min-h-0 flex-1 overflow-y-auto">
                 <div className="mx-auto flex min-h-full w-full max-w-5xl items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
-                  <article className="w-full max-w-3xl overflow-hidden rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-lg ring-1 ring-black/5 dark:ring-white/10">
+                  <article className="w-full max-w-3xl rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-lg ring-1 ring-black/5 dark:ring-white/10">
                     <p className="border-b border-[var(--border)] bg-[var(--surface-2)]/80 px-5 py-3 text-sm font-bold tracking-wide text-[var(--muted)] uppercase">
                       Python
                     </p>
