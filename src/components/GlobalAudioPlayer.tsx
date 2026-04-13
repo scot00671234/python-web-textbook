@@ -28,8 +28,8 @@ export function GlobalAudioPlayer() {
   const panelRef = useRef<HTMLDivElement>(null);
   const supported = typeof window !== "undefined" && "speechSynthesis" in window;
 
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [mode, setMode] = useState<Mode>("lesson");
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [mode, setMode] = useState<Mode>("all");
   const [status, setStatus] = useState<Status>("idle");
   const [rate, setRate] = useState(1);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
@@ -56,7 +56,13 @@ export function GlobalAudioPlayer() {
     return getLessonContext(currentLesson.slug)?.module.lessons ?? [currentLesson];
   }, [currentLesson, mode]);
 
-  const queueChunks = useMemo(() => queueLessons.map((l) => lessonToSpeechChunks(l)), [queueLessons]);
+  const queueChunks = useMemo(
+    () =>
+      queueLessons.map((l) =>
+        lessonToSpeechChunks(l).map((x) => x.trim()).filter((x) => x.length > 0),
+      ),
+    [queueLessons],
+  );
   const totalChunks = useMemo(
     () => queueChunks.reduce((sum, arr) => sum + arr.filter((x) => x.trim().length > 0).length, 0),
     [queueChunks],
@@ -119,6 +125,60 @@ export function GlobalAudioPlayer() {
     setStatus("idle");
   }, [supported]);
 
+  const speakFrom = useCallback(
+    (startLessonIndex: number, startChunkIndex: number) => {
+      if (!supported || queueChunks.length === 0) return;
+      cancelledRef.current = false;
+      window.speechSynthesis.cancel();
+
+      let li = Math.max(0, Math.min(queueChunks.length - 1, startLessonIndex));
+      let ci = Math.max(0, startChunkIndex);
+
+      const runNext = () => {
+        if (cancelledRef.current) {
+          setStatus("idle");
+          return;
+        }
+
+        while (li < queueChunks.length) {
+          const chunks = queueChunks[li] ?? [];
+          while (ci < chunks.length && !(chunks[ci] ?? "").trim()) ci += 1;
+          if (ci < chunks.length) break;
+          li += 1;
+          ci = 0;
+        }
+
+        if (li >= queueChunks.length) {
+          setStatus("idle");
+          return;
+        }
+
+        const text = (queueChunks[li]?.[ci] ?? "").trim();
+        if (!text) {
+          ci += 1;
+          runNext();
+          return;
+        }
+
+        setLessonIndex(li);
+        setChunkIndex(ci);
+        ci += 1;
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = Math.min(2, Math.max(0.75, rateRef.current));
+        utterance.pitch = 1;
+        if (voiceRef.current) utterance.voice = voiceRef.current;
+        utterance.onend = runNext;
+        utterance.onerror = () => setStatus("idle");
+        window.speechSynthesis.speak(utterance);
+        setStatus("playing");
+      };
+
+      runNext();
+    },
+    [queueChunks, supported],
+  );
+
   useEffect(() => {
     const startLessonIndex =
       mode === "all"
@@ -140,103 +200,103 @@ export function GlobalAudioPlayer() {
   }, [currentLesson, currentLesson?.slug, mode, stop]);
 
   useEffect(() => {
-    if (!settingsOpen) return;
+    if (!panelOpen) return;
     const onDown = (e: MouseEvent) => {
       if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
-        setSettingsOpen(false);
+        setPanelOpen(false);
       }
     };
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
-  }, [settingsOpen]);
+  }, [panelOpen]);
 
   const speak = useCallback(() => {
-    if (!supported || queueChunks.length === 0) return;
-    cancelledRef.current = false;
-    window.speechSynthesis.cancel();
+    speakFrom(lessonIndex, chunkIndex);
+  }, [chunkIndex, lessonIndex, speakFrom]);
 
-    let li = Math.max(0, Math.min(queueChunks.length - 1, lessonIndex));
-    let ci = Math.max(0, chunkIndex);
-
-    const runNext = () => {
-      if (cancelledRef.current) {
-        setStatus("idle");
-        return;
-      }
-
-      while (li < queueChunks.length) {
-        const chunks = queueChunks[li] ?? [];
-        while (ci < chunks.length && !(chunks[ci] ?? "").trim()) ci += 1;
-        if (ci < chunks.length) break;
-        li += 1;
-        ci = 0;
-      }
-
-      if (li >= queueChunks.length) {
-        setStatus("idle");
-        return;
-      }
-
-      const text = (queueChunks[li]?.[ci] ?? "").trim();
-      setLessonIndex(li);
-      setChunkIndex(ci);
-      ci += 1;
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = Math.min(2, Math.max(0.75, rateRef.current));
-      utterance.pitch = 1;
-      if (voiceRef.current) utterance.voice = voiceRef.current;
-      utterance.onend = runNext;
-      utterance.onerror = () => setStatus("idle");
-      window.speechSynthesis.speak(utterance);
-      setStatus("playing");
-    };
-
-    runNext();
-  }, [chunkIndex, lessonIndex, queueChunks, supported]);
+  useEffect(() => {
+    if (status !== "playing") return;
+    const t = window.setTimeout(() => {
+      // Restart from the current passage so speed changes are felt immediately.
+      stop();
+      speakFrom(lessonIndex, chunkIndex);
+    }, 120);
+    return () => window.clearTimeout(t);
+  }, [chunkIndex, lessonIndex, rate, speakFrom, status, stop]);
 
   const jumpLesson = useCallback(
     (delta: number) => {
       if (!queueLessons.length) return;
-      setLessonIndex((i) => {
-        const next = (i + delta + queueLessons.length) % queueLessons.length;
-        return next;
-      });
+      const nextLesson = (lessonIndex + delta + queueLessons.length) % queueLessons.length;
+      setLessonIndex(nextLesson);
       setChunkIndex(0);
       if (status === "playing") {
         stop();
-        setTimeout(() => speak(), 0);
+        setTimeout(() => speakFrom(nextLesson, 0), 0);
       }
     },
-    [queueLessons.length, speak, status, stop],
+    [lessonIndex, queueLessons.length, speakFrom, status, stop],
   );
 
-  if (!supported) return null;
+  const jumpPassage = useCallback(
+    (delta: number) => {
+      const chunks = queueChunks[lessonIndex] ?? [];
+      if (!chunks.length) return;
+      const nextChunk = (chunkIndex + delta + chunks.length) % chunks.length;
+      setChunkIndex(nextChunk);
+      if (status === "playing") {
+        stop();
+        setTimeout(() => speakFrom(lessonIndex, nextChunk), 0);
+      }
+    },
+    [chunkIndex, lessonIndex, queueChunks, speakFrom, status, stop],
+  );
+
+  const setPassage = useCallback(
+    (nextChunk: number) => {
+      const chunks = queueChunks[lessonIndex] ?? [];
+      if (!chunks.length) return;
+      const clamped = Math.max(0, Math.min(chunks.length - 1, nextChunk));
+      setChunkIndex(clamped);
+      if (status === "playing") {
+        stop();
+        setTimeout(() => speakFrom(lessonIndex, clamped), 0);
+      }
+    },
+    [lessonIndex, queueChunks, speakFrom, status, stop],
+  );
+
+  const isLessonPage = Boolean(currentLesson);
+  if (!supported || !isLessonPage) return null;
 
   const activeLesson = queueLessons[lessonIndex];
   const activeChunks = queueChunks[lessonIndex] ?? [];
-  const activeChunkCount = activeChunks.filter((x) => x.trim().length > 0).length;
-  const modeLabel =
-    mode === "lesson" ? "This lesson" : mode === "module" ? "This module" : "All lessons";
-
+  const activeChunkCount = activeChunks.length;
+  const totalLessonCount = queueLessons.length;
+  const completedChunksBefore = queueChunks
+    .slice(0, lessonIndex)
+    .reduce((sum, arr) => sum + arr.length, 0);
+  const overallChunkPosition =
+    totalChunks > 0 ? Math.min(totalChunks, completedChunksBefore + chunkIndex + 1) : 0;
   return (
     <div className="pointer-events-none fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2 sm:bottom-6 sm:right-6">
-      {settingsOpen ? (
+      {panelOpen ? (
         <div
           id={`${id}-panel`}
           ref={panelRef}
-          className="pointer-events-auto w-[min(21rem,calc(100vw-2rem))] rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 shadow-xl ring-1 ring-black/5 dark:ring-white/10"
+          className="pointer-events-auto w-[min(23rem,calc(100vw-2rem))] rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-xl ring-1 ring-black/5 dark:ring-white/10"
         >
-          <p className="text-[10px] leading-snug text-[var(--muted)]">
-            Audiobook mode reads currently loaded lessons. If you edit lesson content, playback uses the new text on the next run.
+          <p className="text-[11px] font-semibold text-[var(--text)]">Lesson audio</p>
+          <p className="mt-1 text-[10px] leading-snug text-[var(--muted)]">
+            Scope, voices, pacing, lesson jumps, and passage jumps in one place.
           </p>
           <div className="mt-3">
             <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)]">Scope</p>
             <div className="mt-2 inline-flex rounded-full border border-[var(--border)] bg-[var(--surface)] p-0.5">
               {([
-                ["lesson", "Lesson"],
-                ["module", "Module"],
                 ["all", "All"],
+                ["module", "Module"],
+                ["lesson", "Lesson"],
               ] as const).map(([value, label]) => (
                 <button
                   key={value}
@@ -251,6 +311,32 @@ export function GlobalAudioPlayer() {
                 </button>
               ))}
             </div>
+          </div>
+          <div className="mt-3 rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-2 text-[11px] text-[var(--muted)]">
+            <p className="font-semibold text-[var(--text)]">
+              {lessonIndex + 1}/{totalLessonCount}: {activeLesson?.title ?? "No lesson"}
+            </p>
+            <p className="mt-0.5">
+              {mode === "lesson" ? "This lesson" : mode === "module" ? "This module" : "All lessons"}
+              {" · "}
+              Passage {Math.min(chunkIndex + 1, Math.max(activeChunkCount, 1))}/{Math.max(activeChunkCount, 1)}
+              {totalChunks ? ` · Overall ${overallChunkPosition}/${totalChunks}` : ""}
+            </p>
+          </div>
+          <div className="mt-3">
+            <label className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)]" htmlFor={rateId}>
+              Speed {formatRateLabel(rate)}
+            </label>
+            <input
+              id={rateId}
+              type="range"
+              min={0.8}
+              max={2}
+              step={0.05}
+              value={rate}
+              onChange={(e) => setRate(Number(e.target.value))}
+              className="mt-1 w-full accent-[var(--accent)]"
+            />
           </div>
           <div className="mt-3 space-y-2">
             <label className="block text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)]" htmlFor={voiceSelectId}>
@@ -273,113 +359,102 @@ export function GlobalAudioPlayer() {
             </select>
           </div>
           <div className="mt-3">
-            <label className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)]" htmlFor={rateId}>
-              Speed {formatRateLabel(rate)}
-            </label>
-            <input
-              id={rateId}
-              type="range"
-              min={0.8}
-              max={2}
-              step={0.05}
-              value={rate}
-              onChange={(e) => setRate(Number(e.target.value))}
-              className="mt-1 w-full accent-[var(--accent)]"
-            />
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)]">Passage</p>
+            <div className="mt-2 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => jumpPassage(-1)}
+                className="inline-flex h-8 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-semibold text-[var(--text)] transition hover:bg-[var(--surface-2)]"
+              >
+                ←
+              </button>
+              <input
+                type="range"
+                min={1}
+                max={Math.max(activeChunkCount, 1)}
+                step={1}
+                value={Math.min(chunkIndex + 1, Math.max(activeChunkCount, 1))}
+                onChange={(e) => setPassage(Number(e.target.value) - 1)}
+                className="w-full accent-[var(--accent)]"
+              />
+              <button
+                type="button"
+                onClick={() => jumpPassage(1)}
+                className="inline-flex h-8 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-semibold text-[var(--text)] transition hover:bg-[var(--surface-2)]"
+              >
+                →
+              </button>
+            </div>
+          </div>
+          <div className="mt-3">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)]">Lesson</p>
+            <div className="mt-2 grid grid-cols-3 items-center gap-2">
+              <button
+                type="button"
+                onClick={() => jumpLesson(-1)}
+                className="inline-flex h-8 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-semibold text-[var(--text)] transition hover:bg-[var(--surface-2)]"
+              >
+                ← Prev
+              </button>
+              {status === "playing" ? (
+                <button
+                  type="button"
+                  className="inline-flex h-8 items-center justify-center rounded-full bg-red-600 px-4 text-xs font-semibold text-white transition hover:bg-red-700"
+                  onClick={stop}
+                >
+                  Stop
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="inline-flex h-8 items-center justify-center rounded-full bg-[var(--text)] px-4 text-xs font-semibold text-[var(--bg)] transition hover:opacity-90 disabled:opacity-50"
+                  onClick={speak}
+                  disabled={!queueLessons.length}
+                >
+                  Play
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => jumpLesson(1)}
+                className="inline-flex h-8 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-semibold text-[var(--text)] transition hover:bg-[var(--surface-2)]"
+              >
+                Next →
+              </button>
+            </div>
           </div>
         </div>
       ) : null}
 
-      <div className="pointer-events-auto rounded-full border border-[var(--border)] bg-[var(--surface)]/95 p-1 shadow-lg backdrop-blur-sm">
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            className="grid h-9 w-9 place-items-center rounded-full text-[var(--muted)] transition hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
-            onClick={() => setSettingsOpen((o) => !o)}
-            aria-expanded={settingsOpen}
-            title="Audio settings"
-          >
-            <GearIcon />
-            <span className="sr-only">Audio settings</span>
-          </button>
-          <button
-            type="button"
-            className="grid h-9 w-9 place-items-center rounded-full text-[var(--muted)] transition hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
-            onClick={() => jumpLesson(-1)}
-            title="Previous lesson in queue"
-          >
-            ←
-          </button>
+      <div className="pointer-events-auto">
+        <button
+          type="button"
+          onClick={() => setPanelOpen((o) => !o)}
+          aria-expanded={panelOpen}
+          aria-controls={panelOpen ? `${id}-panel` : undefined}
+          className={[
+            "relative grid h-12 w-12 place-items-center rounded-full border bg-[var(--surface)] text-[var(--text)] shadow-lg backdrop-blur-sm transition",
+            panelOpen
+              ? "border-[var(--accent)] ring-2 ring-[var(--accent)]/20"
+              : "border-[var(--border)] hover:bg-[var(--surface-2)]",
+          ].join(" ")}
+          title="Open lesson audio controls"
+        >
+          <SpeakerIcon />
           {status === "playing" ? (
-            <button
-              type="button"
-              className="flex h-9 items-center gap-1.5 rounded-full bg-red-600 px-2.5 pr-3 text-xs font-semibold text-white shadow-sm hover:bg-red-700"
-              onClick={stop}
-              title="Stop audio"
-            >
-              <StopIcon className="h-3.5 w-3.5 shrink-0" />
-              Stop
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="flex h-9 items-center gap-1.5 rounded-full bg-[var(--text)] px-2.5 pr-3 text-xs font-semibold text-[var(--bg)] shadow-sm hover:opacity-90 disabled:opacity-50"
-              onClick={speak}
-              disabled={!queueLessons.length}
-              title={queueLessons.length ? "Play queue audio" : "Open a lesson to listen"}
-            >
-              <PlayIcon className="h-3.5 w-3.5 shrink-0" />
-              Listen
-            </button>
-          )}
-          <button
-            type="button"
-            className="grid h-9 w-9 place-items-center rounded-full text-[var(--muted)] transition hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
-            onClick={() => jumpLesson(1)}
-            title="Next lesson in queue"
-          >
-            →
-          </button>
-        </div>
-        <div className="px-2 pb-1 pt-0.5 text-[10px] leading-snug text-[var(--muted)]">
-          <span className="font-semibold text-[var(--text)]">{modeLabel}</span>
-          {activeLesson ? (
-            <>
-              {" · "}
-              {lessonIndex + 1}/{queueLessons.length}: {activeLesson.title}
-              {" · "}
-              chunk {Math.min(chunkIndex + 1, Math.max(activeChunkCount, 1))}/{Math.max(activeChunkCount, 1)}
-              {totalChunks ? ` · total ${totalChunks}` : ""}
-            </>
-          ) : (
-            <> · open a lesson page to start</>
-          )}
-        </div>
+            <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full bg-[var(--accent)] ring-2 ring-[var(--surface)]" />
+          ) : null}
+          <span className="sr-only">Open lesson audio controls</span>
+        </button>
       </div>
     </div>
   );
 }
 
-function PlayIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M8 5v14l11-7L8 5z" />
-    </svg>
-  );
-}
-
-function StopIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M6 6h12v12H6V6z" />
-    </svg>
-  );
-}
-
-function GearIcon() {
+function SpeakerIcon() {
   return (
     <svg
-      className="h-4 w-4"
+      className="h-5 w-5"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -388,8 +463,9 @@ function GearIcon() {
       strokeLinejoin="round"
       aria-hidden
     >
-      <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+      <path d="M11 5 6 9H3v6h3l5 4V5z" />
+      <path d="M15.5 8.5a5 5 0 0 1 0 7" />
+      <path d="M18.5 6a8.5 8.5 0 0 1 0 12" />
     </svg>
   );
 }
