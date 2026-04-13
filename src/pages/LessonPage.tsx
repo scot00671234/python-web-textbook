@@ -116,15 +116,13 @@ export function LessonPage() {
       </nav>
 
       {ctx ? (
-        <div className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--muted)] shadow-sm">
-          <p className="font-medium text-[var(--text)]">
-            Lesson {ctx.lessonIndex1} of {ctx.totalLessons}
-          </p>
-          <p className="mt-1 text-xs leading-relaxed sm:text-sm">
-            In <span className="font-semibold text-[var(--text)]">{ctx.module.title}</span>
-            : this is lesson {ctx.lessonInModule1} of {ctx.lessonsInModule} in that module.
-          </p>
-        </div>
+        <p className="mt-4 text-sm leading-relaxed text-[var(--muted)]">
+          Lesson <span className="font-semibold text-[var(--text)]">{ctx.lessonIndex1}</span> of{" "}
+          <span className="font-semibold text-[var(--text)]">{ctx.totalLessons}</span> overall, lesson{" "}
+          <span className="font-semibold text-[var(--text)]">{ctx.lessonInModule1}</span> of{" "}
+          <span className="font-semibold text-[var(--text)]">{ctx.lessonsInModule}</span> in{" "}
+          <span className="font-semibold text-[var(--text)]">{ctx.module.title}</span>.
+        </p>
       ) : null}
 
       <header className="mt-8 border-b border-[var(--border)] pb-10">
@@ -148,11 +146,11 @@ export function LessonPage() {
         </p>
 
         {lesson.objectives?.length ? (
-          <div className="mt-8 rounded-card border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm sm:p-6">
+          <section className="mt-8">
             <h2 className="text-xs font-bold tracking-wide text-[var(--muted)] uppercase">
               After this lesson you should be able to
             </h2>
-            <ul className="mt-4 space-y-3 text-sm leading-relaxed text-[var(--muted)] sm:text-[15px]">
+            <ul className="mt-4 space-y-3 border-l-2 border-[var(--accent)]/30 pl-4 text-sm leading-relaxed text-[var(--muted)] sm:text-[15px]">
               {lesson.objectives.map((item) => (
                 <li key={item} className="flex gap-3">
                   <span
@@ -165,14 +163,11 @@ export function LessonPage() {
                 </li>
               ))}
             </ul>
-          </div>
+          </section>
         ) : null}
 
         {showJump ? (
-          <nav
-            className="mt-8 flex flex-wrap gap-2 border-t border-dashed border-[var(--border)] pt-6 text-sm"
-            aria-label="Jump to lesson sections"
-          >
+          <nav className="mt-8 flex flex-wrap gap-2 text-sm" aria-label="Jump to lesson sections">
             <span className="w-full text-xs font-bold tracking-wide text-[var(--muted)] uppercase">
               Jump to
             </span>
@@ -210,7 +205,7 @@ export function LessonPage() {
       {lesson.practicePrompts?.length ? (
         <section
           id="lesson-practice"
-          className="scroll-mt-28 mt-12 rounded-card border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm sm:p-7"
+          className="scroll-mt-28 mt-12 border-t border-[var(--border)] pt-8"
           aria-labelledby="practice-heading"
         >
           <h2

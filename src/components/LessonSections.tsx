@@ -48,7 +48,7 @@ function SectionBlock({
   switch (section.type) {
     case "h2":
       return (
-        <h2 className="scroll-mt-28 border-b border-[var(--border)] pb-2.5 font-serif text-[1.35rem] font-semibold leading-snug tracking-tight text-[var(--text)] sm:text-2xl">
+        <h2 className="scroll-mt-28 pt-2 font-serif text-[1.35rem] font-semibold leading-snug tracking-tight text-[var(--text)] sm:text-2xl">
           {section.text}
         </h2>
       );
@@ -117,19 +117,11 @@ function SectionBlock({
     }
     case "practice":
       return (
-        <aside className="rounded-2xl border border-[var(--practice-border)] bg-[var(--practice-bg)] p-5 shadow-sm sm:p-6">
-          <div className="flex flex-wrap items-center gap-3">
-            <span
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[var(--accent)] text-[10px] font-bold uppercase tracking-wide text-[var(--accent-fg)]"
-              aria-hidden
-            >
-              Lab
-            </span>
-            <h3 className="font-sans text-base font-bold tracking-tight text-[var(--text)] sm:text-lg">
-              {section.title ?? "Try it yourself"}
-            </h3>
-          </div>
-          <ol className="mt-5 list-decimal space-y-3 pl-5 text-sm leading-relaxed text-[var(--muted)] marker:font-bold marker:text-[var(--accent)] sm:text-[15px] sm:leading-relaxed">
+        <aside className="border-t border-[var(--practice-border)] pt-5 sm:pt-6">
+          <h3 className="font-sans text-base font-bold tracking-tight text-[var(--text)] sm:text-lg">
+            {section.title ?? "Try it yourself"}
+          </h3>
+          <ol className="mt-4 list-decimal space-y-3 pl-5 text-sm leading-relaxed text-[var(--muted)] marker:font-bold marker:text-[var(--accent)] sm:text-[15px] sm:leading-relaxed">
             {section.steps.map((step, i) => (
               <li key={i} className="pl-2">
                 <RichText text={step} />
@@ -143,33 +135,29 @@ function SectionBlock({
         section.variant === "tip"
           ? {
               border: "var(--callout-tip-border)",
-              bg: "var(--callout-tip-bg)",
               label: "Tip",
             }
           : section.variant === "warn"
             ? {
                 border: "var(--callout-warn-border)",
-                bg: "var(--callout-warn-bg)",
                 label: "Heads-up",
               }
             : {
                 border: "var(--callout-note-border)",
-                bg: "var(--callout-note-bg)",
                 label: "Note",
               };
       return (
         <aside
-          className="rounded-2xl border border-[var(--border)] p-4 shadow-sm sm:p-5"
+          className="border-l-2 pl-4"
           style={{
-            borderLeftWidth: "4px",
             borderLeftColor: styles.border,
-            background: styles.bg,
+            background: "transparent",
           }}
         >
-          <div className="text-[11px] font-bold tracking-wide text-[var(--text)] uppercase">
+          <div className="text-[11px] font-bold tracking-wide text-[var(--muted)] uppercase">
             {styles.label}
           </div>
-          <div className="mt-2 text-[15px] leading-relaxed text-[var(--muted)] sm:text-base sm:leading-relaxed">
+          <div className="mt-1 text-[15px] leading-relaxed text-[var(--muted)] sm:text-base sm:leading-relaxed">
             <RichText text={section.text} />
           </div>
         </aside>

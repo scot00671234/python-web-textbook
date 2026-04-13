@@ -9,56 +9,110 @@ export const lessonCashflowsNpvAndScenarios: Lesson = {
   title: "Cash flows, NPV, and scenarios in code",
   subtitle: subInt,
   summary:
-    "Net present value discounts future cash flows by a rate reflecting time preference and risk. Code makes assumptions explicit so you can stress-test them.",
+    "Net present value (NPV) converts future cash flows into today's value using a discount rate you must state clearly. This lets you compare projects in one unit and test how sensitive conclusions are to assumptions.",
   tier: "intermediate",
   isPractical: true,
   readingTimeMinutes: 18,
   objectives: [
-    "Implement NPV as a loop over dated cash flows with a constant discount rate",
-    "Compare two scenarios by varying growth or discount assumptions",
+    "Explain in plain language why a dollar later is worth less than a dollar now",
+    "Implement NPV with a loop and verify each discounted term",
+    "Compare two scenarios and explain how discount-rate changes alter decisions",
   ],
   practicePrompts: [
-    "Extend the snippet to accept cash flows in any order by sorting on period index before discounting.",
+    "Modify the function so it accepts `(period, cashflow)` pairs in any order, sorts by period, and then discounts correctly.",
+    "Create a two-scenario table (`base`, `conservative`) and write one sentence interpreting which assumptions drive the NPV difference.",
   ],
   keyTakeaways: [
-    "NPV is sensitive to the discount rate; report a small sensitivity table, not a single magic number.",
-    "This lesson teaches mechanics. It is not investment, tax, or legal advice.",
+    "NPV is not a fact, it is a model output tied to assumptions you choose and must report.",
+    "Always show a small sensitivity table. One single discount rate can hide decision risk.",
+    "The same cash flows can look attractive or weak depending on timing and discount rate.",
   ],
   sections: [
     ...ql(
-      "NPV answers: are future cash flows worth more than money today, given a discount rate you state out loud?",
+      "NPV asks a simple question: after discounting future cash flows, how much value is this project worth in today's money?",
       [
-        "Implement discounting in a tiny function",
-        "Compare scenarios by changing rate or flows",
-        "Optional IRR search lab",
+        "Build intuition for discounting one cash flow",
+        "Implement NPV in a short Python function",
+        "Interpret outputs with scenario and sensitivity checks",
       ],
     ),
     {
-      type: "callout",
-      variant: "warn",
-      text: "Educational examples only. Real decisions need professional advice, audited data, and institutional controls.",
-    },
-    {
-      type: "code",
-      title: "NPV with constant rate",
-      code: `def npv(rate: float, cashflows: list[float]) -> float:\n    \"\"\"cashflows[k] is at end of period k+1 (common convention).\"\"\"\n    total = 0.0\n    for k, cf in enumerate(cashflows):\n        total += cf / (1 + rate) ** (k + 1)\n    return total\n\nprint(npv(0.08, [-1000, 300, 420, 510]))`,
-    },
-    {
       type: "h2",
-      text: "Scenario table",
+      text: "Start with intuition before formulas",
     },
     {
       type: "p",
-      text: "Build a list of dicts or a small `DataFrame` with columns `scenario`, `rate`, `npv`. Plotting three rates takes minutes and prevents silent optimism.",
+      text: "If someone offers you 100 today or 100 in one year, most people prefer 100 today. You can invest it, keep flexibility, and avoid uncertainty. Discounting turns that intuition into a number.",
+    },
+    {
+      type: "p",
+      text: "With discount rate `r`, one future cash flow `CF` at period `t` contributes `CF / (1 + r)^t` to present value. NPV is the sum of those discounted contributions.",
+    },
+    {
+      type: "callout",
+      variant: "note",
+      text: "Teaching tip: keep periods explicit. If cash flows are yearly, `t=1` means end of year 1, `t=2` means end of year 2, and so on.",
+    },
+    {
+      type: "code",
+      title: "Compute NPV and inspect discounted terms",
+      code: `def npv(rate: float, cashflows: list[float]) -> float:
+    """cashflows[k] occurs at the end of period k+1."""
+    total = 0.0
+    for k, cf in enumerate(cashflows, start=1):
+        discounted = cf / (1 + rate) ** k
+        print(f"period={k}, raw={cf:.2f}, discounted={discounted:.2f}")
+        total += discounted
+    return total
+
+project_flows = [-1000, 300, 420, 510]
+result = npv(0.08, project_flows)
+print(f"NPV = {result:.2f}")`,
+    },
+    {
+      type: "h2",
+      text: "Read the output like an analyst",
+    },
+    {
+      type: "p",
+      text: "The print lines show each period's contribution. Later periods should shrink more because they are discounted for longer. If they do not, check your period index.",
+    },
+    {
+      type: "p",
+      text: "The final NPV is the net value of all discounted flows. Positive NPV means value creation under your assumptions. Negative NPV means value destruction under those assumptions.",
+    },
+    {
+      type: "h2",
+      text: "Scenario and sensitivity check",
+    },
+    {
+      type: "code",
+      title: "Compare discount-rate assumptions",
+      code: `flows = [-1000, 300, 420, 510]
+for rate in [0.06, 0.08, 0.12]:
+    print(f"rate={rate:.0%}, npv={npv(rate, flows):.2f}")`,
+    },
+    {
+      type: "p",
+      text: "This tiny loop prevents overconfidence. If your decision flips between 6 percent and 12 percent, the project is assumption-sensitive and needs careful discussion, not a single-number conclusion.",
+    },
+    {
+      type: "callout",
+      variant: "warn",
+      text: "Common mistake: mixing monthly and yearly rates with yearly cash-flow periods. Rate frequency and period frequency must match.",
     },
     {
       type: "practice",
-      title: "Lab",
+      title: "Your turn",
       steps: [
-        "Implement IRR via binary search on the rate `r` such that `npv(r, flows) ≈ 0` for a simple two-sign-change cashflow list.",
+        "Add an input check that raises a clear error when `rate <= -1`, because division would break.",
+        "Build a small list of scenario dicts (`name`, `rate`, `flows`) and print a ranked table by NPV.",
+        "Write a one-paragraph interpretation: which assumption matters most, and what additional data would reduce uncertainty.",
       ],
     },
-    check("If you double the discount rate, does NPV usually rise or fall, holding cash flows fixed?"),
+    check(
+      "If you increase the discount rate while keeping future cash flows fixed, what usually happens to NPV, and why?",
+    ),
   ],
 };
 
@@ -67,51 +121,89 @@ export const lessonMonteCarloForDecisions: Lesson = {
   title: "Monte Carlo for decisions under uncertainty",
   subtitle: subInt,
   summary:
-    "Simulate many futures by drawing random inputs according to assumptions. Inspect the whole distribution of outcomes, not only the mean.",
+    "Monte Carlo simulation helps you reason under uncertainty by generating many possible futures from explicit assumptions. Instead of one point estimate, you inspect a distribution and ask what can go wrong.",
   tier: "intermediate",
   isPractical: true,
   readingTimeMinutes: 18,
   objectives: [
-    "Use `numpy.random.Generator` for reproducible draws",
-    "Summarize simulation output with percentiles",
+    "Use `numpy.random.Generator` with a seed so results are reproducible",
+    "Interpret mean and tail percentiles as different decision signals",
+    "Explain why assumption choice matters as much as code correctness",
   ],
   practicePrompts: [
-    "Plot a histogram of simulated total returns after 252 daily steps with drift 0 and small volatility (GBM toy).",
+    "Simulate 10,000 yearly outcomes for two strategies with different win probabilities, then compare median and 10th percentile.",
+    "Write two sentences: one for a risk-neutral reader (mean-focused) and one for a risk-averse reader (tail-focused).",
   ],
   keyTakeaways: [
-    "Document the RNG seed and distribution choices next to plots.",
-    "Garbage in, garbage out: the hardest part is defensible input distributions.",
+    "Monte Carlo does not remove uncertainty, it makes uncertainty visible.",
+    "Always document seed, distribution assumptions, and why those choices are defensible.",
+    "Tail metrics can change decisions even when means look similar.",
   ],
   sections: [
     ...ql(
-      "Monte Carlo means: draw random futures many times, summarize the distribution, do not worship the mean alone.",
+      "Draw many random futures, then read the whole distribution, not only the average.",
       [
-        "Run many simulations with a fixed seed",
-        "Read mean vs tail percentiles",
-        "Stress-test assumptions verbally",
+        "Set up reproducible random draws",
+        "Summarize outcomes with mean and percentiles",
+        "Interpret results for real decision-making",
       ],
     ),
     {
-      type: "code",
-      title: "Portfolio of independent bets (toy)",
-      code: `import numpy as np\n\nrng = np.random.default_rng(42)\nn_sims = 50_000\np_win = 0.55\npayout = 1.0\nstake = 1.0\nwins = rng.binomial(1, p_win, size=n_sims)\nprofit = wins * payout - stake\nprint(\"mean\", profit.mean())\nprint(\"5th pct\", np.percentile(profit, 5))`,
-    },
-    {
       type: "h2",
-      text: "Why seed",
+      text: "Why this method matters",
     },
     {
       type: "p",
-      text: "Seeds make collaboration possible: teammates reproduce your histogram. Change the seed to stress-test RNG sensitivity occasionally.",
+      text: "Many decisions are made with uncertain inputs, such as demand, defaults, or conversion rates. A single expected value hides risk. Monte Carlo lets you see both typical and bad-case outcomes.",
+    },
+    {
+      type: "code",
+      title: "Simulate yearly profit distribution (toy)",
+      code: `import numpy as np
+
+rng = np.random.default_rng(42)
+n_sims = 20_000
+n_trials = 100
+p_win = 0.55
+gain_if_win = 1.2
+loss_if_lose = -1.0
+
+wins = rng.binomial(1, p_win, size=(n_sims, n_trials))
+profit_per_trial = np.where(wins == 1, gain_if_win, loss_if_lose)
+year_profit = profit_per_trial.sum(axis=1)
+
+print("mean", round(float(year_profit.mean()), 2))
+print("median", round(float(np.percentile(year_profit, 50)), 2))
+print("10th_pct", round(float(np.percentile(year_profit, 10)), 2))`,
+    },
+    {
+      type: "h2",
+      text: "How to interpret these numbers",
+    },
+    {
+      type: "p",
+      text: "The mean is the long-run average across simulated futures. The median is the middle outcome. The 10th percentile is a downside marker: 10 percent of simulations are worse than this.",
+    },
+    {
+      type: "p",
+      text: "If two strategies have similar means but different 10th percentiles, risk-sensitive teams often prefer the strategy with better downside protection.",
+    },
+    {
+      type: "callout",
+      variant: "warn",
+      text: "Common mistake: presenting simulation outputs as predictions. They are conditional on your input assumptions, not guaranteed future truth.",
     },
     {
       type: "practice",
-      title: "Lab",
+      title: "Your turn",
       steps: [
-        "Estimate the probability that cumulative profit after 100 independent bets stays above zero using the same `p_win`.",
+        "Add a second strategy with lower mean but lower downside risk. Compare both using mean and 10th percentile.",
+        "Estimate `P(year_profit < 0)` for each strategy and explain which one you would pick under a conservative policy.",
       ],
     },
-    check("Why is documenting the RNG seed as important as documenting the discount rate in finance code?"),
+    check(
+      "Why can two strategies with almost equal mean outcomes still imply very different decisions?",
+    ),
   ],
 };
 
@@ -345,51 +437,89 @@ export const lessonExperimentsAndAbTesting: Lesson = {
   title: "Experiments and A/B testing in code",
   subtitle: subInt,
   summary:
-    "Randomized experiments compare outcomes between groups that differ only by treatment assignment on average. Code helps simulate, analyze, and document them.",
+    "Randomized experiments estimate causal effects by assigning treatment with chance, so groups are comparable on average. Good analysis then focuses on effect size, uncertainty, and precommitted rules.",
   tier: "intermediate",
   isPractical: true,
   readingTimeMinutes: 16,
   objectives: [
-    "Simulate a two-arm experiment with NumPy and compare means",
-    "Explain why peeking inflates false positive rates",
+    "Simulate an A/B test and compute an average treatment effect estimate",
+    "Explain in plain language why randomization supports causal interpretation",
+    "Explain why repeated peeking inflates false positives",
   ],
   practicePrompts: [
-    "Run 2000 simulated experiments under the null (no effect) with early stopping when p<0.05; observe inflated false positives vs fixed sample.",
+    "Run many null simulations (true lift = 0) and compare false-positive rates under fixed sample size versus repeated peeking.",
+    "Write a short analysis note that reports estimate, uncertainty, and one design limitation.",
   ],
   keyTakeaways: [
-    "Preregister metrics and stopping rules when possible.",
-    "Block randomization when units vary within strata (simple sketch in code comments).",
+    "Randomization is a design choice that gives causal leverage, not a statistical decoration.",
+    "Always report uncertainty with the estimate, not estimate alone.",
+    "Stopping-rule discipline is essential if you want trustworthy p-values.",
   ],
   sections: [
     ...ql(
-      "A/B tests randomize who sees what so average differences reflect treatment, not selection; peeking breaks that story.",
+      "A/B tests use random assignment so observed differences can be interpreted causally on average.",
       [
-        "Simulate two arms in NumPy",
-        "Link peeking to false positives",
-        "Histogram many simulated lifts",
+        "Simulate treatment assignment and outcomes",
+        "Estimate effect size and uncertainty",
+        "Understand why peeking can trick you",
       ],
     ),
     {
-      type: "code",
-      title: "Simulate lift",
-      code: `import numpy as np\n\nrng = np.random.default_rng(7)\nn = 400\ntreatment = rng.binomial(1, 0.5, size=n).astype(bool)\nbase = rng.normal(10.0, 1.5, size=n)\nlift = 0.4\noutcome = base + lift * treatment + rng.normal(0, 0.3, size=n)\nprint(outcome[treatment].mean() - outcome[~treatment].mean())`,
-    },
-    {
       type: "h2",
-      text: "Simple stats link",
+      text: "Design first, statistics second",
     },
     {
       type: "p",
-      text: "For Gaussian-ish outcomes with equal variance, a two-sample t-test is a starting point. For rates, look at Wilson intervals or logistic regression; reach for `scipy.stats` or `statsmodels` after you write down assumptions.",
+      text: "Before running code, define your outcome, sample size target, and stopping rule. If these change after seeing results, your reported significance can become misleading.",
+    },
+    {
+      type: "code",
+      title: "Simulate and estimate average treatment effect (toy)",
+      code: `import numpy as np
+
+rng = np.random.default_rng(7)
+n = 600
+treatment = rng.binomial(1, 0.5, size=n).astype(bool)
+
+baseline = rng.normal(10.0, 1.5, size=n)
+true_lift = 0.4
+noise = rng.normal(0, 0.7, size=n)
+outcome = baseline + true_lift * treatment + noise
+
+treated_mean = outcome[treatment].mean()
+control_mean = outcome[~treatment].mean()
+ate_hat = treated_mean - control_mean
+print("estimated_lift", round(float(ate_hat), 3))`,
+    },
+    {
+      type: "h2",
+      text: "From estimate to decision",
+    },
+    {
+      type: "p",
+      text: "The difference in means is your effect estimate. Next you need uncertainty, often confidence intervals or standard errors, before claiming a win.",
+    },
+    {
+      type: "p",
+      text: "For approximately normal continuous outcomes, a two-sample t-test is a common start. For proportions, use methods designed for rates, such as Wilson intervals or logistic models.",
+    },
+    {
+      type: "callout",
+      variant: "warn",
+      text: "Common mistake: checking p-values repeatedly and stopping when one dips below 0.05. This inflates false positives unless your design accounts for sequential looks.",
     },
     {
       type: "practice",
-      title: "Lab",
+      title: "Your turn",
       steps: [
-        "Wrap the simulation in a function `simulate_once(n, lift)` returning the observed mean difference. Call it 500 times and plot a histogram of differences.",
+        "Wrap the simulation in `simulate_once(n, true_lift)` and run it 1000 times for `true_lift = 0.0`. Count how often you would falsely claim a win.",
+        "Repeat with fixed sample size and no peeking. Compare false-positive rates.",
+        "Write three lines: effect estimate, uncertainty summary, and one limitation of this toy setup.",
       ],
     },
-    check("Under the null (no true lift), why does stopping the moment p<0.05 inflate false positives?"),
+    check(
+      "Why does random assignment help causal interpretation even when treated and control means differ by chance in one realized sample?",
+    ),
   ],
 };
 
