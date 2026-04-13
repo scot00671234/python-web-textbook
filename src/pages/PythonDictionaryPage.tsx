@@ -321,7 +321,14 @@ export function PythonDictionaryPage() {
           No terms match your current filters. Try clearing one filter or using fewer words.
         </p>
       ) : focusMode && activeEntry ? (
-        <section className="mt-8 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 sm:p-6">
+        <section
+          className={[
+            "mt-8 rounded-2xl border border-[var(--border)] bg-[var(--surface)]",
+            focusExpanded
+              ? "grid h-[min(80vh,50rem)] grid-rows-[auto,1fr,auto] overflow-hidden p-0"
+              : "p-5 sm:p-6",
+          ].join(" ")}
+        >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
               Focus mode {activeIndex + 1}/{filtered.length}
@@ -336,6 +343,64 @@ export function PythonDictionaryPage() {
                 <ExpandIcon />
                 {focusExpanded ? "Collapse" : "Expand"}
               </button>
+              {!focusExpanded ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => moveFocusEntry(-1)}
+                    className="rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] transition hover:border-[var(--accent)]/40"
+                  >
+                    Prev
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveFocusEntry(1)}
+                    className="rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] transition hover:border-[var(--accent)]/40"
+                  >
+                    Next
+                  </button>
+                </>
+              ) : null}
+            </div>
+          </div>
+          <div
+            className={[
+              "rounded-xl border border-[var(--border)] bg-[var(--surface-2)]",
+              focusExpanded ? "min-h-0 overflow-y-auto m-4 mt-3 p-5 sm:m-6 sm:mt-4" : "mt-4 p-4",
+            ].join(" ")}
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className={["font-sans font-semibold text-[var(--text)]", focusExpanded ? "text-2xl" : "text-xl"].join(" ")}>
+                {activeEntry.term}
+              </h2>
+              <span className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-[var(--muted)] uppercase">
+                {activeEntry.category}
+              </span>
+            </div>
+            <p className={["mt-3 leading-relaxed text-[var(--muted)]", focusExpanded ? "text-sm sm:text-[16px]" : "text-sm sm:text-[15px]"].join(" ")}>
+              {activeEntry.meaning}
+            </p>
+            {activeEntry.example ? (
+              <div className="mt-3">
+                <p className="text-[11px] font-semibold tracking-wide text-[var(--muted)] uppercase">
+                  Context snippet
+                </p>
+                <pre className={["mt-1.5 overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--code-bg)] leading-relaxed", focusExpanded ? "p-4 text-sm" : "p-3 text-xs sm:text-sm"].join(" ")}>
+                  <code className="font-mono text-[var(--code-fg)]">{activeEntry.example}</code>
+                </pre>
+              </div>
+            ) : null}
+            {activeEntry.related?.length ? (
+              <p className="mt-3 text-xs text-[var(--muted)]">
+                Related:{" "}
+                <span className="font-medium text-[var(--text)]">
+                  {activeEntry.related.join(", ")}
+                </span>
+              </p>
+            ) : null}
+          </div>
+          {focusExpanded ? (
+            <div className="flex items-center justify-center gap-2 border-t border-[var(--border)] px-5 py-4 sm:px-6">
               <button
                 type="button"
                 onClick={() => moveFocusEntry(-1)}
@@ -351,38 +416,7 @@ export function PythonDictionaryPage() {
                 Next
               </button>
             </div>
-          </div>
-          <div className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="font-sans text-xl font-semibold text-[var(--text)]">
-                {activeEntry.term}
-              </h2>
-              <span className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-[var(--muted)] uppercase">
-                {activeEntry.category}
-              </span>
-            </div>
-            <p className="mt-3 text-sm leading-relaxed text-[var(--muted)] sm:text-[15px]">
-              {activeEntry.meaning}
-            </p>
-            {activeEntry.example ? (
-              <div className="mt-3">
-                <p className="text-[11px] font-semibold tracking-wide text-[var(--muted)] uppercase">
-                  Context snippet
-                </p>
-                <pre className="mt-1.5 overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--code-bg)] p-3 text-xs leading-relaxed sm:text-sm">
-                  <code className="font-mono text-[var(--code-fg)]">{activeEntry.example}</code>
-                </pre>
-              </div>
-            ) : null}
-            {activeEntry.related?.length ? (
-              <p className="mt-3 text-xs text-[var(--muted)]">
-                Related:{" "}
-                <span className="font-medium text-[var(--text)]">
-                  {activeEntry.related.join(", ")}
-                </span>
-              </p>
-            ) : null}
-          </div>
+          ) : null}
         </section>
       ) : (
         <ul className="mt-8 space-y-3">
@@ -434,78 +468,6 @@ export function PythonDictionaryPage() {
         </ul>
       )}
 
-      {focusMode && activeEntry && focusExpanded ? (
-        <section
-          className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-lg"
-          aria-label={`Expanded dictionary term: ${activeEntry.term}`}
-        >
-          <div className="grid h-[min(80vh,50rem)] grid-rows-[auto,1fr,auto] overflow-hidden rounded-2xl">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] px-5 py-4 sm:px-6">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                Expanded focus view {activeIndex + 1}/{filtered.length}
-              </p>
-              <button
-                type="button"
-                onClick={() => setFocusExpanded(false)}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] transition hover:border-[var(--accent)]/40"
-              >
-                Collapse
-              </button>
-            </div>
-
-            <div className="min-h-0 overflow-y-auto px-5 py-4 sm:px-6 sm:py-5">
-              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4 sm:p-5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="font-sans text-2xl font-semibold text-[var(--text)]">
-                    {activeEntry.term}
-                  </h2>
-                  <span className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-[var(--muted)] uppercase">
-                    {activeEntry.category}
-                  </span>
-                </div>
-                <p className="mt-3 text-sm leading-relaxed text-[var(--muted)] sm:text-[16px]">
-                  {activeEntry.meaning}
-                </p>
-                {activeEntry.example ? (
-                  <div className="mt-3">
-                    <p className="text-[11px] font-semibold tracking-wide text-[var(--muted)] uppercase">
-                      Context snippet
-                    </p>
-                    <pre className="mt-1.5 overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--code-bg)] p-4 text-sm leading-relaxed">
-                      <code className="font-mono text-[var(--code-fg)]">{activeEntry.example}</code>
-                    </pre>
-                  </div>
-                ) : null}
-                {activeEntry.related?.length ? (
-                  <p className="mt-3 text-xs text-[var(--muted)]">
-                    Related:{" "}
-                    <span className="font-medium text-[var(--text)]">
-                      {activeEntry.related.join(", ")}
-                    </span>
-                  </p>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center gap-2 border-t border-[var(--border)] px-5 py-4 sm:px-6">
-              <button
-                type="button"
-                onClick={() => moveFocusEntry(-1)}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] transition hover:border-[var(--accent)]/40"
-              >
-                Prev
-              </button>
-              <button
-                type="button"
-                onClick={() => moveFocusEntry(1)}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] transition hover:border-[var(--accent)]/40"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        </section>
-      ) : null}
     </div>
   );
 }
