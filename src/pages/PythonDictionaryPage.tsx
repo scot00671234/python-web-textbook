@@ -329,11 +329,16 @@ export function PythonDictionaryPage() {
               : "p-5 sm:p-6",
           ].join(" ")}
         >
-          <div className="flex flex-wrap items-center justify-between gap-2">
+          <div
+            className={[
+              "flex items-center justify-between gap-3",
+              focusExpanded ? "px-4 pb-0 pt-4 sm:px-6 sm:pt-5" : "flex-wrap gap-y-2",
+            ].join(" ")}
+          >
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
               Focus mode {activeIndex + 1}/{filtered.length}
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setFocusExpanded((prev) => !prev)}

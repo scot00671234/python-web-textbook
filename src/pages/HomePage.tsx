@@ -79,7 +79,7 @@ function CodeTypewriter({ snippets }: { snippets: HeroSnippet[] }) {
           </Link>
         </div>
       </div>
-      <pre className="min-h-[19rem] bg-[var(--code-bg)] p-4 text-[13px] leading-[1.7] sm:p-5 sm:text-sm">
+      <pre className="min-h-[14rem] bg-[var(--code-bg)] p-4 text-[13px] leading-[1.7] sm:min-h-[19rem] sm:p-5 sm:text-sm">
         <code className="font-mono text-[var(--code-fg)] [tab-size:2]">
           {current.code.slice(0, charIndex)}
           <span className="animate-pulse text-[var(--accent)]">|</span>

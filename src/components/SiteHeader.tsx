@@ -4,7 +4,7 @@ import { SiteSearch } from "./SiteSearch";
 import { ThemeToggle } from "./ThemeToggle";
 
 const linkClass =
-  "rounded-full px-3 py-2 text-sm font-medium text-[var(--muted)] no-underline hover:bg-[var(--surface-2)] hover:text-[var(--text)]";
+  "rounded-full px-2.5 py-2 text-sm font-medium text-[var(--muted)] no-underline hover:bg-[var(--surface-2)] hover:text-[var(--text)] sm:px-3";
 
 const activeClass = "bg-[var(--surface-2)] text-[var(--text)]";
 
@@ -36,8 +36,8 @@ export function SiteHeader() {
           <SiteSearch />
         </div>
 
-        <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
-          <nav className="flex max-w-[100vw] items-center overflow-x-auto">
+        <div className="ml-auto flex w-full min-w-0 items-center justify-between gap-2 sm:w-auto sm:shrink-0 sm:justify-end sm:gap-2">
+          <nav className="flex min-w-0 flex-1 items-center overflow-x-auto sm:max-w-[100vw] sm:flex-none">
             <NavLink
               to="/"
               className={({ isActive }) =>

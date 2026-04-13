@@ -673,13 +673,13 @@ export function PythonInPlainEnglishPage() {
               </button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
             <button
               type="button"
               onClick={() => setBrowseIndex(0)}
               title="One card at a time, full screen. Arrow keys to step, Esc to exit. You can also open focus mode by clicking a card (outside TYPE and other controls)."
               aria-label="Open focus mode from the first card. Full screen, one translation at a time. Arrow keys to move, Escape to exit."
-              className="inline-flex h-10 shrink-0 items-center justify-center self-start rounded-full bg-[var(--text)] px-4 text-sm font-semibold text-[var(--bg)] shadow-md transition hover:opacity-95 sm:self-center sm:px-5"
+              className="inline-flex h-10 min-w-[9.5rem] flex-1 items-center justify-center self-start rounded-full bg-[var(--text)] px-4 text-sm font-semibold text-[var(--bg)] shadow-md transition hover:opacity-95 sm:min-w-0 sm:flex-none sm:self-center sm:px-5"
             >
               Focus mode
             </button>
@@ -693,7 +693,7 @@ export function PythonInPlainEnglishPage() {
               }}
               title="Autoplay typewriter: code first, then plain English translation."
               aria-label="Open animation mode with typewriter playback."
-              className="inline-flex h-10 shrink-0 items-center justify-center self-start rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--text)] shadow-sm transition hover:bg-[var(--surface-2)] sm:self-center sm:px-5"
+              className="inline-flex h-10 min-w-[9.5rem] flex-1 items-center justify-center self-start rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--text)] shadow-sm transition hover:bg-[var(--surface-2)] sm:min-w-0 sm:flex-none sm:self-center sm:px-5"
             >
               Animation mode
             </button>
@@ -707,7 +707,7 @@ export function PythonInPlainEnglishPage() {
               }}
               title="Multiple-choice translation game using existing cards."
               aria-label="Open plain English quiz mode."
-              className="inline-flex h-10 shrink-0 items-center justify-center self-start rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--text)] shadow-sm transition hover:bg-[var(--surface-2)] sm:self-center sm:px-5"
+              className="inline-flex h-10 min-w-[9.5rem] flex-1 items-center justify-center self-start rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--text)] shadow-sm transition hover:bg-[var(--surface-2)] sm:min-w-0 sm:flex-none sm:self-center sm:px-5"
             >
               Quiz mode
             </button>
