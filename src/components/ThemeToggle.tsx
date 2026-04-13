@@ -4,21 +4,31 @@ import { useTheme } from "../theme/useTheme";
 export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
   const labelId = useId();
+  const isDark = theme === "dark";
 
   return (
     <button
       type="button"
-      className="inline-flex h-10 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 text-sm font-semibold text-[var(--text)] shadow-sm"
+      className="group relative inline-flex h-10 w-16 items-center rounded-full bg-gradient-to-br from-[#f8f8fb] via-[#b8bcc6] to-[#fdfdff] p-[1.5px] text-[var(--text)] shadow-[0_6px_20px_rgba(0,0,0,0.18)] transition-all hover:shadow-[0_8px_24px_rgba(0,0,0,0.24)] dark:from-[#8e93a0] dark:via-[#5f6472] dark:to-[#c2c7d2]"
       onClick={toggleTheme}
       aria-labelledby={labelId}
+      aria-pressed={isDark}
     >
       <span id={labelId} className="sr-only">
         Toggle color theme
       </span>
-      <span aria-hidden className="grid h-7 w-7 place-items-center rounded-full bg-[var(--surface-2)]">
-        {theme === "dark" ? <MoonIcon /> : <SunIcon />}
+      <span
+        aria-hidden
+        className="absolute inset-[1.5px] rounded-full bg-[var(--surface)] shadow-[inset_0_1px_0_rgba(255,255,255,0.45),inset_0_-1px_0_rgba(0,0,0,0.25)] dark:bg-[var(--surface-2)]"
+      />
+      <span
+        aria-hidden
+        className={`relative z-10 grid h-7 w-7 place-items-center rounded-full border border-white/45 bg-[var(--surface-2)] text-[var(--text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_2px_6px_rgba(0,0,0,0.35)] transition-transform duration-200 ${
+          isDark ? "translate-x-7" : "translate-x-1"
+        }`}
+      >
+        {isDark ? <MoonIcon /> : <SunIcon />}
       </span>
-      <span className="hidden sm:inline">{theme === "dark" ? "Dark" : "Light"}</span>
     </button>
   );
 }
