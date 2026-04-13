@@ -60,6 +60,13 @@ export function LearnIndexPage() {
           >
             Python in plain English
           </Link>
+          {" · "}
+          <Link
+            className="font-semibold text-[var(--accent)] no-underline hover:underline"
+            to="/learn/python-dictionary"
+          >
+            Python dictionary
+          </Link>
         </p>
       </div>
 

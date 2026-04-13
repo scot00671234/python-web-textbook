@@ -68,7 +68,16 @@ function CodeTypewriter({ snippets }: { snippets: HeroSnippet[] }) {
     <div className="overflow-hidden rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-md">
       <div className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-2.5">
         <p className="font-mono text-xs font-semibold text-[var(--accent)]">Live Python demo</p>
-        <p className="truncate text-xs text-[var(--muted)]">{current.title}</p>
+        <div className="flex items-center gap-2">
+          <p className="max-w-[14rem] truncate text-xs text-[var(--muted)]">{current.title}</p>
+          <Link
+            to="/learn/python-in-plain-english?mode=animation"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--text)] no-underline transition hover:border-[var(--accent)]/40 hover:bg-[var(--surface-2)]"
+            aria-label="Open full animation mode"
+          >
+            See more
+          </Link>
+        </div>
       </div>
       <pre className="min-h-[18rem] bg-[var(--code-bg)] p-4 text-[13px] leading-[1.7] sm:p-5 sm:text-sm">
         <code className="font-mono text-[var(--code-fg)] [tab-size:2]">

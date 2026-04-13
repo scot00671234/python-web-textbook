@@ -1,9 +1,10 @@
 import { getFlashcardDecks } from "../content/flashcards";
 import { getAllLessons } from "../content/curriculum";
 import { getPlainEnglishCards } from "../content/pythonInPlainEnglish";
+import { getPythonDictionaryEntries } from "../content/pythonDictionary";
 import { getBlogArticles } from "../content/blogArticles";
 
-export type SearchKind = "lesson" | "page" | "deck" | "plain" | "blog";
+export type SearchKind = "lesson" | "page" | "deck" | "plain" | "blog" | "dictionary";
 
 export type SearchHit = {
   id: string;
@@ -66,6 +67,13 @@ function buildIndex(): InternalHit[] {
       subtitle: "Code next to plain-language readings",
     },
     {
+      id: "page-dictionary",
+      kind: "page",
+      title: "Python dictionary",
+      href: "/learn/python-dictionary",
+      subtitle: "Beginner-friendly terms, meanings, and examples",
+    },
+    {
       id: "page-home",
       kind: "page",
       title: "Home",
@@ -106,6 +114,17 @@ function buildIndex(): InternalHit[] {
       href: `/learn/python-in-plain-english#${card.id}`,
       subtitle: "Python in plain English",
       haystack: `${card.title} ${card.bullets.join(" ")} plain english`.toLowerCase(),
+    });
+  }
+
+  for (const term of getPythonDictionaryEntries()) {
+    hits.push({
+      id: `dictionary-${term.id}`,
+      kind: "dictionary",
+      title: term.term,
+      href: "/learn/python-dictionary",
+      subtitle: term.meaning,
+      haystack: `${term.term} ${term.category} ${term.meaning} ${(term.related ?? []).join(" ")} python dictionary`.toLowerCase(),
     });
   }
 

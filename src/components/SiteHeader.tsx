@@ -29,7 +29,6 @@ export function SiteHeader() {
             <div className="font-semibold tracking-tight text-[var(--text)] [font-variant-ligatures:none]">
               <span className="text-base lowercase">{SITE_NAME}</span>
             </div>
-            <div className="text-xs text-[var(--muted)]">Beginner Python · structured lessons</div>
           </div>
         </NavLink>
 
@@ -63,6 +62,14 @@ export function SiteHeader() {
               }
             >
               Plain English
+            </NavLink>
+            <NavLink
+              to="/learn/python-dictionary"
+              className={({ isActive }) =>
+                [linkClass, isActive ? activeClass : ""].join(" ")
+              }
+            >
+              Dictionary
             </NavLink>
             <NavLink
               to="/learn"

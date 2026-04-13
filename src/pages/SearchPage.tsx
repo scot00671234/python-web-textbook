@@ -13,6 +13,8 @@ function kindLabel(kind: SearchHit["kind"]): string {
       return "Plain English card";
     case "blog":
       return "Blog article";
+    case "dictionary":
+      return "Dictionary term";
     default:
       return "Page";
   }

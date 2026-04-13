@@ -8,6 +8,7 @@ export function getSitemapStaticPaths(): string[] {
     "/learn",
     "/learn/flashcards",
     "/learn/python-in-plain-english",
+    "/learn/python-dictionary",
     "/blog",
   ];
   const lessons = getAllLessons().map(({ lesson }) => `/learn/${lesson.slug}`);

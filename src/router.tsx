@@ -5,6 +5,7 @@ import { HomePage } from "./pages/HomePage";
 import { LearnIndexPage } from "./pages/LearnIndexPage";
 import { FlashcardsPage } from "./pages/FlashcardsPage";
 import { PythonInPlainEnglishPage } from "./pages/PythonInPlainEnglishPage";
+import { PythonDictionaryPage } from "./pages/PythonDictionaryPage";
 import { LessonPage } from "./pages/LessonPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { SearchPage } from "./pages/SearchPage";
@@ -26,6 +27,7 @@ export const router = createBrowserRouter([
           { index: true, element: <LearnIndexPage /> },
           { path: "flashcards", element: <FlashcardsPage /> },
           { path: "python-in-plain-english", element: <PythonInPlainEnglishPage /> },
+          { path: "python-dictionary", element: <PythonDictionaryPage /> },
           { path: ":slug", element: <LessonPage /> },
         ],
       },

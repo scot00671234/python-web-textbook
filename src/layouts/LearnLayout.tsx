@@ -37,6 +37,20 @@ export function LearnLayout() {
           >
             Python in plain English
           </NavLink>
+          <NavLink
+            to="/learn/python-dictionary"
+            className={({ isActive }) =>
+              [
+                "flex w-full items-center justify-center rounded-xl border-2 px-3 py-2.5 text-xs font-bold no-underline transition-colors",
+                isActive
+                  ? "border-[var(--text)] bg-[var(--text)] text-[var(--bg)]"
+                  : "border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:border-[var(--accent)] hover:bg-[color-mix(in_oklab,var(--accent)_10%,var(--surface))]",
+              ].join(" ")
+            }
+            onClick={() => setOpen(false)}
+          >
+            Python dictionary
+          </NavLink>
         </div>
         {modules.map((module) => (
           <div key={module.id} className="py-4 first:pt-0">

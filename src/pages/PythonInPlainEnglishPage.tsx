@@ -194,6 +194,17 @@ export function PythonInPlainEnglishPage() {
     if (i >= 0) setBrowseIndex(i);
   }, [flatItems, location.hash]);
 
+  /** Allow deep-linking into animation mode from homepage CTA. */
+  useEffect(() => {
+    const mode = new URLSearchParams(location.search).get("mode");
+    if (mode !== "animation") return;
+    if (!flatItems.length) return;
+    if (animationIndex !== null || browseIndex !== null) return;
+    setAnimationIndex(0);
+    setAnimationPhase("typingCode");
+    setAnimationChars(0);
+  }, [animationIndex, browseIndex, flatItems, location.search]);
+
   /** Lock page scroll while focus mode (full-screen card) is open. */
   useEffect(() => {
     if (browseIndex === null && animationIndex === null) return;
