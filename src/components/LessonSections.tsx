@@ -60,8 +60,14 @@ export function RichText({ text }: { text: string }) {
                   >
                     {token}
                   </Link>
-                  <span className="pointer-events-none absolute left-0 top-[calc(100%+0.3rem)] z-30 hidden w-72 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs leading-relaxed text-[var(--text)] shadow-lg group-hover:block group-focus-within:block">
-                    {hit.meaning}
+                  <span className="absolute left-0 top-[calc(100%+0.3rem)] z-30 hidden w-72 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs leading-relaxed text-[var(--text)] shadow-lg group-hover:block group-focus-within:block">
+                    <span>{hit.meaning}</span>
+                    <Link
+                      to={`/learn/python-dictionary#${hit.id}`}
+                      className="mt-2 block text-[11px] font-semibold text-[var(--accent)] no-underline hover:underline"
+                    >
+                      Open in dictionary →
+                    </Link>
                   </span>
                 </span>
               );

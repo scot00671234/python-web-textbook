@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Seo } from "../components/Seo";
 import {
   getPythonDictionaryEntries,
@@ -57,6 +58,7 @@ function fuzzyMatch(query: string, haystack: string): boolean {
 }
 
 export function PythonDictionaryPage() {
+  const location = useLocation();
   const entries = getPythonDictionaryEntries();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<PythonDictionaryCategory | typeof ALL>(ALL);
@@ -146,6 +148,27 @@ export function PythonDictionaryPage() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [focusMode, moveFocusEntry]);
+
+  useEffect(() => {
+    const raw = location.hash.replace(/^#/, "").trim();
+    if (!raw) return;
+    const targetId = decodeURIComponent(raw);
+    const target = entries.find((entry) => entry.id === targetId);
+    if (!target) return;
+
+    // Ensure the linked term is visible even if filters were previously narrowed.
+    setQuery("");
+    setCategory(ALL);
+    setLetter(ALL);
+    setActiveEntryId(target.id);
+
+    requestAnimationFrame(() => {
+      document.getElementById(target.id)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  }, [entries, location.hash]);
 
   return (
     <div className="max-w-5xl py-8 lg:py-10">
