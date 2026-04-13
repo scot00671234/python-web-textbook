@@ -450,8 +450,8 @@ export function PythonDictionaryPage() {
           aria-modal="true"
           aria-label={`Expanded dictionary term: ${activeEntry.term}`}
         >
-          <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xl sm:p-6">
-            <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="grid h-[min(90vh,52rem)] w-full max-w-4xl grid-rows-[auto,1fr,auto] overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-2xl">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] px-5 py-4 sm:px-6">
               <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
                 Focus mode {activeIndex + 1}/{filtered.length}
               </p>
@@ -464,37 +464,41 @@ export function PythonDictionaryPage() {
               </button>
             </div>
 
-            <div className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4 sm:p-5">
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="font-sans text-2xl font-semibold text-[var(--text)]">{activeEntry.term}</h2>
-                <span className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-[var(--muted)] uppercase">
-                  {activeEntry.category}
-                </span>
-              </div>
-              <p className="mt-3 text-sm leading-relaxed text-[var(--muted)] sm:text-[16px]">
-                {activeEntry.meaning}
-              </p>
-              {activeEntry.example ? (
-                <div className="mt-3">
-                  <p className="text-[11px] font-semibold tracking-wide text-[var(--muted)] uppercase">
-                    Context snippet
-                  </p>
-                  <pre className="mt-1.5 overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--code-bg)] p-4 text-sm leading-relaxed">
-                    <code className="font-mono text-[var(--code-fg)]">{activeEntry.example}</code>
-                  </pre>
-                </div>
-              ) : null}
-              {activeEntry.related?.length ? (
-                <p className="mt-3 text-xs text-[var(--muted)]">
-                  Related:{" "}
-                  <span className="font-medium text-[var(--text)]">
-                    {activeEntry.related.join(", ")}
+            <div className="min-h-0 overflow-y-auto px-5 py-4 sm:px-6 sm:py-5">
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4 sm:p-5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="font-sans text-2xl font-semibold text-[var(--text)]">
+                    {activeEntry.term}
+                  </h2>
+                  <span className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-[var(--muted)] uppercase">
+                    {activeEntry.category}
                   </span>
+                </div>
+                <p className="mt-3 text-sm leading-relaxed text-[var(--muted)] sm:text-[16px]">
+                  {activeEntry.meaning}
                 </p>
-              ) : null}
+                {activeEntry.example ? (
+                  <div className="mt-3">
+                    <p className="text-[11px] font-semibold tracking-wide text-[var(--muted)] uppercase">
+                      Context snippet
+                    </p>
+                    <pre className="mt-1.5 overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--code-bg)] p-4 text-sm leading-relaxed">
+                      <code className="font-mono text-[var(--code-fg)]">{activeEntry.example}</code>
+                    </pre>
+                  </div>
+                ) : null}
+                {activeEntry.related?.length ? (
+                  <p className="mt-3 text-xs text-[var(--muted)]">
+                    Related:{" "}
+                    <span className="font-medium text-[var(--text)]">
+                      {activeEntry.related.join(", ")}
+                    </span>
+                  </p>
+                ) : null}
+              </div>
             </div>
 
-            <div className="mt-4 flex items-center justify-center gap-2">
+            <div className="flex items-center justify-center gap-2 border-t border-[var(--border)] px-5 py-4 sm:px-6">
               <button
                 type="button"
                 onClick={() => moveFocusEntry(-1)}
