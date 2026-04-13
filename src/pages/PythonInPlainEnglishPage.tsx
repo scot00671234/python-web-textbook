@@ -17,6 +17,7 @@ type LayoutMode = "split" | "stacked";
 type AnimationPhase = "typingCode" | "holdCode" | "typingEnglish" | "holdEnglish";
 type AnimationPlaybackMode = "auto" | "manual";
 type ManualAnimationPanel = "code" | "english";
+type QuizOption = { cardId: string; text: string };
 
 function readStoredLayout(): LayoutMode {
   try {
@@ -177,6 +178,10 @@ export function PythonInPlainEnglishPage() {
   const [animationZoom, setAnimationZoom] = useState(100);
   const [jumpInput, setJumpInput] = useState("");
   const [animationJumpInput, setAnimationJumpInput] = useState("");
+  const [quizIndex, setQuizIndex] = useState<number | null>(null);
+  const [quizScore, setQuizScore] = useState(0);
+  const [quizSelectedCardId, setQuizSelectedCardId] = useState<string | null>(null);
+  const [quizAnswered, setQuizAnswered] = useState(false);
 
   useEffect(() => {
     try {
@@ -205,15 +210,26 @@ export function PythonInPlainEnglishPage() {
     setAnimationChars(0);
   }, [animationIndex, browseIndex, flatItems, location.search]);
 
+  useEffect(() => {
+    const mode = new URLSearchParams(location.search).get("mode");
+    if (mode !== "quiz") return;
+    if (!flatItems.length) return;
+    if (quizIndex !== null || animationIndex !== null || browseIndex !== null) return;
+    setQuizIndex(0);
+    setQuizScore(0);
+    setQuizSelectedCardId(null);
+    setQuizAnswered(false);
+  }, [animationIndex, browseIndex, flatItems, location.search, quizIndex]);
+
   /** Lock page scroll while focus mode (full-screen card) is open. */
   useEffect(() => {
-    if (browseIndex === null && animationIndex === null) return;
+    if (browseIndex === null && animationIndex === null && quizIndex === null) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = prev;
     };
-  }, [animationIndex, browseIndex]);
+  }, [animationIndex, browseIndex, quizIndex]);
 
   /** Keep the URL hash in sync while stepping (React Router + no extra history entries). */
   useEffect(() => {
@@ -259,6 +275,13 @@ export function PythonInPlainEnglishPage() {
     navigate({ pathname: location.pathname, search: location.search, hash: "" }, { replace: true });
   }, [flatItems, location.pathname, location.search, navigate]);
 
+  const exitQuizMode = useCallback(() => {
+    setQuizIndex(null);
+    setQuizSelectedCardId(null);
+    setQuizAnswered(false);
+    navigate({ pathname: location.pathname, search: location.search, hash: "" }, { replace: true });
+  }, [location.pathname, location.search, navigate]);
+
   const applyJumpToSlide = useCallback(() => {
     const parsed = Number.parseInt(jumpInput.trim(), 10);
     if (Number.isNaN(parsed)) return;
@@ -285,6 +308,7 @@ export function PythonInPlainEnglishPage() {
 
   const focusModeActive = browseIndex !== null;
   const animationModeActive = animationIndex !== null;
+  const quizModeActive = quizIndex !== null;
   const animationCard = animationIndex !== null ? flatItems[animationIndex]?.card : undefined;
   const animationEnglishText = animationCard ? animationCard.bullets.map((b) => `- ${b}`).join("\n") : "";
   const animationShowingEnglish =
@@ -293,6 +317,44 @@ export function PythonInPlainEnglishPage() {
       : animationPhase === "typingEnglish" || animationPhase === "holdEnglish";
   const animationPanelMaxWidthPx = Math.round(980 * (animationZoom / 100));
   const animationPanelFontPx = Math.max(13, Math.round(15 * (animationZoom / 100)));
+  const primaryEnglishByCardId = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const item of flatItems) {
+      m.set(item.card.id, item.card.bullets[0] ?? item.card.title);
+    }
+    return m;
+  }, [flatItems]);
+  const quizQuestion = quizIndex !== null ? flatItems[quizIndex] : undefined;
+  const quizCorrectCardId = quizQuestion?.card.id ?? null;
+  const quizCorrectText = quizCorrectCardId ? (primaryEnglishByCardId.get(quizCorrectCardId) ?? "") : "";
+  const quizChoices = useMemo(() => {
+    if (!quizQuestion) return [] as QuizOption[];
+    const correct: QuizOption = {
+      cardId: quizQuestion.card.id,
+      text: primaryEnglishByCardId.get(quizQuestion.card.id) ?? quizQuestion.card.title,
+    };
+    const distractors = flatItems
+      .filter((item) => item.card.id !== quizQuestion.card.id)
+      .map((item) => ({
+        cardId: item.card.id,
+        text: primaryEnglishByCardId.get(item.card.id) ?? item.card.title,
+      }))
+      .slice(0, 24);
+    const seed = quizIndex ?? 0;
+    const picked: QuizOption[] = [];
+    for (let i = 0; i < distractors.length && picked.length < 3; i += 1) {
+      const idx = (seed * 7 + i * 11) % distractors.length;
+      const candidate = distractors[idx];
+      if (!candidate) continue;
+      if (picked.some((p) => p.cardId === candidate.cardId || p.text === candidate.text)) continue;
+      picked.push(candidate);
+    }
+    const merged = [correct, ...picked];
+    return merged
+      .map((option, idx) => ({ option, sort: (seed * 13 + idx * 17) % 97 }))
+      .sort((a, b) => a.sort - b.sort)
+      .map((x) => x.option);
+  }, [flatItems, primaryEnglishByCardId, quizIndex, quizQuestion]);
 
   const stepManualAnimationForward = useCallback(() => {
     if (!flatItems.length) return;
@@ -473,6 +535,29 @@ export function PythonInPlainEnglishPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [animationModeActive, exitAnimationMode, stepAnimationBackward, stepAnimationForward]);
 
+  useEffect(() => {
+    if (!quizModeActive) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (shouldIgnoreCardStepArrows()) return;
+      if (e.key === "Escape") {
+        e.preventDefault();
+        exitQuizMode();
+        return;
+      }
+      if (e.key === "ArrowRight" && quizAnswered) {
+        e.preventDefault();
+        setQuizIndex((prev) => {
+          if (prev === null) return 0;
+          return Math.min(flatItems.length - 1, prev + 1);
+        });
+        setQuizSelectedCardId(null);
+        setQuizAnswered(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [exitQuizMode, flatItems.length, quizAnswered, quizModeActive]);
+
   const jsonLd = useMemo(() => {
     const base = getCanonicalBase();
     if (!base) return undefined;
@@ -570,17 +655,31 @@ export function PythonInPlainEnglishPage() {
             </button>
             <button
               type="button"
-            onClick={() => {
-              setAnimationPlaybackMode("auto");
-              setAnimationPaused(false);
-              setManualAnimationPanel("code");
-              setAnimationIndex(0);
-            }}
+              onClick={() => {
+                setAnimationPlaybackMode("auto");
+                setAnimationPaused(false);
+                setManualAnimationPanel("code");
+                setAnimationIndex(0);
+              }}
               title="Autoplay typewriter: code first, then plain English translation."
               aria-label="Open animation mode with typewriter playback."
               className="inline-flex h-10 shrink-0 items-center justify-center self-start rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--text)] shadow-sm transition hover:bg-[var(--surface-2)] sm:self-center sm:px-5"
             >
               Animation mode
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setQuizIndex(0);
+                setQuizScore(0);
+                setQuizSelectedCardId(null);
+                setQuizAnswered(false);
+              }}
+              title="Multiple-choice translation game using existing cards."
+              aria-label="Open plain English quiz mode."
+              className="inline-flex h-10 shrink-0 items-center justify-center self-start rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--text)] shadow-sm transition hover:bg-[var(--surface-2)] sm:self-center sm:px-5"
+            >
+              Quiz mode
             </button>
           </div>
         </div>
@@ -1094,6 +1193,126 @@ export function PythonInPlainEnglishPage() {
                       Next →
                     </button>
                   </div>
+                </div>
+              </footer>
+            </div>,
+            document.body,
+          )
+        : null}
+
+      {quizIndex !== null && quizQuestion && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="plain-english-quiz-title"
+              className="fixed inset-0 z-[220] flex flex-col bg-[var(--bg)] text-[var(--text)]"
+            >
+              <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--surface)]/95 px-4 py-3 backdrop-blur-md sm:px-6">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--muted)]">
+                    Python in plain English · Quiz
+                  </p>
+                  <h2 id="plain-english-quiz-title" className="mt-0.5 truncate font-serif text-lg font-semibold tracking-tight sm:text-xl">
+                    Pick the best translation
+                  </h2>
+                  <p className="mt-1 font-mono text-xs font-semibold text-[var(--accent)]">
+                    Question {quizIndex + 1} of {flatItems.length} · Score {quizScore}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={exitQuizMode}
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--text)] transition hover:bg-[var(--surface-2)] sm:text-sm"
+                >
+                  Exit
+                </button>
+              </header>
+              <div className="min-h-0 flex-1 overflow-y-auto">
+                <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+                  <article className="overflow-hidden rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-lg ring-1 ring-black/5 dark:ring-white/10">
+                    <p className="border-b border-[var(--border)] bg-[var(--surface-2)]/80 px-5 py-3 text-sm font-bold tracking-wide text-[var(--muted)] uppercase">
+                      Python
+                    </p>
+                    <pre className="max-h-[min(50vh,30rem)] overflow-auto bg-[var(--code-bg)] p-5 text-sm leading-[1.7] sm:text-base">
+                      <code className="font-mono text-[var(--code-fg)] [tab-size:2]">{quizQuestion.card.code}</code>
+                    </pre>
+                    <div className="border-t border-[var(--border)] p-4 sm:p-5">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                        Which plain-English line fits this snippet best?
+                      </p>
+                      <div className="mt-3 grid gap-2">
+                        {quizChoices.map((choice, idx) => {
+                          const picked = quizSelectedCardId === choice.cardId;
+                          const isCorrect = quizAnswered && choice.cardId === quizCorrectCardId;
+                          const isWrongPick = quizAnswered && picked && choice.cardId !== quizCorrectCardId;
+                          return (
+                            <button
+                              key={choice.cardId}
+                              type="button"
+                              onClick={() => {
+                                if (quizAnswered) return;
+                                setQuizSelectedCardId(choice.cardId);
+                                setQuizAnswered(true);
+                                if (choice.cardId === quizCorrectCardId) {
+                                  setQuizScore((s) => s + 1);
+                                }
+                              }}
+                              className={[
+                                "w-full rounded-xl border px-4 py-3 text-left text-sm transition",
+                                isCorrect
+                                  ? "border-emerald-500/60 bg-emerald-500/10 text-[var(--text)]"
+                                  : isWrongPick
+                                    ? "border-red-500/60 bg-red-500/10 text-[var(--text)]"
+                                    : picked
+                                      ? "border-[var(--accent)]/50 bg-[var(--surface-2)] text-[var(--text)]"
+                                      : "border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--surface-2)]",
+                              ].join(" ")}
+                              aria-pressed={picked}
+                              disabled={quizAnswered}
+                            >
+                              <span className="mr-2 font-mono text-xs text-[var(--muted)]">{String.fromCharCode(65 + idx)}.</span>
+                              {choice.text}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {quizAnswered ? (
+                        <p className="mt-3 text-sm text-[var(--muted)]">
+                          {quizSelectedCardId === quizCorrectCardId ? "Correct." : "Not quite."} Best match:{" "}
+                          <span className="font-medium text-[var(--text)]">{quizCorrectText}</span>
+                        </p>
+                      ) : null}
+                    </div>
+                  </article>
+                </div>
+              </div>
+              <footer className="shrink-0 border-t border-[var(--border)] bg-[var(--surface)]/95 px-4 py-4 backdrop-blur-md sm:px-6">
+                <div className="mx-auto flex w-full max-w-5xl gap-2">
+                  <button
+                    type="button"
+                    className="min-h-11 flex-1 rounded-full border border-[var(--border)] bg-[var(--surface-2)] py-3 text-sm font-bold text-[var(--text)] transition hover:bg-[var(--surface)] disabled:opacity-40"
+                    onClick={() => {
+                      setQuizIndex((prev) => (prev === null ? 0 : Math.max(0, prev - 1)));
+                      setQuizSelectedCardId(null);
+                      setQuizAnswered(false);
+                    }}
+                    disabled={quizIndex <= 0}
+                  >
+                    ← Previous
+                  </button>
+                  <button
+                    type="button"
+                    className="min-h-11 flex-1 rounded-full bg-[var(--text)] py-3 text-sm font-bold text-[var(--bg)] transition hover:opacity-95 disabled:opacity-40"
+                    onClick={() => {
+                      setQuizIndex((prev) => (prev === null ? 0 : Math.min(flatItems.length - 1, prev + 1)));
+                      setQuizSelectedCardId(null);
+                      setQuizAnswered(false);
+                    }}
+                    disabled={!quizAnswered || quizIndex >= flatItems.length - 1}
+                  >
+                    Next question →
+                  </button>
                 </div>
               </footer>
             </div>,
