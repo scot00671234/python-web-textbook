@@ -294,6 +294,48 @@ export function PythonInPlainEnglishPage() {
   const animationPanelMaxWidthPx = Math.round(980 * (animationZoom / 100));
   const animationPanelFontPx = Math.max(13, Math.round(15 * (animationZoom / 100)));
 
+  const stepManualAnimationForward = useCallback(() => {
+    if (!flatItems.length) return;
+    setAnimationIndex((i) => {
+      const current = i ?? 0;
+      if (manualAnimationPanel === "code") return current;
+      return (current + 1) % flatItems.length;
+    });
+    setManualAnimationPanel((panel) => (panel === "code" ? "english" : "code"));
+  }, [flatItems.length, manualAnimationPanel]);
+
+  const stepManualAnimationBackward = useCallback(() => {
+    if (!flatItems.length) return;
+    setAnimationIndex((i) => {
+      const current = i ?? 0;
+      if (manualAnimationPanel === "english") return current;
+      return (current - 1 + flatItems.length) % flatItems.length;
+    });
+    setManualAnimationPanel((panel) => (panel === "english" ? "code" : "english"));
+  }, [flatItems.length, manualAnimationPanel]);
+
+  const stepAnimationForward = useCallback(() => {
+    if (animationPlaybackMode === "manual") {
+      stepManualAnimationForward();
+      return;
+    }
+    setAnimationIndex((i) => {
+      if (i === null) return 0;
+      return (i + 1) % flatItems.length;
+    });
+  }, [animationPlaybackMode, flatItems.length, stepManualAnimationForward]);
+
+  const stepAnimationBackward = useCallback(() => {
+    if (animationPlaybackMode === "manual") {
+      stepManualAnimationBackward();
+      return;
+    }
+    setAnimationIndex((i) => {
+      if (i === null) return 0;
+      return (i - 1 + flatItems.length) % flatItems.length;
+    });
+  }, [animationPlaybackMode, flatItems.length, stepManualAnimationBackward]);
+
   useEffect(() => {
     if (browseIndex === null) return;
     setJumpInput(String(browseIndex + 1));
@@ -412,18 +454,12 @@ export function PythonInPlainEnglishPage() {
       }
       if (e.key === "ArrowRight") {
         e.preventDefault();
-        setAnimationIndex((i) => {
-          if (i === null) return 0;
-          return (i + 1) % flatItems.length;
-        });
+        stepAnimationForward();
         return;
       }
       if (e.key === "ArrowLeft") {
         e.preventDefault();
-        setAnimationIndex((i) => {
-          if (i === null) return 0;
-          return (i - 1 + flatItems.length) % flatItems.length;
-        });
+        stepAnimationBackward();
         return;
       }
       if (e.key === "ArrowUp" || e.key === "ArrowDown") {
@@ -435,7 +471,7 @@ export function PythonInPlainEnglishPage() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [animationModeActive, exitAnimationMode, flatItems.length]);
+  }, [animationModeActive, exitAnimationMode, stepAnimationBackward, stepAnimationForward]);
 
   const jsonLd = useMemo(() => {
     const base = getCanonicalBase();
@@ -1017,11 +1053,16 @@ export function PythonInPlainEnglishPage() {
                             <span className="font-semibold text-[var(--text)]">Slide:</span> type number and
                             press Enter.
                           </li>
+                          <li>
+                            <span className="font-semibold text-[var(--text)]">Manual arrows:</span> Python,
+                            then English, then next Python card.
+                          </li>
                         </ul>
                         <p className="mt-3 font-semibold text-[var(--text)]">Keyboard shortcuts</p>
                         <ul className="mt-2 space-y-1.5 leading-relaxed">
                           <li>
-                            <span className="font-semibold text-[var(--text)]">← / →</span>: previous / next card
+                            <span className="font-semibold text-[var(--text)]">← / →</span>: previous / next step
+                            (in Manual: Python, then English, then next card)
                           </li>
                           <li>
                             <span className="font-semibold text-[var(--text)]">↑ / ↓</span>: toggle Python and
@@ -1039,12 +1080,7 @@ export function PythonInPlainEnglishPage() {
                     <button
                       type="button"
                       className="min-h-11 flex-1 rounded-full border border-[var(--border)] bg-[var(--surface-2)] py-3 text-sm font-bold text-[var(--text)] transition hover:bg-[var(--surface)]"
-                      onClick={() =>
-                        setAnimationIndex((i) => {
-                          if (i === null) return 0;
-                          return (i - 1 + flatItems.length) % flatItems.length;
-                        })
-                      }
+                      onClick={stepAnimationBackward}
                       aria-label="Previous animation card"
                     >
                       ← Previous
@@ -1052,12 +1088,7 @@ export function PythonInPlainEnglishPage() {
                     <button
                       type="button"
                       className="min-h-11 flex-1 rounded-full bg-[var(--text)] py-3 text-sm font-bold text-[var(--bg)] transition hover:opacity-95"
-                      onClick={() =>
-                        setAnimationIndex((i) => {
-                          if (i === null) return 0;
-                          return (i + 1) % flatItems.length;
-                        })
-                      }
+                      onClick={stepAnimationForward}
                       aria-label="Next animation card"
                     >
                       Next →
