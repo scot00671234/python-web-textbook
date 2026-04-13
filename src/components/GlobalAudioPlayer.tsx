@@ -188,7 +188,13 @@ export function GlobalAudioPlayer() {
         utterance.rate = Math.min(2, Math.max(0.75, rateRef.current));
         utterance.pitch = 1;
         if (voiceRef.current) utterance.voice = voiceRef.current;
-        utterance.onend = runNext;
+        let advanced = false;
+        const advanceOnce = () => {
+          if (advanced) return;
+          advanced = true;
+          runNext();
+        };
+        utterance.onend = advanceOnce;
         utterance.onerror = (event: SpeechSynthesisErrorEvent) => {
           // Some browsers can emit interrupted/canceled events between chunks.
           // Treat those as transition noise unless we explicitly canceled playback.
@@ -197,7 +203,7 @@ export function GlobalAudioPlayer() {
             return;
           }
           if (event.error === "interrupted" || event.error === "canceled") {
-            runNext();
+            advanceOnce();
             return;
           }
           setStatus("idle");
