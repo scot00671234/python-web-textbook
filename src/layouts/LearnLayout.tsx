@@ -111,10 +111,15 @@ export function LearnLayout() {
           <div
             className={[
               "border-b border-[var(--border)] bg-[var(--surface-2)]",
-              sidebarCollapsed ? "px-2 py-2" : "px-3 py-3",
+              sidebarCollapsed ? "px-2 py-3" : "px-3 py-3",
             ].join(" ")}
           >
-            <div className="flex items-start justify-between gap-2">
+            <div
+              className={[
+                "flex gap-2",
+                sidebarCollapsed ? "items-center justify-center" : "items-start justify-between",
+              ].join(" ")}
+            >
               <div className={sidebarCollapsed ? "sr-only" : ""}>
                 <p className="text-xs font-bold tracking-wide text-[var(--muted)] uppercase">
                   All lessons
@@ -126,7 +131,7 @@ export function LearnLayout() {
               <button
                 type="button"
                 onClick={() => setSidebarCollapsed((prev) => !prev)}
-                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] transition hover:text-[var(--text)]"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] shadow-sm transition hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
                 aria-label={sidebarCollapsed ? "Expand lessons sidebar" : "Collapse lessons sidebar"}
                 title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
               >
@@ -135,8 +140,8 @@ export function LearnLayout() {
             </div>
           </div>
           {sidebarCollapsed ? (
-            <div className="flex items-center justify-center px-2 py-3">
-              <span className="select-none text-[10px] font-bold uppercase tracking-wide text-[var(--muted)] [writing-mode:vertical-rl]">
+            <div className="flex items-center justify-center px-2 py-4">
+              <span className="select-none text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--muted)] [writing-mode:vertical-rl]">
                 Lessons
               </span>
             </div>
@@ -176,7 +181,7 @@ export function LearnLayout() {
 
 function ChevronLeftIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.25" aria-hidden>
       <path d="m15 18-6-6 6-6" />
     </svg>
   );
@@ -184,7 +189,7 @@ function ChevronLeftIcon() {
 
 function ChevronRightIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.25" aria-hidden>
       <path d="m9 6 6 6-6 6" />
     </svg>
   );
