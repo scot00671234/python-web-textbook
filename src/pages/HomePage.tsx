@@ -71,7 +71,7 @@ function CodeTypewriter({ snippets }: { snippets: HeroSnippet[] }) {
         <div className="flex items-center gap-2">
           <p className="max-w-[14rem] truncate text-xs text-[var(--muted)]">{current.title}</p>
           <Link
-            to="/learn/python-in-plain-english?mode=animation"
+            to="/learn/python-in-plain-english"
             className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--text)] no-underline transition hover:border-[var(--accent)]/40 hover:bg-[var(--surface-2)]"
             aria-label="Open full animation mode"
           >

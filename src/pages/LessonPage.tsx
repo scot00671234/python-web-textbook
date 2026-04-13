@@ -1,6 +1,5 @@
 import { useEffect, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
-import { LessonAudioReader } from "../components/LessonAudioReader";
 import { Seo } from "../components/Seo";
 import { LessonTierBadgeLarge } from "../components/LessonTierBadge";
 import { LessonSections, RichText } from "../components/LessonSections";
@@ -272,8 +271,6 @@ export function LessonPage() {
           </ul>
         </section>
       ) : null}
-
-      <LessonAudioReader lesson={lesson} />
 
       <footer className="mt-14 flex flex-col gap-3 border-t border-[var(--border)] pt-10 sm:flex-row sm:items-stretch sm:justify-between">
         {prev ? (

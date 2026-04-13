@@ -1,4 +1,5 @@
 import { Outlet } from "react-router-dom";
+import { GlobalAudioPlayer } from "../components/GlobalAudioPlayer";
 import { SiteFooter } from "../components/SiteFooter";
 import { SiteHeader } from "../components/SiteHeader";
 
@@ -16,6 +17,7 @@ export function AppShell() {
         <Outlet />
       </main>
       <SiteFooter />
+      <GlobalAudioPlayer />
     </div>
   );
 }
