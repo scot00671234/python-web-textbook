@@ -461,24 +461,26 @@ export function PythonInPlainEnglishPage() {
               </button>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setBrowseIndex(0)}
-            title="One card at a time, full screen. Arrow keys to step, Esc to exit. You can also open focus mode by clicking a card (outside TYPE and other controls)."
-            aria-label="Open focus mode from the first card. Full screen, one translation at a time. Arrow keys to move, Escape to exit."
-            className="inline-flex h-10 shrink-0 items-center justify-center self-start rounded-full bg-[var(--text)] px-4 text-sm font-semibold text-[var(--bg)] shadow-md transition hover:opacity-95 sm:self-center sm:px-5"
-          >
-            Focus mode
-          </button>
-          <button
-            type="button"
-            onClick={() => setAnimationIndex(0)}
-            title="Autoplay typewriter: code first, then plain English translation."
-            aria-label="Open animation mode with typewriter playback."
-            className="inline-flex h-10 shrink-0 items-center justify-center self-start rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--text)] shadow-sm transition hover:bg-[var(--surface-2)] sm:self-center sm:px-5"
-          >
-            Animation mode
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setBrowseIndex(0)}
+              title="One card at a time, full screen. Arrow keys to step, Esc to exit. You can also open focus mode by clicking a card (outside TYPE and other controls)."
+              aria-label="Open focus mode from the first card. Full screen, one translation at a time. Arrow keys to move, Escape to exit."
+              className="inline-flex h-10 shrink-0 items-center justify-center self-start rounded-full bg-[var(--text)] px-4 text-sm font-semibold text-[var(--bg)] shadow-md transition hover:opacity-95 sm:self-center sm:px-5"
+            >
+              Focus mode
+            </button>
+            <button
+              type="button"
+              onClick={() => setAnimationIndex(0)}
+              title="Autoplay typewriter: code first, then plain English translation."
+              aria-label="Open animation mode with typewriter playback."
+              className="inline-flex h-10 shrink-0 items-center justify-center self-start rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--text)] shadow-sm transition hover:bg-[var(--surface-2)] sm:self-center sm:px-5"
+            >
+              Animation mode
+            </button>
+          </div>
         </div>
       </header>
 

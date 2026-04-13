@@ -512,6 +512,14 @@ export const modules: Module[] = [
       lessonLinearModelsInferenceStatsmodels,
       lessonTimeSeriesAndPanelsIntro,
       lessonCausalQuestionsBeforePackages,
+    ],
+  },
+  {
+    id: "policy-evaluation",
+    title: "Policy evaluation",
+    blurb:
+      "Causal design, implementation in Python, and clear communication of policy effects with uncertainty.",
+    lessons: [
       lessonPolicyEvaluationMethodology,
       lessonPolicyEvaluationWithPython,
       lessonPolicyEvaluationInterpretation,
