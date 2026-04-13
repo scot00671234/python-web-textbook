@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import type { LessonSection } from "../content/types";
 import { CodeRetypePractice } from "./CodeRetypePractice";
 
@@ -90,31 +92,14 @@ function SectionBlock({
           ))}
         </ol>
       );
-    case "code": {
-      const trimmed = section.code.trim();
+    case "code":
       return (
-        <figure className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-md ring-1 ring-black/5 dark:ring-white/10">
-          {section.title ? (
-            <figcaption className="border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 text-xs font-semibold leading-snug text-[var(--text)]">
-              <span className="text-[var(--muted)]">Code · </span>
-              {section.title}
-            </figcaption>
-          ) : null}
-          <pre className="overflow-x-auto bg-[var(--code-bg)] p-4 text-[13px] leading-[1.65] sm:p-5 sm:text-sm">
-            <code className="font-mono text-[var(--code-fg)] [tab-size:2]">
-              {section.code}
-            </code>
-          </pre>
-          {trimmed ? (
-            <CodeRetypePractice
-              expectedCode={section.code}
-              title={section.title}
-              storageKey={`${lessonSlug}-s${sectionIndex}`}
-            />
-          ) : null}
-        </figure>
+        <CodeSectionBlock
+          section={section}
+          lessonSlug={lessonSlug}
+          sectionIndex={sectionIndex}
+        />
       );
-    }
     case "practice":
       return (
         <aside className="border-t border-[var(--practice-border)] pt-5 sm:pt-6">
@@ -166,4 +151,133 @@ function SectionBlock({
     default:
       return null;
   }
+}
+
+function CodeSectionBlock({
+  section,
+  lessonSlug,
+  sectionIndex,
+}: {
+  section: Extract<LessonSection, { type: "code" }>;
+  lessonSlug: string;
+  sectionIndex: number;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const trimmed = section.code.trim();
+
+  useEffect(() => {
+    if (!expanded) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [expanded]);
+
+  useEffect(() => {
+    if (!expanded) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setExpanded(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [expanded]);
+
+  return (
+    <>
+      <figure className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-md ring-1 ring-black/5 dark:ring-white/10">
+        <figcaption className="flex items-center justify-between gap-2 border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 text-xs font-semibold leading-snug text-[var(--text)]">
+          <span>
+            {section.title ? (
+              <>
+                <span className="text-[var(--muted)]">Code · </span>
+                {section.title}
+              </>
+            ) : (
+              "Code example"
+            )}
+          </span>
+          <button
+            type="button"
+            onClick={() => setExpanded(true)}
+            className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-[var(--text)] transition hover:bg-[var(--surface-2)]"
+            title="Expand code block"
+            aria-label="Expand code block"
+          >
+            <ExpandIcon />
+            Expand
+          </button>
+        </figcaption>
+        <pre className="overflow-x-auto bg-[var(--code-bg)] p-4 text-[13px] leading-[1.65] sm:p-5 sm:text-sm">
+          <code className="font-mono text-[var(--code-fg)] [tab-size:2]">
+            {section.code}
+          </code>
+        </pre>
+        {trimmed ? (
+          <CodeRetypePractice
+            expectedCode={section.code}
+            title={section.title}
+            storageKey={`${lessonSlug}-s${sectionIndex}`}
+          />
+        ) : null}
+      </figure>
+
+      {expanded && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Expanded code block"
+              className="fixed inset-0 z-[230] flex flex-col bg-[var(--bg)]/95 backdrop-blur-sm"
+            >
+              <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-4 sm:px-6">
+                <div className="flex items-center justify-between gap-2 rounded-t-2xl border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3">
+                  <p className="text-sm font-semibold text-[var(--text)]">
+                    {section.title ? section.title : "Code example"}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setExpanded(false)}
+                    className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-bold text-[var(--text)] transition hover:bg-[var(--surface-2)]"
+                  >
+                    Close
+                  </button>
+                </div>
+                <div className="min-h-0 flex-1 overflow-hidden rounded-b-2xl border-x border-b border-[var(--border)] bg-[var(--surface)]">
+                  <pre className="h-[min(62vh,42rem)] overflow-auto bg-[var(--code-bg)] p-5 text-[15px] leading-[1.75] sm:p-6 sm:text-base">
+                    <code className="font-mono text-[var(--code-fg)] [tab-size:2]">
+                      {section.code}
+                    </code>
+                  </pre>
+                  {trimmed ? (
+                    <div className="border-t border-[var(--border)] bg-[var(--surface)]">
+                      <CodeRetypePractice
+                        expectedCode={section.code}
+                        title={section.title}
+                        storageKey={`${lessonSlug}-s${sectionIndex}`}
+                      />
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
+    </>
+  );
+}
+
+function ExpandIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M8 3H3v5" />
+      <path d="M16 3h5v5" />
+      <path d="M3 16v5h5" />
+      <path d="M21 16v5h-5" />
+    </svg>
+  );
 }

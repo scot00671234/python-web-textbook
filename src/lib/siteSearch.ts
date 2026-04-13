@@ -100,7 +100,7 @@ function buildIndex(): InternalHit[] {
       id: `deck-${deck.id}`,
       kind: "deck",
       title: deck.title,
-      href: "/learn/flashcards",
+      href: `/learn/flashcards?deck=${encodeURIComponent(deck.id)}`,
       subtitle: deck.blurb,
       haystack: `${deck.title} ${deck.blurb} flashcards`.toLowerCase(),
     });
@@ -122,7 +122,7 @@ function buildIndex(): InternalHit[] {
       id: `dictionary-${term.id}`,
       kind: "dictionary",
       title: term.term,
-      href: "/learn/python-dictionary",
+      href: `/learn/python-dictionary#${term.id}`,
       subtitle: term.meaning,
       haystack: `${term.term} ${term.category} ${term.meaning} ${(term.related ?? []).join(" ")} python dictionary`.toLowerCase(),
     });
