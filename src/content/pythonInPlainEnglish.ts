@@ -1927,6 +1927,128 @@ print(message)`,
       "The f-string produces one plain-language sentence suitable for a policy brief.",
     ],
   },
+  {
+    id: "policy-rct-random-assignment",
+    level: 2,
+    title: "Randomly assigning people into treatment and control",
+    code: `import random
+
+random.seed(42)
+ids = list(range(1, 11))
+treated = set(random.sample(ids, k=5))
+
+for pid in ids:
+    is_treated = int(pid in treated)
+    print(pid, is_treated)`,
+    bullets: [
+      "Set a random seed so this toy assignment is reproducible when you rerun the script.",
+      "Sample five ids into treated, the remaining ids become control by definition.",
+      "Print a 1 for treated and 0 for control. Random assignment is the key reason RCT groups are comparable on average.",
+    ],
+  },
+  {
+    id: "policy-rct-balance-check",
+    level: 2,
+    title: "Quick baseline balance check after randomization",
+    code: `from statistics import mean
+
+treated_age = [31, 28, 35, 30, 29]
+control_age = [30, 27, 36, 31, 28]
+age_gap = mean(treated_age) - mean(control_age)
+print(round(age_gap, 2), "years baseline age gap")`,
+    bullets: [
+      "After randomization, you still check whether baseline covariates look similar by chance.",
+      "This computes the mean age difference between treated and control before treatment starts.",
+      "A small gap is reassuring. A large gap in a tiny sample can happen randomly, so report it and be transparent.",
+    ],
+  },
+  {
+    id: "policy-matching-nearest-age",
+    level: 2,
+    title: "Simple nearest-neighbor matching on one covariate",
+    code: `treated_age = [21, 26, 30]
+control_age = [20, 24, 28, 35]
+
+for t in treated_age:
+    nearest = min(control_age, key=lambda c: abs(c - t))
+    print("treated", t, "matched control", nearest)`,
+    bullets: [
+      "For each treated unit, find the control unit with the closest age in this toy setup.",
+      "This is one-variable nearest-neighbor matching and is only an intuition builder, not a full causal pipeline.",
+      "Real matching work should check overlap, often use multiple covariates, and account for uncertainty in inference.",
+    ],
+  },
+  {
+    id: "policy-did-two-period-panel",
+    level: 2,
+    title: "Build two-period panel data for a DiD model",
+    code: `rows = [
+    {"group": "treated", "post": 0, "y": 12.1},
+    {"group": "treated", "post": 1, "y": 14.0},
+    {"group": "control", "post": 0, "y": 11.8},
+    {"group": "control", "post": 1, "y": 12.3},
+]
+
+for r in rows:
+    r["treated"] = int(r["group"] == "treated")
+    r["treated_post"] = r["treated"] * r["post"]
+
+print(rows[1])`,
+    bullets: [
+      "DiD regressions usually need treated, post, and their interaction treated_post.",
+      "The interaction equals 1 only for treated units in the post period.",
+      "In a standard two-way DiD setup, the interaction coefficient is the DiD estimate under parallel trends.",
+    ],
+  },
+  {
+    id: "policy-synthetic-control-weighted-combo",
+    level: 2,
+    title: "Synthetic control as a weighted average of donor units",
+    code: `donor_outcomes = {"A": 52, "B": 61, "C": 58}
+weights = {"A": 0.5, "B": 0.3, "C": 0.2}
+
+synthetic_y = sum(weights[k] * donor_outcomes[k] for k in donor_outcomes)
+treated_y = 65
+gap = treated_y - synthetic_y
+print(round(gap, 2), "treated minus synthetic gap")`,
+    bullets: [
+      "Synthetic control builds a comparison unit from weighted donor regions or units.",
+      "Weights are chosen so pre-policy fit is good, then post-policy treated minus synthetic is interpreted as impact.",
+      "This card shows the core weighted-average idea. Production work includes placebo and sensitivity checks.",
+    ],
+  },
+  {
+    id: "economics-elasticity-midpoint",
+    level: 2,
+    title: "Price elasticity with the midpoint formula",
+    code: `q0, q1 = 100, 88
+p0, p1 = 10.0, 11.0
+
+pct_q = (q1 - q0) / ((q0 + q1) / 2)
+pct_p = (p1 - p0) / ((p0 + p1) / 2)
+elasticity = pct_q / pct_p
+print(round(elasticity, 2))`,
+    bullets: [
+      "Midpoint elasticity uses average quantity and average price in the denominator to reduce direction bias.",
+      "It measures how responsive demand is to a price change over this interval.",
+      "Negative values are common for demand, because quantity tends to fall when price rises.",
+    ],
+  },
+  {
+    id: "ml-classification-metrics",
+    level: 2,
+    title: "Precision and recall from a confusion table",
+    code: `tp, fp, fn = 42, 8, 10
+precision = tp / (tp + fp)
+recall = tp / (tp + fn)
+print("precision", round(precision, 3))
+print("recall", round(recall, 3))`,
+    bullets: [
+      "Precision asks: when the model predicts positive, how often is it right.",
+      "Recall asks: of truly positive cases, how many the model catches.",
+      "Teams choose trade-offs based on cost of false positives versus false negatives in the real application.",
+    ],
+  },
 ];
 
 export function getPlainEnglishCards(): PlainEnglishCard[] {
