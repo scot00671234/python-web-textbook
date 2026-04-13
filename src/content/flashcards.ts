@@ -523,6 +523,73 @@ const decks: FlashcardDeck[] = [
       },
     ],
   },
+  {
+    id: "policy-evaluation",
+    title: "Policy evaluation with Python",
+    blurb: "Design logic, causal assumptions, and plain-language reporting.",
+    cards: [
+      {
+        id: "pe-1",
+        front: "What is the core policy evaluation question?",
+        back: "What would outcomes have been for treated units in the same period if the policy had not been implemented? This is the counterfactual.",
+      },
+      {
+        id: "pe-2",
+        front: "Difference-in-means estimate in one line?",
+        back: "Average outcome among treated units minus average outcome among control units. It is simple but biased if groups differ before treatment.",
+      },
+      {
+        id: "pe-3",
+        front: "What assumption is central for DiD?",
+        back: "Parallel trends: without treatment, treated and control groups would have changed similarly over time.",
+      },
+      {
+        id: "pe-4",
+        front: "How do you compute a DiD estimate?",
+        back: "(Treated post minus treated pre) minus (Control post minus control pre).",
+      },
+      {
+        id: "pe-5",
+        front: "Why check pre-policy trends before DiD?",
+        back: "If groups already move differently before treatment, the DiD estimate may reflect those trend differences, not policy impact.",
+      },
+      {
+        id: "pe-6",
+        front: "What is matching used for?",
+        back: "To create more comparable treated and control groups in observational data by aligning on observed covariates. It does not automatically fix hidden confounding.",
+      },
+      {
+        id: "pe-7",
+        front: "What does RDD exploit?",
+        back: "A treatment assignment cutoff in a running variable. Units just above and below the threshold can be compared for a local causal effect.",
+      },
+      {
+        id: "pe-8",
+        front: "What is synthetic control in plain terms?",
+        back: "A weighted combination of untreated units that mimics the treated unit before policy, then serves as its counterfactual after policy.",
+      },
+      {
+        id: "pe-9",
+        front: "Why report confidence intervals, not only p-values?",
+        back: "Intervals show both direction and plausible magnitude. A p-value alone hides effect size and practical relevance.",
+      },
+      {
+        id: "pe-10",
+        front: "Statistical significance versus practical significance?",
+        back: "Statistical significance asks whether evidence is unlikely under a null model. Practical significance asks whether the effect is large enough to matter for policy.",
+      },
+      {
+        id: "pe-11",
+        front: "One sentence for external validity?",
+        back: "External validity is whether an estimate from this setting can generalize to different places, times, or populations.",
+      },
+      {
+        id: "pe-12",
+        front: "What should every policy estimate sentence include?",
+        back: "Unit, time window, effect size, uncertainty range, and key assumption caveat.",
+      },
+    ],
+  },
 ];
 
 export function getFlashcardDecks(): FlashcardDeck[] {

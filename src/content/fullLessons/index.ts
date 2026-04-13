@@ -7,3 +7,4 @@ export * from "./upperPart2";
 export * from "./upperPart3";
 export * from "./appliedPart1";
 export * from "./appliedPart2";
+export * from "./appliedPart3";

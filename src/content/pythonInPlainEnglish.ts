@@ -1878,6 +1878,55 @@ print(round(turns, 2), "inventory turns per year")`,
       "Dividing tells how many times inventory fully cycled, a classic retail operations KPI.",
     ],
   },
+  {
+    id: "policy-did-estimate",
+    level: 2,
+    title: "Difference-in-differences from four group averages",
+    code: `treated_pre = 62
+treated_post = 70
+control_pre = 60
+control_post = 63
+
+did = (treated_post - treated_pre) - (control_post - control_pre)
+print(did)`,
+    bullets: [
+      "You have one before and one after average for treated and control groups.",
+      "First compute each group's change over time.",
+      "Then subtract control change from treated change to remove shared background trends, under the parallel-trends assumption.",
+    ],
+  },
+  {
+    id: "policy-rdd-running-variable",
+    level: 2,
+    title: "Eligibility cutoff logic for regression discontinuity",
+    code: `def assigned_to_program(score, cutoff=75):
+    return int(score >= cutoff)
+
+for s in [72, 75, 79]:
+    print(s, assigned_to_program(s))`,
+    bullets: [
+      "A running variable score determines treatment assignment by a cutoff rule.",
+      "People just below and just above the threshold are often comparable in RDD logic.",
+      "The function prints who gets assigned under that policy rule.",
+    ],
+  },
+  {
+    id: "policy-plain-english-report",
+    level: 2,
+    title: "Turning a model estimate into policy language",
+    code: `effect = 2.4
+ci_low, ci_high = 0.8, 4.0
+message = (
+    f"Estimated effect: {effect:.1f} points per student. "
+    f"Likely range: {ci_low:.1f} to {ci_high:.1f}."
+)
+print(message)`,
+    bullets: [
+      "effect is the best single estimate from your model.",
+      "ci_low and ci_high define a plausible interval under the model assumptions.",
+      "The f-string produces one plain-language sentence suitable for a policy brief.",
+    ],
+  },
 ];
 
 export function getPlainEnglishCards(): PlainEnglishCard[] {

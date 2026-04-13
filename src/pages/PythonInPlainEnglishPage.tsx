@@ -44,19 +44,33 @@ function shouldIgnoreCardStepArrows(): boolean {
 function CodeAndEnglish({
   card,
   layout,
+  isFocus = false,
 }: {
   card: PlainEnglishCard;
   layout: LayoutMode;
+  isFocus?: boolean;
 }) {
   const stacked = layout === "stacked";
   const hasCode = card.code.trim().length > 0;
 
   const pythonBlock = (
     <div>
-      <p className="border-b border-[var(--border)] bg-[var(--surface-2)]/80 px-4 py-2 text-xs font-bold tracking-wide text-[var(--muted)] uppercase sm:px-5">
+      <p
+        className={[
+          "border-b border-[var(--border)] bg-[var(--surface-2)]/80 font-bold tracking-wide text-[var(--muted)] uppercase",
+          isFocus ? "px-5 py-3 text-sm sm:px-6" : "px-4 py-2 text-xs sm:px-5",
+        ].join(" ")}
+      >
         Python
       </p>
-      <pre className="max-h-[min(28rem,70vh)] overflow-auto bg-[var(--code-bg)] p-4 text-[13px] leading-[1.65] sm:p-5 sm:text-sm">
+      <pre
+        className={[
+          "overflow-auto bg-[var(--code-bg)] leading-[1.65]",
+          isFocus
+            ? "max-h-[min(36rem,72vh)] p-5 text-sm sm:p-6 sm:text-[15px]"
+            : "max-h-[min(28rem,70vh)] p-4 text-[13px] sm:p-5 sm:text-sm",
+        ].join(" ")}
+      >
         <code className="font-mono text-[var(--code-fg)] [tab-size:2]">{card.code}</code>
       </pre>
       {hasCode ? (
@@ -74,10 +88,22 @@ function CodeAndEnglish({
 
   const englishBlock = (
     <>
-      <p className="border-b border-[var(--border)] bg-[var(--surface-2)]/80 px-4 py-2 text-xs font-bold tracking-wide text-[var(--muted)] uppercase sm:px-5">
+      <p
+        className={[
+          "border-b border-[var(--border)] bg-[var(--surface-2)]/80 font-bold tracking-wide text-[var(--muted)] uppercase",
+          isFocus ? "px-5 py-3 text-sm sm:px-6" : "px-4 py-2 text-xs sm:px-5",
+        ].join(" ")}
+      >
         Plain English
       </p>
-      <ul className="space-y-3 p-4 text-[15px] leading-relaxed text-[var(--muted)] sm:p-5 sm:text-base sm:leading-relaxed">
+      <ul
+        className={[
+          "space-y-3 text-[var(--muted)]",
+          isFocus
+            ? "p-5 text-base leading-relaxed sm:p-6 sm:text-lg"
+            : "p-4 text-[15px] leading-relaxed sm:p-5 sm:text-base sm:leading-relaxed",
+        ].join(" ")}
+      >
         {card.bullets.map((b, i) => (
           <li key={i} className="flex gap-3">
             <span
@@ -137,6 +163,7 @@ export function PythonInPlainEnglishPage() {
   const [layout, setLayout] = useState<LayoutMode>(() => readStoredLayout());
   /** Index into `flatItems` while stepping with arrows; null = not stepping. */
   const [browseIndex, setBrowseIndex] = useState<number | null>(null);
+  const [jumpInput, setJumpInput] = useState("");
 
   useEffect(() => {
     try {
@@ -191,6 +218,14 @@ export function PythonInPlainEnglishPage() {
     navigate({ pathname: location.pathname, search: location.search, hash: "" }, { replace: true });
   }, [flatItems, location.pathname, location.search, navigate]);
 
+  const applyJumpToSlide = useCallback(() => {
+    const parsed = Number.parseInt(jumpInput.trim(), 10);
+    if (Number.isNaN(parsed)) return;
+    const clamped = Math.max(1, Math.min(flatItems.length, parsed));
+    setBrowseIndex(clamped - 1);
+    setJumpInput(String(clamped));
+  }, [flatItems.length, jumpInput]);
+
   const onArticleBackgroundClick = useCallback(
     (globalIndex: number, e: React.MouseEvent) => {
       if (isPlainEnglishInteractiveTarget(e.target)) return;
@@ -200,6 +235,11 @@ export function PythonInPlainEnglishPage() {
   );
 
   const focusModeActive = browseIndex !== null;
+
+  useEffect(() => {
+    if (browseIndex === null) return;
+    setJumpInput(String(browseIndex + 1));
+  }, [browseIndex]);
 
   useEffect(() => {
     if (!focusModeActive) return;
@@ -448,23 +488,23 @@ export function PythonInPlainEnglishPage() {
               </header>
 
               <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-                <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
-                  <article className="overflow-hidden rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-lg ring-1 ring-black/5 dark:ring-white/10">
+                <div className="mx-auto flex min-h-full w-full max-w-7xl items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
+                  <article className="w-full max-w-6xl overflow-hidden rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-lg ring-1 ring-black/5 dark:ring-white/10">
                     <div className="border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 sm:px-5">
                       <p className="font-mono text-xs font-semibold text-[var(--accent)]">
                         {String(flatItems[browseIndex].number).padStart(2, "0")}
                       </p>
-                      <h3 className="mt-1 font-serif text-lg font-semibold tracking-tight text-[var(--text)] sm:text-xl">
+                      <h3 className="mt-1 font-serif text-xl font-semibold tracking-tight text-[var(--text)] sm:text-2xl">
                         {flatItems[browseIndex].card.title}
                       </h3>
                     </div>
-                    <CodeAndEnglish card={flatItems[browseIndex].card} layout={layout} />
+                    <CodeAndEnglish card={flatItems[browseIndex].card} layout={layout} isFocus />
                   </article>
                 </div>
               </div>
 
               <footer className="shrink-0 border-t border-[var(--border)] bg-[var(--surface)]/95 px-4 py-4 backdrop-blur-md sm:px-6">
-                <div className="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                <div className="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                   <div className="flex gap-2 sm:flex-1">
                     <button
                       type="button"
@@ -487,9 +527,41 @@ export function PythonInPlainEnglishPage() {
                       Next →
                     </button>
                   </div>
-                  <p className="text-center text-[11px] leading-snug text-[var(--muted)] sm:text-right sm:text-xs">
-                    Arrow keys · Esc exits · not while typing in TYPE
-                  </p>
+                  <div className="flex flex-col items-stretch gap-2 sm:w-auto sm:min-w-[19rem] sm:items-end">
+                    <label className="sr-only" htmlFor="focus-jump-input">
+                      Jump to slide number
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        id="focus-jump-input"
+                        type="number"
+                        inputMode="numeric"
+                        min={1}
+                        max={flatItems.length}
+                        value={jumpInput}
+                        onChange={(e) => setJumpInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            applyJumpToSlide();
+                          }
+                        }}
+                        className="h-10 w-24 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/25"
+                        aria-label={`Slide number from 1 to ${flatItems.length}`}
+                        placeholder="Slide #"
+                      />
+                      <button
+                        type="button"
+                        onClick={applyJumpToSlide}
+                        className="inline-flex h-10 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-4 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface)]"
+                      >
+                        Go
+                      </button>
+                    </div>
+                    <p className="text-center text-[11px] leading-snug text-[var(--muted)] sm:text-right sm:text-xs">
+                      Arrow keys · Esc exits · not while typing in TYPE
+                    </p>
+                  </div>
                 </div>
               </footer>
             </div>,
