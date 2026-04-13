@@ -1259,8 +1259,8 @@ export function PythonInPlainEnglishPage() {
                 </button>
               </header>
               <div className="min-h-0 flex-1 overflow-y-auto">
-                <div className="mx-auto flex min-h-full w-full max-w-5xl items-center px-4 py-6 sm:px-6 lg:px-8">
-                  <article className="overflow-hidden rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-lg ring-1 ring-black/5 dark:ring-white/10">
+                <div className="mx-auto flex min-h-full w-full max-w-5xl items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
+                  <article className="w-full max-w-3xl overflow-hidden rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-lg ring-1 ring-black/5 dark:ring-white/10">
                     <p className="border-b border-[var(--border)] bg-[var(--surface-2)]/80 px-5 py-3 text-sm font-bold tracking-wide text-[var(--muted)] uppercase">
                       Python
                     </p>
