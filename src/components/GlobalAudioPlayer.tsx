@@ -189,7 +189,19 @@ export function GlobalAudioPlayer() {
         utterance.pitch = 1;
         if (voiceRef.current) utterance.voice = voiceRef.current;
         utterance.onend = runNext;
-        utterance.onerror = () => setStatus("idle");
+        utterance.onerror = (event: SpeechSynthesisErrorEvent) => {
+          // Some browsers can emit interrupted/canceled events between chunks.
+          // Treat those as transition noise unless we explicitly canceled playback.
+          if (cancelledRef.current) {
+            setStatus("idle");
+            return;
+          }
+          if (event.error === "interrupted" || event.error === "canceled") {
+            runNext();
+            return;
+          }
+          setStatus("idle");
+        };
         window.speechSynthesis.speak(utterance);
         setStatus("playing");
       };
