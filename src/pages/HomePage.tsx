@@ -287,61 +287,58 @@ export function HomePage() {
               with built-in TYPE and flashcards as you go.
             </p>
 
-            <div className="mt-8 max-w-xl rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 sm:p-6">
-              <p className="text-xs font-bold tracking-wide text-[var(--accent)] uppercase">Start here</p>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
-                className="mt-3 flex w-full items-center justify-center rounded-full bg-[var(--text)] py-3.5 text-center text-sm font-bold text-[var(--bg)] no-underline transition hover:opacity-95 active:scale-[0.99] sm:text-base"
+                className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--text)] px-6 text-sm font-semibold text-[var(--bg)] no-underline transition hover:opacity-95"
                 to={LESSON_1}
               >
-                Start lesson 1 (about 8 minutes)
+                Start lesson 1
               </Link>
-              <p className="mt-3 text-center text-xs leading-relaxed text-[var(--muted)]">
-                No install needed for this first page. It teaches how the site works and how to practice.
-              </p>
-            </div>
-
-            <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
               <Link
-                className="font-semibold text-[var(--accent)] no-underline hover:underline"
+                className="inline-flex h-11 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-5 text-sm font-semibold text-[var(--text)] no-underline transition hover:bg-[var(--surface-2)]"
                 to="/learn"
               >
-                See all {totalLessons} lessons (overview)
+                Browse all lessons
               </Link>
-              <span className="hidden text-[var(--border)] sm:inline" aria-hidden>
-                |
-              </span>
+            </div>
+
+            <p className="mt-3 text-sm leading-relaxed text-[var(--muted)]">
+              No install needed for this first page. It teaches how the site works and how to practice.
+            </p>
+
+            <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
               <Link
-                className="font-semibold text-[var(--accent)] no-underline hover:underline"
-                to="/learn/flashcards"
-              >
-                Flashcards
-              </Link>
-              <span className="hidden text-[var(--border)] sm:inline" aria-hidden>
-                |
-              </span>
-              <Link
-                className="font-semibold text-[var(--accent)] no-underline hover:underline"
+                className="font-medium text-[var(--muted)] no-underline hover:text-[var(--text)]"
                 to="/learn/python-in-plain-english"
               >
                 Plain English
               </Link>
               <span className="hidden text-[var(--border)] sm:inline" aria-hidden>
-                |
+                ·
               </span>
               <Link
-                className="font-semibold text-[var(--accent)] no-underline hover:underline"
-                to={LESSON_3}
+                className="font-medium text-[var(--muted)] no-underline hover:text-[var(--text)]"
+                to="/learn/flashcards"
               >
-                I already have Python: skip to first code
+                Flashcards
               </Link>
               <span className="hidden text-[var(--border)] sm:inline" aria-hidden>
-                |
+                ·
+              </span>
+              <Link
+                className="font-medium text-[var(--muted)] no-underline hover:text-[var(--text)]"
+                to={LESSON_3}
+              >
+                Skip to first code
+              </Link>
+              <span className="hidden text-[var(--border)] sm:inline" aria-hidden>
+                ·
               </span>
               <a
-                className="font-semibold text-[var(--accent)] no-underline hover:underline"
+                className="font-medium text-[var(--muted)] no-underline hover:text-[var(--text)]"
                 href="#course-map"
               >
-                Jump to topic list
+                Topic list
               </a>
             </div>
 
@@ -372,11 +369,13 @@ export function HomePage() {
           </div>
           <div className="mx-auto mt-6 w-full max-w-4xl">
             <Link
-              className="inline-flex items-center gap-1 font-semibold text-[var(--accent)] no-underline hover:underline"
+              className="inline-flex h-10 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--text)] no-underline transition hover:bg-[var(--surface-2)]"
               to="/learn/flashcards"
             >
               Open all flashcards
-              <span aria-hidden>→</span>
+              <span className="ml-1 text-[var(--accent)]" aria-hidden>
+                →
+              </span>
             </Link>
           </div>
         </div>
