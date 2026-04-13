@@ -15,6 +15,8 @@ const LAYOUT_STORAGE_KEY = "python-plain-english-layout";
 
 type LayoutMode = "split" | "stacked";
 type AnimationPhase = "typingCode" | "holdCode" | "typingEnglish" | "holdEnglish";
+type AnimationPlaybackMode = "auto" | "manual";
+type ManualAnimationPanel = "code" | "english";
 
 function readStoredLayout(): LayoutMode {
   try {
@@ -167,7 +169,10 @@ export function PythonInPlainEnglishPage() {
   const [animationIndex, setAnimationIndex] = useState<number | null>(null);
   const [animationPhase, setAnimationPhase] = useState<AnimationPhase>("typingCode");
   const [animationChars, setAnimationChars] = useState(0);
-  const [animationSpeed, setAnimationSpeed] = useState(90);
+  const [animationSpeed, setAnimationSpeed] = useState(80);
+  const [animationPaused, setAnimationPaused] = useState(false);
+  const [animationPlaybackMode, setAnimationPlaybackMode] = useState<AnimationPlaybackMode>("auto");
+  const [manualAnimationPanel, setManualAnimationPanel] = useState<ManualAnimationPanel>("code");
   const [jumpInput, setJumpInput] = useState("");
 
   useEffect(() => {
@@ -258,6 +263,8 @@ export function PythonInPlainEnglishPage() {
 
   const focusModeActive = browseIndex !== null;
   const animationModeActive = animationIndex !== null;
+  const animationCard = animationIndex !== null ? flatItems[animationIndex]?.card : undefined;
+  const animationEnglishText = animationCard ? animationCard.bullets.map((b) => `- ${b}`).join("\n") : "";
 
   useEffect(() => {
     if (browseIndex === null) return;
@@ -295,10 +302,13 @@ export function PythonInPlainEnglishPage() {
 
   useEffect(() => {
     if (!animationModeActive || animationIndex === null) return;
+    if (animationPlaybackMode === "manual" || animationPaused) return;
 
     const card = flatItems[animationIndex]?.card;
     if (!card) return;
-    const typingDelayMs = Math.max(2, 122 - animationSpeed);
+    const typingDelayMs = Math.max(1, Math.round(220 / animationSpeed));
+    const shortHoldMs = Math.max(120, 900 - animationSpeed * 5);
+    const longHoldMs = Math.max(220, 1450 - animationSpeed * 7);
 
     const englishText = card.bullets.map((b) => `- ${b}`).join("\n");
     const activeText = animationPhase === "typingCode" || animationPhase === "holdCode" ? card.code : englishText;
@@ -313,7 +323,7 @@ export function PythonInPlainEnglishPage() {
     }
 
     if (animationPhase === "typingCode" && animationChars >= fullLength) {
-      const timer = window.setTimeout(() => setAnimationPhase("holdCode"), 450);
+      const timer = window.setTimeout(() => setAnimationPhase("holdCode"), shortHoldMs);
       return () => window.clearTimeout(timer);
     }
 
@@ -321,12 +331,12 @@ export function PythonInPlainEnglishPage() {
       const timer = window.setTimeout(() => {
         setAnimationPhase("typingEnglish");
         setAnimationChars(0);
-      }, 650);
+      }, shortHoldMs);
       return () => window.clearTimeout(timer);
     }
 
     if (animationPhase === "typingEnglish" && animationChars >= fullLength) {
-      const timer = window.setTimeout(() => setAnimationPhase("holdEnglish"), 700);
+      const timer = window.setTimeout(() => setAnimationPhase("holdEnglish"), shortHoldMs);
       return () => window.clearTimeout(timer);
     }
 
@@ -336,15 +346,25 @@ export function PythonInPlainEnglishPage() {
           if (i === null) return 0;
           return (i + 1) % flatItems.length;
         });
-      }, 1200);
+      }, longHoldMs);
       return () => window.clearTimeout(timer);
     }
-  }, [animationChars, animationIndex, animationModeActive, animationPhase, animationSpeed, flatItems]);
+  }, [
+    animationChars,
+    animationIndex,
+    animationModeActive,
+    animationPaused,
+    animationPhase,
+    animationPlaybackMode,
+    animationSpeed,
+    flatItems,
+  ]);
 
   useEffect(() => {
     if (animationIndex === null) return;
     setAnimationPhase("typingCode");
     setAnimationChars(0);
+    setManualAnimationPanel("code");
   }, [animationIndex]);
 
   useEffect(() => {
@@ -473,7 +493,12 @@ export function PythonInPlainEnglishPage() {
             </button>
             <button
               type="button"
-              onClick={() => setAnimationIndex(0)}
+            onClick={() => {
+              setAnimationPlaybackMode("auto");
+              setAnimationPaused(false);
+              setManualAnimationPanel("code");
+              setAnimationIndex(0);
+            }}
               title="Autoplay typewriter: code first, then plain English translation."
               aria-label="Open animation mode with typewriter playback."
               className="inline-flex h-10 shrink-0 items-center justify-center self-start rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--text)] shadow-sm transition hover:bg-[var(--surface-2)] sm:self-center sm:px-5"
@@ -711,20 +736,6 @@ export function PythonInPlainEnglishPage() {
                   </p>
                 </div>
                 <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-                  <label className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-semibold text-[var(--muted)] sm:text-sm">
-                    Speed
-                    <input
-                      type="range"
-                      min={2}
-                      max={120}
-                      step={1}
-                      value={animationSpeed}
-                      onChange={(e) => setAnimationSpeed(Number(e.target.value))}
-                      className="w-20 accent-[var(--accent)]"
-                      aria-label="Animation typing speed where higher is faster"
-                    />
-                    <span className="font-mono text-[var(--text)]">{animationSpeed}</span>
-                  </label>
                   <button
                     type="button"
                     onClick={exitAnimationMode}
@@ -739,21 +750,30 @@ export function PythonInPlainEnglishPage() {
                 <div className="mx-auto flex min-h-full w-full max-w-5xl items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
                   <article className="w-full overflow-hidden rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-lg ring-1 ring-black/5 dark:ring-white/10">
                     <p className="border-b border-[var(--border)] bg-[var(--surface-2)]/80 px-5 py-3 text-sm font-bold tracking-wide text-[var(--muted)] uppercase sm:px-6">
-                      {animationPhase === "typingCode" || animationPhase === "holdCode"
-                        ? "Python"
-                        : "Plain English"}
+                      {animationPlaybackMode === "manual"
+                        ? manualAnimationPanel === "code"
+                          ? "Python"
+                          : "Plain English"
+                        : animationPhase === "typingCode" || animationPhase === "holdCode"
+                          ? "Python"
+                          : "Plain English"}
                     </p>
                     <pre className="max-h-[min(70vh,40rem)] overflow-auto bg-[var(--code-bg)] p-5 text-[15px] leading-[1.75] sm:p-6 sm:text-base">
                       <code className="font-mono text-[var(--code-fg)] [tab-size:2]">
-                        {(() => {
-                          const card = flatItems[animationIndex].card;
-                          const englishText = card.bullets.map((b) => `- ${b}`).join("\n");
-                          const activeText =
-                            animationPhase === "typingCode" || animationPhase === "holdCode"
-                              ? card.code
-                              : englishText;
-                          return activeText.slice(0, animationChars);
-                        })()}
+                        {animationCard
+                          ? (() => {
+                              if (animationPlaybackMode === "manual") {
+                                return manualAnimationPanel === "code"
+                                  ? animationCard.code
+                                  : animationEnglishText;
+                              }
+                              const activeText =
+                                animationPhase === "typingCode" || animationPhase === "holdCode"
+                                  ? animationCard.code
+                                  : animationEnglishText;
+                              return activeText.slice(0, animationChars);
+                            })()
+                          : ""}
                         <span className="animate-pulse text-[var(--accent)]">|</span>
                       </code>
                     </pre>
@@ -762,8 +782,117 @@ export function PythonInPlainEnglishPage() {
               </div>
 
               <footer className="shrink-0 border-t border-[var(--border)] bg-[var(--surface)]/95 px-4 py-4 backdrop-blur-md sm:px-6">
-                <div className="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                  <div className="flex gap-2 sm:flex-1">
+                <div className="mx-auto flex max-w-5xl flex-col items-center gap-3">
+                  <div className="flex w-full max-w-3xl flex-wrap items-center justify-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-2 py-2 sm:px-3">
+                    <div className="inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface)] p-0.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAnimationPlaybackMode("auto");
+                          setAnimationPaused(false);
+                        }}
+                        className={[
+                          "rounded-full px-3 py-1.5 text-xs font-bold transition",
+                          animationPlaybackMode === "auto"
+                            ? "bg-[var(--text)] text-[var(--bg)]"
+                            : "text-[var(--muted)] hover:text-[var(--text)]",
+                        ].join(" ")}
+                      >
+                        Auto
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAnimationPlaybackMode("manual");
+                          setAnimationPaused(true);
+                          setAnimationChars(0);
+                          setAnimationPhase("typingCode");
+                        }}
+                        className={[
+                          "rounded-full px-3 py-1.5 text-xs font-bold transition",
+                          animationPlaybackMode === "manual"
+                            ? "bg-[var(--text)] text-[var(--bg)]"
+                            : "text-[var(--muted)] hover:text-[var(--text)]",
+                        ].join(" ")}
+                      >
+                        Manual
+                      </button>
+                    </div>
+
+                    <label className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold text-[var(--muted)] sm:text-sm">
+                      Speed
+                      <input
+                        type="range"
+                        min={2}
+                        max={120}
+                        step={1}
+                        value={animationSpeed}
+                        onChange={(e) => setAnimationSpeed(Number(e.target.value))}
+                        className="w-20 accent-[var(--accent)]"
+                        aria-label="Animation typing speed where higher is faster"
+                      />
+                      <span className="font-mono text-[var(--text)]">{animationSpeed}</span>
+                    </label>
+
+                    {animationPlaybackMode === "auto" ? (
+                      <button
+                        type="button"
+                        onClick={() => setAnimationPaused((p) => !p)}
+                        className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-bold text-[var(--text)] transition hover:bg-[var(--surface-2)] sm:text-sm"
+                      >
+                        {animationPaused ? "Play" : "Pause"}
+                      </button>
+                    ) : (
+                      <div className="inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface)] p-0.5">
+                        <button
+                          type="button"
+                          onClick={() => setManualAnimationPanel("code")}
+                          className={[
+                            "rounded-full px-3 py-1.5 text-xs font-bold transition",
+                            manualAnimationPanel === "code"
+                              ? "bg-[var(--text)] text-[var(--bg)]"
+                              : "text-[var(--muted)] hover:text-[var(--text)]",
+                          ].join(" ")}
+                        >
+                          Python
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setManualAnimationPanel("english")}
+                          className={[
+                            "rounded-full px-3 py-1.5 text-xs font-bold transition",
+                            manualAnimationPanel === "english"
+                              ? "bg-[var(--text)] text-[var(--bg)]"
+                              : "text-[var(--muted)] hover:text-[var(--text)]",
+                          ].join(" ")}
+                        >
+                          English
+                        </button>
+                      </div>
+                    )}
+
+                    {animationPlaybackMode === "auto" ? (
+                      <button
+                        type="button"
+                        className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-bold text-[var(--text)] transition hover:bg-[var(--surface-2)] sm:text-sm"
+                        onClick={() => {
+                          if (!animationCard) return;
+                          if (animationPhase === "typingCode" || animationPhase === "holdCode") {
+                            setAnimationPhase("typingEnglish");
+                            setAnimationChars(0);
+                            return;
+                          }
+                          setAnimationChars(animationEnglishText.length);
+                          setAnimationPhase("holdEnglish");
+                        }}
+                        aria-label="Skip current typing phase"
+                      >
+                        Skip typing
+                      </button>
+                    ) : null}
+                  </div>
+
+                  <div className="flex w-full max-w-2xl gap-2">
                     <button
                       type="button"
                       className="min-h-11 flex-1 rounded-full border border-[var(--border)] bg-[var(--surface-2)] py-3 text-sm font-bold text-[var(--text)] transition hover:bg-[var(--surface)]"
@@ -791,9 +920,6 @@ export function PythonInPlainEnglishPage() {
                       Next →
                     </button>
                   </div>
-                  <p className="text-center text-[11px] leading-snug text-[var(--muted)] sm:text-right sm:text-xs">
-                    Arrow keys · Esc exits · code types, then translation types
-                  </p>
                 </div>
               </footer>
             </div>,

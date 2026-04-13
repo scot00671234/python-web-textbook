@@ -68,9 +68,9 @@ function CodeTypewriter({ snippets }: { snippets: HeroSnippet[] }) {
     <div className="overflow-hidden rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-md">
       <div className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-2.5">
         <p className="font-mono text-xs font-semibold text-[var(--accent)]">Live Python demo</p>
-        <p className="text-xs text-[var(--muted)]">{current.title}</p>
+        <p className="truncate text-xs text-[var(--muted)]">{current.title}</p>
       </div>
-      <pre className="min-h-[16rem] bg-[var(--code-bg)] p-4 text-[13px] leading-[1.7] sm:p-5 sm:text-sm">
+      <pre className="min-h-[18rem] bg-[var(--code-bg)] p-4 text-[13px] leading-[1.7] sm:p-5 sm:text-sm">
         <code className="font-mono text-[var(--code-fg)] [tab-size:2]">
           {current.code.slice(0, charIndex)}
           <span className="animate-pulse text-[var(--accent)]">|</span>
@@ -237,11 +237,18 @@ export function HomePage() {
   );
   const heroSnippets = useMemo(
     () =>
-      plainEnglishPreviewCards.slice(0, 4).map((c) => ({
+      getPlainEnglishCards()
+        .slice(0, 28)
+        .map((c) => ({
+          title: c.title,
+          code: c.code,
+        }))
+        .filter((c) => c.code.trim().length > 0)
+        .map((c) => ({
         title: c.title,
         code: c.code,
       })),
-    [plainEnglishPreviewCards],
+    [],
   );
 
   const jsonLd = useMemo(() => {
@@ -270,22 +277,20 @@ export function HomePage() {
         jsonLd={jsonLd}
       />
       <section className="hero-grid border-b border-[var(--border)]">
-        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:gap-12 lg:px-8 lg:py-20">
+        <div className="mx-auto grid max-w-6xl gap-14 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:gap-16 lg:px-8 lg:py-24">
           <div>
-            <h1 className="mt-4 max-w-3xl font-serif text-4xl font-semibold tracking-tight text-balance text-[var(--text)] sm:text-5xl lg:text-[3.1rem] lg:leading-[1.08]">
+            <h1 className="max-w-3xl font-serif text-4xl font-semibold tracking-tight text-balance text-[var(--text)] sm:text-5xl lg:text-[3.2rem] lg:leading-[1.06]">
               Learn Python from the first click
             </h1>
-            <p className="mt-4 max-w-2xl text-lg leading-relaxed text-[var(--muted)]">
+            <p className="mt-5 max-w-2xl text-lg leading-relaxed text-[var(--muted)]">
               Read short lessons, see working code, and translate syntax into plain English. Practice
               with built-in TYPE and flashcards as you go.
             </p>
 
-            <div className="mt-8 max-w-xl rounded-card border-2 border-[var(--accent)]/35 bg-[var(--surface)] p-5 shadow-md sm:p-6">
-              <p className="text-xs font-bold tracking-wide text-[var(--accent)] uppercase">
-                If you only do one thing
-              </p>
+            <div className="mt-8 max-w-xl rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 sm:p-6">
+              <p className="text-xs font-bold tracking-wide text-[var(--accent)] uppercase">Start here</p>
               <Link
-                className="mt-3 flex w-full items-center justify-center rounded-full bg-[var(--text)] py-3.5 text-center text-sm font-bold text-[var(--bg)] no-underline shadow-md transition hover:opacity-95 active:scale-[0.99] sm:text-base"
+                className="mt-3 flex w-full items-center justify-center rounded-full bg-[var(--text)] py-3.5 text-center text-sm font-bold text-[var(--bg)] no-underline transition hover:opacity-95 active:scale-[0.99] sm:text-base"
                 to={LESSON_1}
               >
                 Start lesson 1 (about 8 minutes)
@@ -295,7 +300,7 @@ export function HomePage() {
               </p>
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+            <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
               <Link
                 className="font-semibold text-[var(--accent)] no-underline hover:underline"
                 to="/learn"
@@ -340,24 +345,13 @@ export function HomePage() {
               </a>
             </div>
 
-            <dl className="mt-10 grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
-                <dt className="text-xs font-bold tracking-wide text-[var(--muted)] uppercase">Lessons</dt>
-                <dd className="mt-1 font-serif text-2xl font-semibold text-[var(--text)]">{totalLessons}</dd>
-              </div>
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
-                <dt className="text-xs font-bold tracking-wide text-[var(--muted)] uppercase">Modules</dt>
-                <dd className="mt-1 font-serif text-2xl font-semibold text-[var(--text)]">{modules.length}</dd>
-              </div>
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
-                <dt className="text-xs font-bold tracking-wide text-[var(--muted)] uppercase">Flashcards</dt>
-                <dd className="mt-1 font-serif text-2xl font-semibold text-[var(--text)]">{totalFlashcards}</dd>
-              </div>
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
-                <dt className="text-xs font-bold tracking-wide text-[var(--muted)] uppercase">Pace</dt>
-                <dd className="mt-1 text-sm font-semibold leading-snug text-[var(--text)]">Your schedule</dd>
-              </div>
-            </dl>
+            <p className="mt-8 text-sm text-[var(--muted)]">
+              <span className="font-semibold text-[var(--text)]">{totalLessons}</span> lessons
+              <span className="mx-2 text-[var(--border)]">·</span>
+              <span className="font-semibold text-[var(--text)]">{modules.length}</span> modules
+              <span className="mx-2 text-[var(--border)]">·</span>
+              <span className="font-semibold text-[var(--text)]">{totalFlashcards}</span> flashcards
+            </p>
           </div>
           <div className="space-y-4">
             <CodeTypewriter snippets={heroSnippets} />
@@ -373,10 +367,10 @@ export function HomePage() {
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">
             Use flashcards while you learn. These are real cards from the site, not placeholder content.
           </p>
-          <div className="mt-8 max-w-3xl">
+          <div className="mx-auto mt-8 w-full max-w-4xl">
             <HomeFlashcardViewer cards={featuredFlashcards} />
           </div>
-          <div className="mt-6">
+          <div className="mx-auto mt-6 w-full max-w-4xl">
             <Link
               className="inline-flex items-center gap-1 font-semibold text-[var(--accent)] no-underline hover:underline"
               to="/learn/flashcards"

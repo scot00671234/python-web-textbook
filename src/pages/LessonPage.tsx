@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { LessonAudioReader } from "../components/LessonAudioReader";
 import { Seo } from "../components/Seo";
@@ -16,6 +16,10 @@ export function LessonPage() {
   const { slug } = useParams();
   const lesson = slug ? getLessonBySlug(slug) : undefined;
   const ctx = slug ? getLessonContext(slug) : undefined;
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [slug]);
 
   const lessonDescription =
     lesson == null
