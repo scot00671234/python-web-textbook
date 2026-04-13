@@ -60,8 +60,8 @@ export function LessonAudioReader({ lesson }: Props) {
           <p className="text-[10px] leading-snug text-[var(--muted)]">
             Voice comes from your device. Pick one with &quot;Natural&quot; or
             &quot;Neural&quot; in the name if you see it. You can change speed while
-            it plays: each new phrase uses the slider value (the current phrase
-            keeps its speed until it ends).
+            it plays: the current phrase keeps its speed until it ends, and the
+            new speed applies right after.
           </p>
           <div className="mt-3 space-y-2">
             <label

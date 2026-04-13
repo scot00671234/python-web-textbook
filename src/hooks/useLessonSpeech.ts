@@ -115,17 +115,17 @@ export function useLessonSpeech(lesson: Lesson | undefined) {
     cancelledRef.current = false;
 
     let index = 0;
-    const runNext = () => {
+    let finished = false;
+
+    const createNextUtterance = (): SpeechSynthesisUtterance | null => {
       if (cancelledRef.current) {
-        setStatus("idle");
-        return;
+        return null;
       }
       while (index < chunks.length && !chunks[index]?.trim()) {
         index += 1;
       }
       if (index >= chunks.length) {
-        setStatus("idle");
-        return;
+        return null;
       }
 
       const text = chunks[index]!.trim();
@@ -138,24 +138,56 @@ export function useLessonSpeech(lesson: Lesson | undefined) {
       if (v) {
         utterance.voice = v;
       }
+      return utterance;
+    };
+
+    const queuePipeline = (utterance: SpeechSynthesisUtterance) => {
+      let queuedNext = false;
+      utterance.onstart = () => {
+        if (queuedNext || cancelledRef.current) {
+          return;
+        }
+        queuedNext = true;
+        const next = createNextUtterance();
+        if (next) {
+          queuePipeline(next);
+          window.speechSynthesis.speak(next);
+        }
+      };
       utterance.onend = () => {
-        if (cancelledRef.current) {
+        if (cancelledRef.current || finished) {
           setStatus("idle");
           return;
         }
-        runNext();
-      };
-      utterance.onerror = () => {
-        if (!cancelledRef.current) {
+        if (!queuedNext) {
+          const next = createNextUtterance();
+          if (next) {
+            queuePipeline(next);
+            window.speechSynthesis.speak(next);
+            return;
+          }
+        }
+        if (!window.speechSynthesis.speaking && !window.speechSynthesis.pending) {
+          finished = true;
           setStatus("idle");
         }
       };
-
-      window.speechSynthesis.speak(utterance);
-      setStatus("playing");
+      utterance.onerror = () => {
+        if (!cancelledRef.current) {
+          finished = true;
+          setStatus("idle");
+        }
+      };
     };
 
-    runNext();
+    const first = createNextUtterance();
+    if (!first) {
+      setStatus("idle");
+      return;
+    }
+    queuePipeline(first);
+    window.speechSynthesis.speak(first);
+    setStatus("playing");
   }, [chunks, supported]);
 
   return {

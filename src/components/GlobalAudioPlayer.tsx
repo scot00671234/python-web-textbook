@@ -155,11 +155,11 @@ export function GlobalAudioPlayer() {
 
       let li = Math.max(0, Math.min(queueChunks.length - 1, startLessonIndex));
       let ci = Math.max(0, startChunkIndex);
+      let finished = false;
 
-      const runNext = () => {
+      const createNextUtterance = (): SpeechSynthesisUtterance | null => {
         if (cancelledRef.current) {
-          setStatus("idle");
-          return;
+          return null;
         }
 
         while (li < queueChunks.length) {
@@ -171,20 +171,13 @@ export function GlobalAudioPlayer() {
         }
 
         if (li >= queueChunks.length) {
-          setStatus("idle");
-          return;
+          return null;
         }
 
         const text = (queueChunks[li]?.[ci] ?? "").trim();
-        if (!text) {
+        if (!text || text === lastSpokenRef.current) {
           ci += 1;
-          runNext();
-          return;
-        }
-        if (text === lastSpokenRef.current) {
-          ci += 1;
-          runNext();
-          return;
+          return createNextUtterance();
         }
 
         setLessonIndex(li);
@@ -196,31 +189,63 @@ export function GlobalAudioPlayer() {
         utterance.rate = Math.min(2, Math.max(0.75, rateRef.current));
         utterance.pitch = 1;
         if (voiceRef.current) utterance.voice = voiceRef.current;
-        let advanced = false;
-        const advanceOnce = () => {
-          if (advanced) return;
-          advanced = true;
-          runNext();
+        return utterance;
+      };
+
+      const queuePipeline = (utterance: SpeechSynthesisUtterance) => {
+        let queuedNext = false;
+        utterance.onstart = () => {
+          if (queuedNext || cancelledRef.current) {
+            return;
+          }
+          queuedNext = true;
+          const next = createNextUtterance();
+          if (next) {
+            queuePipeline(next);
+            window.speechSynthesis.speak(next);
+          }
         };
-        utterance.onend = advanceOnce;
+        utterance.onend = () => {
+          if (cancelledRef.current || finished) {
+            setStatus("idle");
+            return;
+          }
+          if (!queuedNext) {
+            const next = createNextUtterance();
+            if (next) {
+              queuePipeline(next);
+              window.speechSynthesis.speak(next);
+              return;
+            }
+          }
+          if (!window.speechSynthesis.speaking && !window.speechSynthesis.pending) {
+            finished = true;
+            setStatus("idle");
+          }
+        };
         utterance.onerror = (event: SpeechSynthesisErrorEvent) => {
-          // Some browsers can emit interrupted/canceled events between chunks.
-          // Treat those as transition noise unless we explicitly canceled playback.
           if (cancelledRef.current) {
             setStatus("idle");
             return;
           }
           if (event.error === "interrupted" || event.error === "canceled") {
-            advanceOnce();
-            return;
+            if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+              return;
+            }
           }
+          finished = true;
           setStatus("idle");
         };
-        window.speechSynthesis.speak(utterance);
-        setStatus("playing");
       };
 
-      runNext();
+      const first = createNextUtterance();
+      if (!first) {
+        setStatus("idle");
+        return;
+      }
+      queuePipeline(first);
+      window.speechSynthesis.speak(first);
+      setStatus("playing");
     },
     [queueChunks, supported],
   );
