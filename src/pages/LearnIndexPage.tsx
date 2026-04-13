@@ -28,57 +28,14 @@ export function LearnIndexPage() {
         description={`Ordered Python lessons (${total} total) from first steps through applied topics—self-paced, with flashcards and plain-English companion readings.`}
         jsonLd={jsonLd}
       />
-      <div className="rounded-card border border-[var(--border)] bg-[color-mix(in_oklab,var(--accent)_8%,var(--surface))] p-6 shadow-sm dark:bg-[color-mix(in_oklab,var(--accent)_12%,var(--surface))] sm:p-8">
-        <p className="text-xs font-bold tracking-wide text-[var(--muted)] uppercase">
-          Recommended path
-        </p>
-        <h2 className="mt-2 font-serif text-2xl font-semibold tracking-tight text-[var(--text)]">
-          New here? Do not pick randomly. Start at lesson 1.
-        </h2>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">
-          The first pages explain how to study, what Python is, and how to run a
-          tiny file. That groundwork saves hours later. Later modules add
-          intermediate and advanced tracks in the same chunked style. Later
-          modules add applied tracks (science, econometrics, ML, finance, AI,
-          and related fields) marked Applied in the list.
-        </p>
-        <Link
-          className="mt-5 inline-flex h-11 items-center justify-center rounded-full bg-[var(--text)] px-6 text-sm font-semibold text-[var(--bg)] no-underline shadow-md transition hover:opacity-95"
-          to="/learn/how-to-use-this-site"
-        >
-          Begin: How to use this textbook
-        </Link>
-        <p className="mt-4 text-xs text-[var(--muted)]">
-          {total} lessons across {modules.length} modules · self-paced ·{" "}
-          <Link className="font-semibold text-[var(--accent)] no-underline hover:underline" to="/learn/flashcards">
-            flashcards
-          </Link>
-          {" · "}
-          <Link
-            className="font-semibold text-[var(--accent)] no-underline hover:underline"
-            to="/learn/python-in-plain-english"
-          >
-            Python in plain English
-          </Link>
-          {" · "}
-          <Link
-            className="font-semibold text-[var(--accent)] no-underline hover:underline"
-            to="/learn/python-dictionary"
-          >
-            Python dictionary
-          </Link>
-        </p>
-      </div>
-
-      <header className="mt-12 max-w-3xl">
+      <header className="max-w-3xl">
         <h1 className="font-serif text-4xl font-semibold tracking-tight">
           All lessons in order
         </h1>
         <p className="mt-4 text-base leading-relaxed text-[var(--muted)]">
-          Scroll to browse every module. First time through, use the recommended
-          path above, then work top to bottom inside each section. When you see
-          &quot;Lab&quot; or &quot;Your turn,&quot; try the smallest version at the
-          keyboard.
+          Scroll to browse every module and work top to bottom inside each
+          section. When you see &quot;Lab&quot; or &quot;Your turn,&quot; try the
+          smallest version at the keyboard.
         </p>
       </header>
 
