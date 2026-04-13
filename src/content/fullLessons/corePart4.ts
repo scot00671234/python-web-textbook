@@ -137,64 +137,106 @@ export const lessonMiniProjectIdeas: Lesson = {
   title: "Mini-project ideas",
   subtitle: subFound,
   summary:
-    "Ship a tiny vertical slice: input, logic, file output. Success is a working loop you can demo in two minutes, not a polished product.",
+    "Build one small project that solves a real weekly task. Focus on an end-to-end loop you can run and explain, then improve it in short iterations.",
   tier: "foundational",
   readingTimeMinutes: 13,
   objectives: [
-    "Pick one project and define a one-sentence success criterion",
-    "Ship a v1 that runs end-to-end, then iterate",
+    "Pick one practical project with a clear user and use case",
+    "Ship a v1 that works end-to-end with simple file storage",
   ],
   practicePrompts: [
-    "Implement the expense tracker: append lines `YYYY-MM-DD,amount,note` to `expenses.txt` and print month totals.",
+    "Choose one project below and write a one-sentence definition of done before coding.",
   ],
   keyTakeaways: [
-    "Readable file formats beat clever databases until you feel pain.",
-    "Automate something you already do by hand weekly.",
+    "A small working tool teaches more than a large unfinished plan.",
+    "Clear inputs and outputs matter more than advanced architecture at this stage.",
+    "Real-world examples become easy when your project mirrors a task you already do.",
   ],
   sections: [
     ...ql(
-      "Pick one idea, define done in one sentence, build the smallest loop that hits it tonight.",
+      "Start with one user problem, then build the smallest script that handles it from input to output.",
       [
-        "Expense tracker shape",
-        "Flashcard flow",
-        "Stretch ideas when basics feel easy",
+        "Choose a project that gives value this week",
+        "Design the first version around a simple loop",
+        "Add careful improvements only after v1 works",
       ],
     ),
     {
+      type: "p",
+      text: "A mini-project is not a toy if it solves a real problem. If you repeatedly rename files, track spending, or summarize survey notes, you already have valid project ideas. Keep version one small: one command, one file format, one useful output.",
+    },
+    {
       type: "h2",
-      text: "Expense tracker (text file)",
+      text: "Project 1: Expense tracker for monthly budgeting",
     },
     {
       type: "p",
-      text: "Loop: prompt amount and note, append CSV-like line, print running total for today. Add `list` command to show last ten lines.",
+      text: "Use case: a student or freelancer wants a fast daily spending log. Start by appending lines like `2026-04-13,12.50,lunch` to `expenses.txt`, then compute totals by month. This teaches input handling, file writes, and grouping logic.",
+    },
+    {
+      type: "code",
+      title: "Small slice of an expense tracker",
+      code: `from datetime import date
+
+amount = float(input("Amount: "))
+note = input("Note: ").strip()
+row = f"{date.today().isoformat()},{amount:.2f},{note}\\n"
+
+with open("expenses.txt", "a", encoding="utf-8") as f:
+    f.write(row)
+
+print("Saved:", row.strip())`,
     },
     {
       type: "h2",
-      text: "Terminal flashcards",
+      text: "Project 2: Study flashcards from your own weak topics",
     },
     {
       type: "p",
-      text: "Store `front|back` pairs. Randomize. Track correct streak. Save weak cards to `review.txt`.",
+      text: "Use case: exam revision where weak topics change each week. Store pairs like `front|back`, quiz yourself in random order, and record missed cards in `review.txt`. This teaches loops, randomization, and simple progress tracking.",
     },
     {
       type: "h2",
-      text: "Stretch goals",
+      text: "Project 3: Policy memo helper for research teams",
+    },
+    {
+      type: "p",
+      text: "Use case: you repeatedly draft policy notes from model output. Write a script that takes effect size, confidence interval, and unit, then generates two plain-English sentences. This is useful in economics and public policy workflows and reinforces string formatting and function design.",
+    },
+    {
+      type: "h2",
+      text: "How to decide what to build first",
+    },
+    {
+      type: "ol",
+      items: [
+        "Pick the project with the clearest real user, often you.",
+        "Define one sentence for success, for example: `I can log one expense and print this month's total.`",
+        "Implement only what is needed for that sentence.",
+        "Test with real inputs, not only ideal fake examples.",
+      ],
+    },
+    {
+      type: "h2",
+      text: "Good stretch goals after version one",
     },
     {
       type: "ul",
       items: [
-        "Add simple tests with `assert` functions.",
-        "Refactor repeated logic into functions once patterns repeat.",
-        "Package data paths with `pathlib` and a `--data-dir` flag later when you learn `argparse`.",
+        "Add two or three tiny tests for your core function outputs.",
+        "Refactor repeated lines into helper functions with clear names.",
+        "Add simple validation and friendly error messages for bad input.",
       ],
     },
     {
       type: "practice",
-      title: "Lab",
+      title: "Lab: ship one useful v1",
       steps: [
-        "Choose one idea. Spend 25 minutes building the smallest runnable slice, then write what you would do next.",
+        "Choose one project and start a timer for 30 minutes.",
+        "Build the smallest end-to-end version that truly runs.",
+        "Write three bullet points: what works, what broke, and what to improve next.",
       ],
     },
-    check("What is your one-sentence definition of done for the slice you picked?"),
+    check("Can another person run your script and describe its value in one sentence?"),
   ],
 };

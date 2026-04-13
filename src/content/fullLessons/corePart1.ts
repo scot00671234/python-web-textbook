@@ -6,12 +6,12 @@ export const lessonNumbersAndStrings: Lesson = {
   title: "Numbers and strings",
   subtitle: "Foundational skills you will use in every script.",
   summary:
-    "Most beginner bugs are type confusion: math on numbers, text in strings, and explicit conversion between them. Learn the operators and f-strings once, reuse forever.",
+    "Many early bugs come from mixing numbers and text. This lesson helps you reason about types, arithmetic, and formatted output in ways you will use in every project.",
   tier: "foundational",
   readingTimeMinutes: 17,
   objectives: [
     "Predict results for `//`, `%`, and `**`",
-    "Choose quotes, escapes, and f-strings without syntax surprises",
+    "Format clear output with quotes, escapes, and f-strings",
   ],
   practicePrompts: [
     "Compute `0.1 + 0.2` in a REPL. Read about `decimal.Decimal` in the docs and write one sentence on when you would switch.",
@@ -38,12 +38,20 @@ export const lessonNumbersAndStrings: Lesson = {
     },
     {
       type: "p",
-      text: "Python distinguishes whole numbers (`int`) from numbers with fractional parts (`float`). Mixed arithmetic usually promotes to `float`.",
+      text: "Python distinguishes whole numbers (`int`) from numbers with fractional parts (`float`). Mixed arithmetic usually becomes `float`, which is useful for most measurements but can surprise you when exact decimal precision matters.",
     },
     {
       type: "code",
       title: "Arithmetic you will use daily",
       code: `a = 7 // 3   # floor division -> 2\nb = 7 % 3    # remainder -> 1\nc = 2**10    # power -> 1024\nx = 9 / 2    # true division -> 4.5`,
+    },
+    {
+      type: "h3",
+      text: "Real-world example: splitting shifts and leftovers",
+    },
+    {
+      type: "p",
+      text: "Suppose a manager assigns 23 support tickets across 5 staff. `23 // 5` gives 4 tickets each, and `23 % 5` gives 3 leftover tickets to distribute. This is exactly how quotient and remainder help in operations work.",
     },
     {
       type: "callout",
@@ -68,6 +76,10 @@ export const lessonNumbersAndStrings: Lesson = {
       text: "f-strings (formatted string literals)",
     },
     {
+      type: "p",
+      text: "In reports and dashboards, output clarity matters. f-strings let you include both values and labels in one readable line, with rounding and alignment when needed.",
+    },
+    {
       type: "code",
       title: "Readable output",
       code: `name = "Dr. Chen"\nscore = 0.9375\nprint(f"{name}, AUC={score:.3f}")`,
@@ -79,10 +91,10 @@ export const lessonNumbersAndStrings: Lesson = {
     },
     {
       type: "practice",
-      title: "Lab",
+      title: "Lab: practical formatting",
       steps: [
-        "Assign `pi = 3.14159265` and print it rounded to four decimals inside an f-string.",
-        "Create a string with an apostrophe inside using double quotes on the outside.",
+        "Assign `temperature_c = 21.678` and print `Room: 21.7 C` using an f-string.",
+        "Create a billing line like `Client: Ava, total: $42.50` from variables.",
       ],
     },
     check("Without running, what does `3 * \"ha\"` print, and why?"),
@@ -94,7 +106,7 @@ export const lessonInputAndOutput: Lesson = {
   title: "Input and output",
   subtitle: "Foundational skills you will use in every script.",
   summary:
-    "Terminal programs read text with `input()`. Treat every response as a string until you parse it; handle bad input at the boundary so the rest of your code stays clean.",
+    "Terminal programs read text with `input()`. Treat every response as a string first, then parse and validate at the boundary so the rest of your code can trust the data.",
   tier: "foundational",
   readingTimeMinutes: 15,
   objectives: [
@@ -124,6 +136,10 @@ export const lessonInputAndOutput: Lesson = {
       text: "Reading one line",
     },
     {
+      type: "p",
+      text: "Input quality controls program quality. A small `strip()` and clear prompt often prevent many avoidable errors.",
+    },
+    {
       type: "code",
       title: "Minimal prompt",
       code: `name = input("Your name: ").strip()\nprint(f"Hello, {name}")`,
@@ -133,9 +149,30 @@ export const lessonInputAndOutput: Lesson = {
       text: "Converting to numbers",
     },
     {
+      type: "p",
+      text: "Conversion is where user-facing errors happen, so it deserves explicit handling. Let users recover with a helpful message instead of showing a long traceback.",
+    },
+    {
       type: "code",
       title: "Guarded conversion",
       code: `raw = input("Enter a positive integer: ").strip()\ntry:\n    n = int(raw)\nexcept ValueError:\n    raise SystemExit("That was not an integer.") from None\nprint("Twice:", n * 2)`,
+    },
+    {
+      type: "h3",
+      text: "Real-world example: quick cost calculator",
+    },
+    {
+      type: "code",
+      title: "Parse and compute safely",
+      code: `price = input("Unit price: ").strip()
+qty = input("Quantity: ").strip()
+
+try:
+    total = float(price) * int(qty)
+except ValueError:
+    raise SystemExit("Please enter numbers only.") from None
+
+print(f"Total: \${total:.2f}")`,
     },
     {
       type: "callout",
@@ -144,9 +181,10 @@ export const lessonInputAndOutput: Lesson = {
     },
     {
       type: "practice",
-      title: "Lab",
+      title: "Lab: input with validation",
       steps: [
-        "Ask for two integers and print their sum, with error handling if either parse fails.",
+        "Ask for hours worked and hourly rate, then print weekly pay rounded to 2 decimals.",
+        "If either input is invalid, print one friendly message and exit.",
       ],
     },
     check("Why is `if age:` a bad way to validate age typed from `input()` when `0` is a valid age?"),
@@ -158,7 +196,7 @@ export const lessonBooleansAndConditions: Lesson = {
   title: "Booleans and conditions",
   subtitle: "Foundational skills you will use in every script.",
   summary:
-    "Conditions drive every program: comparisons yield `True`/`False`, and `and`/`or` short-circuit. Learn truthiness once so `if` reads like plain English.",
+    "Conditions drive every program: comparisons produce `True` or `False`, and `and` or `or` combine checks. Learn truthiness well so your `if` statements read like logic, not guesswork.",
   tier: "foundational",
   readingTimeMinutes: 15,
   objectives: [
@@ -188,6 +226,10 @@ export const lessonBooleansAndConditions: Lesson = {
       text: "Comparisons",
     },
     {
+      type: "p",
+      text: "Comparisons are decision primitives. Every access rule, filter, and validation step is built from these small checks.",
+    },
+    {
       type: "code",
       title: "Chained comparisons",
       code: `x = 4\nprint(0 < x < 10)      # True\nprint(1 < x < 3)       # False`,
@@ -197,11 +239,29 @@ export const lessonBooleansAndConditions: Lesson = {
       text: "Truthiness",
     },
     {
+      type: "p",
+      text: "Truthiness is convenient, but use it intentionally. If `0` and empty values are meaningful in your domain, write explicit checks instead of relying on implicit truth rules.",
+    },
+    {
       type: "ul",
       items: [
         "Falsy: `None`, `0`, `0.0`, empty containers (`\"\"`, `[]`, `{}`, `set()`).",
         "Everything else is truthy in Boolean context (`if`, `while`, `bool(...)`).",
       ],
+    },
+    {
+      type: "h3",
+      text: "Real-world example: eligibility rule",
+    },
+    {
+      type: "code",
+      title: "Simple screening logic",
+      code: `age = 22
+income = 18000
+is_student = True
+
+eligible = (18 <= age <= 30) and (income < 25000 or is_student)
+print("Eligible:", eligible)`,
     },
     {
       type: "callout",
@@ -210,9 +270,10 @@ export const lessonBooleansAndConditions: Lesson = {
     },
     {
       type: "practice",
-      title: "Lab",
+      title: "Lab: write conditions clearly",
       steps: [
         "Set `a = 10`, `b = 0`. Print `a / b` only when `b != 0`, else print `undefined`.",
+        "Add a second condition to block division when `a` is missing (`None`).",
       ],
     },
     check("Why is `if x == True` usually worse than `if x` when `x` is already boolean?"),
@@ -224,7 +285,7 @@ export const lessonIfElifElse: Lesson = {
   title: "if / elif / else",
   subtitle: "Foundational skills you will use in every script.",
   summary:
-    "Branches pick one path. Python runs the first true branch and skips the rest. Put invalid cases first so the happy path stays flat and readable.",
+    "Branching chooses one path among alternatives. Python runs the first true branch and skips the rest, so branch order directly affects correctness.",
   tier: "foundational",
   readingTimeMinutes: 16,
   objectives: [
@@ -261,15 +322,36 @@ export const lessonIfElifElse: Lesson = {
       text: "Handle edge cases at the top (`if score < 0 or score > 100: ...`) so the happy path stays unindented and easy to read.",
     },
     {
+      type: "h3",
+      text: "Real-world example: shipping fee tiers",
+    },
+    {
+      type: "code",
+      title: "Tiered business rule",
+      code: `order_total = 72
+
+if order_total < 0:
+    raise SystemExit("Invalid order total.")
+elif order_total >= 100:
+    shipping = 0
+elif order_total >= 50:
+    shipping = 5
+else:
+    shipping = 9
+
+print("Shipping fee:", shipping)`,
+    },
+    {
       type: "callout",
       variant: "warn",
       text: "Overlapping ranges (two `if` branches that could both be true) are a common bug; use `if` / `elif` so only one runs.",
     },
     {
       type: "practice",
-      title: "Lab",
+      title: "Lab: one clean branching script",
       steps: [
         "Before the `if` chain, set `score` from `input` and validate it is between 0 and 100, printing an error and exiting if not.",
+        "Add one extra branch for a distinction grade, then verify branch order still works.",
       ],
     },
     check("When is a `dict` mapping codes to labels clearer than five `elif` lines?"),

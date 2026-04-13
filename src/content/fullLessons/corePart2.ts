@@ -8,7 +8,7 @@ export const lessonWhileLoops: Lesson = {
   title: "while loops",
   subtitle: subFound,
   summary:
-    "Use `while` when you repeat until a condition flips: read input until \"quit\", drain a buffer, or retry until success. Always move state toward exit inside the loop.",
+    "Use `while` when repetition depends on a changing condition: user input, retries, sensor thresholds, or any process with unknown length.",
   tier: "foundational",
   readingTimeMinutes: 15,
   objectives: [
@@ -38,6 +38,22 @@ export const lessonWhileLoops: Lesson = {
       code: `n = 3\nwhile n > 0:\n    print(n)\n    n -= 1\nprint("go")`,
     },
     {
+      type: "h3",
+      text: "Real-world example: keep asking until valid input",
+    },
+    {
+      type: "code",
+      title: "Validation loop",
+      code: `while True:
+    raw = input("Enter age 0-120 (or q): ").strip().lower()
+    if raw == "q":
+        break
+    if raw.isdigit() and 0 <= int(raw) <= 120:
+        print("Saved age:", raw)
+        break
+    print("Invalid input, try again.")`,
+    },
+    {
       type: "callout",
       variant: "warn",
       text: "If the condition never becomes false, you have an infinite loop. In the REPL, interrupt with Ctrl+C (Windows/Linux/macOS terminal).",
@@ -52,9 +68,10 @@ export const lessonWhileLoops: Lesson = {
     },
     {
       type: "practice",
-      title: "Lab",
+      title: "Lab: retry logic",
       steps: [
         "Simulate rolling a die with `random.randint` until two sixes appear in a row (import `random`).",
+        "Count attempts and print how many loops it took.",
       ],
     },
     check("Why is `while n:` risky if `n` might become negative when you meant to stop at zero?"),
@@ -66,7 +83,7 @@ export const lessonForLoops: Lesson = {
   title: "for loops and iterables",
   subtitle: subFound,
   summary:
-    "`for` is the default loop: it walks an iterable in order. Master `range`, `enumerate`, and `zip` once; they appear in almost every script.",
+    "`for` is the default loop in Python: it walks through each item of an iterable. Master `range`, `enumerate`, and `zip` once and you can read most scripts confidently.",
   tier: "foundational",
   readingTimeMinutes: 17,
   objectives: [
@@ -107,15 +124,29 @@ export const lessonForLoops: Lesson = {
       ],
     },
     {
+      type: "h3",
+      text: "Real-world example: simple KPI report",
+    },
+    {
+      type: "code",
+      title: "Loop through weekly metrics",
+      code: `weeks = ["W1", "W2", "W3"]
+sales = [1200, 1500, 1325]
+
+for week, value in zip(weeks, sales):
+    print(f"{week}: \${value}")`,
+    },
+    {
       type: "callout",
       variant: "tip",
       text: "Prefer `for` over `while` with a manual counter unless the stop rule is genuinely messy.",
     },
     {
       type: "practice",
-      title: "Lab",
+      title: "Lab: reporting with loops",
       steps: [
         "Given `nums = [3, 1, 4, 1, 5]`, print the running total after each element using a `for` loop and an accumulator variable.",
+        "Then print each element with its index using `enumerate`.",
       ],
     },
     check("What does `list(range(3))` produce, and why is the last value not `3`?"),

@@ -367,6 +367,55 @@ export function HomePage() {
 
       <section className="border-b border-[var(--border)] bg-[var(--surface)] py-12 sm:py-14">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-6 rounded-card border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm md:grid-cols-[1.05fr_0.95fr] md:items-center md:p-6">
+            <div>
+              <p className="text-xs font-semibold tracking-wide text-[var(--accent)] uppercase">Audio mode</p>
+              <h2 className="mt-2 font-serif text-2xl font-semibold tracking-tight text-[var(--text)] sm:text-3xl">
+                Listen while you learn
+              </h2>
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-[var(--muted)] sm:text-base">
+                Open any lesson, press the speaker icon, then play one lesson, one module, or the full
+                curriculum. You can change voice, speed, lesson, and passage in one panel.
+              </p>
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <Link
+                  to={LESSON_1}
+                  className="inline-flex h-10 items-center justify-center rounded-full bg-[var(--text)] px-5 text-sm font-semibold text-[var(--bg)] no-underline transition hover:opacity-95"
+                >
+                  Try lesson audio now
+                </Link>
+                <Link
+                  to="/learn"
+                  className="inline-flex h-10 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--text)] no-underline transition hover:bg-[var(--surface-2)]"
+                >
+                  Open all lessons
+                </Link>
+              </div>
+            </div>
+            <div className="rounded-card border border-[var(--border)] bg-[var(--surface-2)] p-4">
+              <p className="text-xs font-semibold tracking-wide text-[var(--muted)] uppercase">How it works</p>
+              <ol className="mt-3 space-y-3 text-sm leading-relaxed text-[var(--text)]">
+                <li>1. Open a lesson page.</li>
+                <li>2. Tap the speaker icon in the bottom-right corner.</li>
+                <li>3. Press Play and choose your scope (All, Module, or Lesson).</li>
+              </ol>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {["Play", "Lesson jump", "Passage jump", "Speed", "Voice"].map((item) => (
+                  <span
+                    key={item}
+                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-xs font-medium text-[var(--muted)]"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-[var(--border)] bg-[var(--surface)] py-12 sm:py-14">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <h2 className="font-serif text-2xl font-semibold tracking-tight sm:text-3xl">
             Practice and retention, built in
           </h2>
@@ -394,7 +443,7 @@ export function HomePage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <h2 className="font-serif text-2xl font-semibold tracking-tight sm:text-3xl">
-              See the value in 30 seconds
+              Translate Python to plain English
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-[var(--muted)] sm:text-base">
               This is how the site teaches: short runnable Python on the left, direct plain-English
