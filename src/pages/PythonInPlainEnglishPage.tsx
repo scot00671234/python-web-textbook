@@ -173,7 +173,10 @@ export function PythonInPlainEnglishPage() {
   const [animationPaused, setAnimationPaused] = useState(false);
   const [animationPlaybackMode, setAnimationPlaybackMode] = useState<AnimationPlaybackMode>("auto");
   const [manualAnimationPanel, setManualAnimationPanel] = useState<ManualAnimationPanel>("code");
+  const [showAnimationHelp, setShowAnimationHelp] = useState(false);
+  const [animationZoom, setAnimationZoom] = useState(100);
   const [jumpInput, setJumpInput] = useState("");
+  const [animationJumpInput, setAnimationJumpInput] = useState("");
 
   useEffect(() => {
     try {
@@ -253,6 +256,14 @@ export function PythonInPlainEnglishPage() {
     setJumpInput(String(clamped));
   }, [flatItems.length, jumpInput]);
 
+  const applyAnimationJumpToSlide = useCallback(() => {
+    const parsed = Number.parseInt(animationJumpInput.trim(), 10);
+    if (Number.isNaN(parsed)) return;
+    const clamped = Math.max(1, Math.min(flatItems.length, parsed));
+    setAnimationIndex(clamped - 1);
+    setAnimationJumpInput(String(clamped));
+  }, [animationJumpInput, flatItems.length]);
+
   const onArticleBackgroundClick = useCallback(
     (globalIndex: number, e: React.MouseEvent) => {
       if (isPlainEnglishInteractiveTarget(e.target)) return;
@@ -265,11 +276,22 @@ export function PythonInPlainEnglishPage() {
   const animationModeActive = animationIndex !== null;
   const animationCard = animationIndex !== null ? flatItems[animationIndex]?.card : undefined;
   const animationEnglishText = animationCard ? animationCard.bullets.map((b) => `- ${b}`).join("\n") : "";
+  const animationShowingEnglish =
+    animationPlaybackMode === "manual"
+      ? manualAnimationPanel === "english"
+      : animationPhase === "typingEnglish" || animationPhase === "holdEnglish";
+  const animationPanelMaxWidthPx = Math.round(980 * (animationZoom / 100));
+  const animationPanelFontPx = Math.max(13, Math.round(15 * (animationZoom / 100)));
 
   useEffect(() => {
     if (browseIndex === null) return;
     setJumpInput(String(browseIndex + 1));
   }, [browseIndex]);
+
+  useEffect(() => {
+    if (animationIndex === null) return;
+    setAnimationJumpInput(String(animationIndex + 1));
+  }, [animationIndex]);
 
   useEffect(() => {
     if (!focusModeActive) return;
@@ -365,6 +387,7 @@ export function PythonInPlainEnglishPage() {
     setAnimationPhase("typingCode");
     setAnimationChars(0);
     setManualAnimationPanel("code");
+    setShowAnimationHelp(false);
   }, [animationIndex]);
 
   useEffect(() => {
@@ -676,11 +699,12 @@ export function PythonInPlainEnglishPage() {
                       Next →
                     </button>
                   </div>
-                  <div className="flex flex-col items-stretch gap-2 sm:w-auto sm:min-w-[19rem] sm:items-end">
-                    <label className="sr-only" htmlFor="focus-jump-input">
-                      Jump to slide number
-                    </label>
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-col items-stretch gap-2 sm:w-auto sm:min-w-[15rem] sm:items-end">
+                    <label
+                      htmlFor="focus-jump-input"
+                      className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-sm font-semibold text-[var(--muted)]"
+                    >
+                      <span>Slide</span>
                       <input
                         id="focus-jump-input"
                         type="number"
@@ -689,24 +713,18 @@ export function PythonInPlainEnglishPage() {
                         max={flatItems.length}
                         value={jumpInput}
                         onChange={(e) => setJumpInput(e.target.value)}
+                        onBlur={applyJumpToSlide}
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             e.preventDefault();
                             applyJumpToSlide();
                           }
                         }}
-                        className="h-10 w-24 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/25"
+                        className="h-8 w-16 rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-2 text-center text-sm text-[var(--text)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/25"
                         aria-label={`Slide number from 1 to ${flatItems.length}`}
-                        placeholder="Slide #"
                       />
-                      <button
-                        type="button"
-                        onClick={applyJumpToSlide}
-                        className="inline-flex h-10 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-4 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface)]"
-                      >
-                        Go
-                      </button>
-                    </div>
+                      <span className="font-mono text-xs text-[var(--text)]">/ {flatItems.length}</span>
+                    </label>
                     <p className="text-center text-[11px] leading-snug text-[var(--muted)] sm:text-right sm:text-xs">
                       Arrow keys · Esc exits · not while typing in TYPE
                     </p>
@@ -755,7 +773,10 @@ export function PythonInPlainEnglishPage() {
 
               <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
                 <div className="mx-auto flex min-h-full w-full max-w-5xl items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
-                  <article className="w-full overflow-hidden rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-lg ring-1 ring-black/5 dark:ring-white/10">
+                  <article
+                    className="w-full overflow-hidden rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-lg ring-1 ring-black/5 dark:ring-white/10"
+                    style={{ maxWidth: `${animationPanelMaxWidthPx}px` }}
+                  >
                     <p className="border-b border-[var(--border)] bg-[var(--surface-2)]/80 px-5 py-3 text-sm font-bold tracking-wide text-[var(--muted)] uppercase sm:px-6">
                       {animationPlaybackMode === "manual"
                         ? manualAnimationPanel === "code"
@@ -765,8 +786,19 @@ export function PythonInPlainEnglishPage() {
                           ? "Python"
                           : "Plain English"}
                     </p>
-                    <pre className="max-h-[min(70vh,40rem)] overflow-auto bg-[var(--code-bg)] p-5 text-[15px] leading-[1.75] sm:p-6 sm:text-base">
-                      <code className="font-mono text-[var(--code-fg)] [tab-size:2]">
+                    <pre
+                      className={[
+                        "max-h-[min(70vh,40rem)] bg-[var(--code-bg)] p-5 text-[15px] leading-[1.75] sm:p-6 sm:text-base",
+                        animationShowingEnglish ? "overflow-y-auto overflow-x-hidden" : "overflow-auto",
+                      ].join(" ")}
+                      style={{ fontSize: `${animationPanelFontPx}px` }}
+                    >
+                      <code
+                        className={[
+                          "font-mono text-[var(--code-fg)] [tab-size:2]",
+                          animationShowingEnglish ? "whitespace-pre-wrap break-words" : "",
+                        ].join(" ")}
+                      >
                         {animationCard
                           ? (() => {
                               if (animationPlaybackMode === "manual") {
@@ -790,7 +822,7 @@ export function PythonInPlainEnglishPage() {
 
               <footer className="shrink-0 border-t border-[var(--border)] bg-[var(--surface)]/95 px-4 py-4 backdrop-blur-md sm:px-6">
                 <div className="mx-auto flex max-w-5xl flex-col items-center gap-4">
-                  <div className="flex w-full max-w-3xl flex-wrap items-center justify-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-2 py-2 sm:px-3">
+                  <div className="relative flex w-full max-w-3xl flex-wrap items-center justify-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-2 py-2 sm:px-3">
                     <div className="inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface)] p-0.5">
                       <button
                         type="button"
@@ -896,6 +928,99 @@ export function PythonInPlainEnglishPage() {
                       >
                         Skip typing
                       </button>
+                    ) : null}
+                    <label
+                      htmlFor="animation-jump-input"
+                      className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold text-[var(--muted)] sm:text-sm"
+                    >
+                      <span>Slide</span>
+                      <input
+                        id="animation-jump-input"
+                        type="number"
+                        inputMode="numeric"
+                        min={1}
+                        max={flatItems.length}
+                        value={animationJumpInput}
+                        onChange={(e) => setAnimationJumpInput(e.target.value)}
+                        onBlur={applyAnimationJumpToSlide}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            applyAnimationJumpToSlide();
+                          }
+                        }}
+                        className="h-7 w-14 rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-2 text-center text-xs text-[var(--text)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/25 sm:h-8 sm:w-16 sm:text-sm"
+                        aria-label={`Animation slide number from 1 to ${flatItems.length}`}
+                      />
+                      <span className="font-mono text-[11px] text-[var(--text)] sm:text-xs">/ {flatItems.length}</span>
+                    </label>
+                    <div className="inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface)] p-0.5">
+                      <button
+                        type="button"
+                        onClick={() => setAnimationZoom((z) => Math.max(80, z - 10))}
+                        className="rounded-full px-2.5 py-1.5 text-xs font-bold text-[var(--muted)] transition hover:text-[var(--text)]"
+                        aria-label="Zoom out animation panel"
+                      >
+                        A-
+                      </button>
+                      <span className="px-1 text-[11px] font-mono text-[var(--text)]">{animationZoom}%</span>
+                      <button
+                        type="button"
+                        onClick={() => setAnimationZoom((z) => Math.min(140, z + 10))}
+                        className="rounded-full px-2.5 py-1.5 text-xs font-bold text-[var(--muted)] transition hover:text-[var(--text)]"
+                        aria-label="Zoom in animation panel"
+                      >
+                        A+
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowAnimationHelp((v) => !v)}
+                      className="grid h-8 w-8 place-items-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-xs font-bold text-[var(--muted)] transition hover:text-[var(--text)]"
+                      aria-label="Show animation controls help"
+                      aria-expanded={showAnimationHelp}
+                    >
+                      i
+                    </button>
+                    {showAnimationHelp ? (
+                      <div className="absolute -top-2 right-2 z-20 w-72 -translate-y-full rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 text-xs text-[var(--muted)] shadow-xl">
+                        <p className="font-semibold text-[var(--text)]">Animation controls</p>
+                        <ul className="mt-2 space-y-1.5 leading-relaxed">
+                          <li>
+                            <span className="font-semibold text-[var(--text)]">Auto/Manual:</span> autoplay
+                            typing or static view.
+                          </li>
+                          <li>
+                            <span className="font-semibold text-[var(--text)]">Speed:</span> higher means faster
+                            typing in Auto.
+                          </li>
+                          <li>
+                            <span className="font-semibold text-[var(--text)]">Pause:</span> pause and resume
+                            autoplay.
+                          </li>
+                          <li>
+                            <span className="font-semibold text-[var(--text)]">Skip typing:</span> jump to next
+                            phase on current card.
+                          </li>
+                          <li>
+                            <span className="font-semibold text-[var(--text)]">Slide:</span> type number and
+                            press Enter.
+                          </li>
+                        </ul>
+                        <p className="mt-3 font-semibold text-[var(--text)]">Keyboard shortcuts</p>
+                        <ul className="mt-2 space-y-1.5 leading-relaxed">
+                          <li>
+                            <span className="font-semibold text-[var(--text)]">← / →</span>: previous / next card
+                          </li>
+                          <li>
+                            <span className="font-semibold text-[var(--text)]">↑ / ↓</span>: toggle Python and
+                            English (switches to Manual)
+                          </li>
+                          <li>
+                            <span className="font-semibold text-[var(--text)]">Esc</span>: exit animation mode
+                          </li>
+                        </ul>
+                      </div>
                     ) : null}
                   </div>
 
