@@ -155,15 +155,6 @@ export function PythonDictionaryPage() {
   }, [focusExpanded, focusMode, moveFocusEntry]);
 
   useEffect(() => {
-    if (!focusExpanded) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [focusExpanded]);
-
-  useEffect(() => {
     const raw = location.hash.replace(/^#/, "").trim();
     if (!raw) return;
     const targetId = decodeURIComponent(raw);
@@ -338,12 +329,12 @@ export function PythonDictionaryPage() {
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setFocusExpanded(true)}
+                onClick={() => setFocusExpanded((prev) => !prev)}
                 className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] transition hover:border-[var(--accent)]/40"
-                aria-label="Expand focus card"
+                aria-label={focusExpanded ? "Collapse focus card" : "Expand focus card"}
               >
                 <ExpandIcon />
-                Expand
+                {focusExpanded ? "Collapse" : "Expand"}
               </button>
               <button
                 type="button"
@@ -444,23 +435,21 @@ export function PythonDictionaryPage() {
       )}
 
       {focusMode && activeEntry && focusExpanded ? (
-        <div
-          className="fixed inset-0 z-[70] grid place-items-center bg-black/65 p-4 sm:p-6"
-          role="dialog"
-          aria-modal="true"
+        <section
+          className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-lg"
           aria-label={`Expanded dictionary term: ${activeEntry.term}`}
         >
-          <div className="grid h-[min(90vh,52rem)] w-full max-w-4xl grid-rows-[auto,1fr,auto] overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-2xl">
+          <div className="grid h-[min(80vh,50rem)] grid-rows-[auto,1fr,auto] overflow-hidden rounded-2xl">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] px-5 py-4 sm:px-6">
               <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                Focus mode {activeIndex + 1}/{filtered.length}
+                Expanded focus view {activeIndex + 1}/{filtered.length}
               </p>
               <button
                 type="button"
                 onClick={() => setFocusExpanded(false)}
                 className="rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] transition hover:border-[var(--accent)]/40"
               >
-                Close
+                Collapse
               </button>
             </div>
 
@@ -515,7 +504,7 @@ export function PythonDictionaryPage() {
               </button>
             </div>
           </div>
-        </div>
+        </section>
       ) : null}
     </div>
   );
