@@ -12,6 +12,50 @@ function startsWithLetter(term: string, letter: string): boolean {
   return term.trim().toLowerCase().startsWith(letter.toLowerCase());
 }
 
+function normalizeText(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function levenshteinDistance(a: string, b: string): number {
+  const m = a.length;
+  const n = b.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+
+  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i += 1) dp[i][0] = i;
+  for (let j = 0; j <= n; j += 1) dp[0][j] = j;
+
+  for (let i = 1; i <= m; i += 1) {
+    for (let j = 1; j <= n; j += 1) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + cost,
+      );
+    }
+  }
+  return dp[m][n];
+}
+
+function fuzzyTokenMatch(queryToken: string, candidateToken: string): boolean {
+  if (!queryToken || !candidateToken) return false;
+  if (candidateToken.includes(queryToken) || candidateToken.startsWith(queryToken)) return true;
+
+  const len = queryToken.length;
+  if (len <= 4) return levenshteinDistance(queryToken, candidateToken) <= 1;
+  return levenshteinDistance(queryToken, candidateToken) <= 2;
+}
+
+function fuzzyMatch(query: string, haystack: string): boolean {
+  const queryTokens = normalizeText(query).split(" ").filter(Boolean);
+  const hayTokens = normalizeText(haystack).split(" ").filter(Boolean);
+  if (!queryTokens.length) return true;
+
+  return queryTokens.every((qt) => hayTokens.some((ht) => fuzzyTokenMatch(qt, ht)));
+}
+
 export function PythonDictionaryPage() {
   const entries = getPythonDictionaryEntries();
   const [query, setQuery] = useState("");
@@ -36,14 +80,14 @@ export function PythonDictionaryPage() {
   );
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = query.trim();
     return entries
       .filter((entry) => {
-      if (category !== ALL && entry.category !== category) return false;
-      if (letter !== ALL && !startsWithLetter(entry.term, letter)) return false;
-      if (!q) return true;
-      const hay = `${entry.term} ${entry.category} ${entry.meaning} ${(entry.related ?? []).join(" ")}`.toLowerCase();
-      return hay.includes(q);
+        if (category !== ALL && entry.category !== category) return false;
+        if (letter !== ALL && !startsWithLetter(entry.term, letter)) return false;
+        if (!q) return true;
+        const hay = `${entry.term} ${entry.category} ${entry.meaning} ${(entry.related ?? []).join(" ")}`;
+        return fuzzyMatch(q, hay);
       })
       .sort((a, b) => a.term.localeCompare(b.term));
   }, [entries, query, category, letter]);
