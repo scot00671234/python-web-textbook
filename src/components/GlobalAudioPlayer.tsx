@@ -37,6 +37,7 @@ export function GlobalAudioPlayer() {
   const [voiceKey, setVoiceKey] = useState("");
   const [lessonIndex, setLessonIndex] = useState(0);
   const [chunkIndex, setChunkIndex] = useState(0);
+  const [pinnedLessonSlug, setPinnedLessonSlug] = useState<string | null>(null);
 
   const rateRef = useRef(rate);
   const lessonIndexRef = useRef(lessonIndex);
@@ -49,15 +50,25 @@ export function GlobalAudioPlayer() {
     if (!slug) return undefined;
     return getLessonBySlug(slug);
   }, [location.pathname]);
+  const contextLesson = useMemo(() => {
+    if (currentLesson) return currentLesson;
+    if (!pinnedLessonSlug) return undefined;
+    return getLessonBySlug(pinnedLessonSlug);
+  }, [currentLesson, pinnedLessonSlug]);
+
+  useEffect(() => {
+    if (!currentLesson?.slug) return;
+    setPinnedLessonSlug((prev) => (prev === currentLesson.slug ? prev : currentLesson.slug));
+  }, [currentLesson?.slug]);
 
   const queueLessons = useMemo(() => {
     if (mode === "all") {
       return getAllLessons().map((x) => x.lesson);
     }
-    if (!currentLesson) return [] as Lesson[];
-    if (mode === "lesson") return [currentLesson];
-    return getLessonContext(currentLesson.slug)?.module.lessons ?? [currentLesson];
-  }, [currentLesson, mode]);
+    if (!contextLesson) return [] as Lesson[];
+    if (mode === "lesson") return [contextLesson];
+    return getLessonContext(contextLesson.slug)?.module.lessons ?? [contextLesson];
+  }, [contextLesson, mode]);
 
   const queueChunks = useMemo(
     () =>
@@ -193,20 +204,20 @@ export function GlobalAudioPlayer() {
       mode === "all"
         ? Math.max(
             0,
-            currentLesson ? getAllLessons().findIndex((x) => x.lesson.slug === currentLesson.slug) : 0,
+            contextLesson ? getAllLessons().findIndex((x) => x.lesson.slug === contextLesson.slug) : 0,
           )
         : mode === "module"
           ? Math.max(
               0,
-              currentLesson
-                ? (getLessonContext(currentLesson.slug)?.lessonInModule1 ?? 1) - 1
+              contextLesson
+                ? (getLessonContext(contextLesson.slug)?.lessonInModule1 ?? 1) - 1
                 : 0,
             )
           : 0;
     setLessonIndex(startLessonIndex >= 0 ? startLessonIndex : 0);
     setChunkIndex(0);
     stop();
-  }, [currentLesson, currentLesson?.slug, mode, stop]);
+  }, [contextLesson, contextLesson?.slug, mode, stop]);
 
   useEffect(() => {
     if (!panelOpen) return;
@@ -275,8 +286,7 @@ export function GlobalAudioPlayer() {
     [lessonIndex, queueChunks, speakFrom, status, stop],
   );
 
-  const isLessonPage = Boolean(currentLesson);
-  if (!supported || !isLessonPage) return null;
+  if (!supported) return null;
 
   const activeLesson = queueLessons[lessonIndex];
   const activeChunks = queueChunks[lessonIndex] ?? [];
