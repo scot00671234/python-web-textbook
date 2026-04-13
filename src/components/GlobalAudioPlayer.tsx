@@ -42,6 +42,7 @@ export function GlobalAudioPlayer() {
   const rateRef = useRef(rate);
   const lessonIndexRef = useRef(lessonIndex);
   const chunkIndexRef = useRef(chunkIndex);
+  const lastSpokenRef = useRef("");
   const cancelledRef = useRef(false);
   const voiceRef = useRef<SpeechSynthesisVoice | null>(null);
 
@@ -149,6 +150,7 @@ export function GlobalAudioPlayer() {
     (startLessonIndex: number, startChunkIndex: number) => {
       if (!supported || queueChunks.length === 0) return;
       cancelledRef.current = false;
+      lastSpokenRef.current = "";
       window.speechSynthesis.cancel();
 
       let li = Math.max(0, Math.min(queueChunks.length - 1, startLessonIndex));
@@ -179,10 +181,16 @@ export function GlobalAudioPlayer() {
           runNext();
           return;
         }
+        if (text === lastSpokenRef.current) {
+          ci += 1;
+          runNext();
+          return;
+        }
 
         setLessonIndex(li);
         setChunkIndex(ci);
         ci += 1;
+        lastSpokenRef.current = text;
 
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.rate = Math.min(2, Math.max(0.75, rateRef.current));
