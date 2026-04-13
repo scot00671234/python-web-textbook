@@ -727,6 +727,474 @@ reg = LinearRegression().fit(X_train, y_train)`,
     example: `mse = ((y_true - y_pred) ** 2).mean()`,
     related: ["regression (ML)"],
   },
+  {
+    id: "expression",
+    term: "expression",
+    category: "Core syntax",
+    meaning:
+      "A piece of code that evaluates to a value, such as `2 + 3` or `name.upper()`.",
+    example: `total = 2 + 3 * 4
+print(total)`,
+    related: ["operator precedence", "statement"],
+  },
+  {
+    id: "statement",
+    term: "statement",
+    category: "Core syntax",
+    meaning:
+      "A complete instruction Python can execute, for example assignment, `if`, `for`, or `return`.",
+    example: `x = 10
+if x > 5:
+    print("big")`,
+    related: ["expression", "if statement"],
+  },
+  {
+    id: "truthy-falsy",
+    term: "truthy and falsy",
+    category: "Data types",
+    meaning:
+      "Values Python treats like true or false in conditions. `0`, `\"\"`, `[]`, and `None` are common falsy values.",
+    example: `items = []
+if items:
+    print("has data")
+else:
+    print("empty")`,
+    related: ["bool", "if statement"],
+  },
+  {
+    id: "pass",
+    term: "pass",
+    category: "Control flow",
+    meaning:
+      "A placeholder statement that does nothing. Useful when syntax requires a block but you are not ready to implement it.",
+    example: `if debug_mode:
+    pass`,
+    related: ["if statement", "while loop"],
+  },
+  {
+    id: "default-parameter",
+    term: "default parameter",
+    category: "Functions",
+    meaning:
+      "A function parameter with a fallback value used when the caller does not provide that argument.",
+    example: `def power(base, exp=2):
+    return base ** exp
+
+print(power(5))`,
+    related: ["parameter", "argument"],
+  },
+  {
+    id: "keyword-arguments",
+    term: "keyword arguments",
+    category: "Functions",
+    meaning:
+      "Arguments passed by parameter name, which makes calls clearer and order-independent.",
+    example: `def greet(name, excited=False):
+    if excited:
+        print("Hi", name, "!")
+
+greet(name="Asha", excited=True)`,
+    related: ["argument", "parameter"],
+  },
+  {
+    id: "unpacking",
+    term: "unpacking",
+    category: "Data structures",
+    meaning:
+      "Assigning items from a sequence into multiple variables in one line.",
+    example: `point = (3, 4)
+x, y = point
+print(x, y)`,
+    related: ["tuple", "list"],
+  },
+  {
+    id: "sorted-builtin",
+    term: "sorted(...)",
+    category: "Data structures",
+    meaning:
+      "Returns a new sorted list from any iterable without changing the original data.",
+    example: `nums = [4, 1, 3]
+print(sorted(nums))
+print(nums)`,
+    related: ["list", "lambda"],
+  },
+  {
+    id: "assert",
+    term: "assert",
+    category: "Files and errors",
+    meaning:
+      "Checks a condition and raises an error if it is false. Useful for quick sanity checks while developing.",
+    example: `x = 5
+assert x > 0
+assert x < 0  # raises AssertionError`,
+    related: ["exception", "raise"],
+  },
+  {
+    id: "alias-import",
+    term: "import alias (`as`)",
+    category: "Modules and packages",
+    meaning:
+      "Renames an imported module or symbol for shorter or clearer usage.",
+    example: `import numpy as np
+from math import sqrt as root
+print(root(9))`,
+    related: ["import", "module"],
+  },
+  {
+    id: "encapsulation",
+    term: "encapsulation",
+    category: "OOP",
+    meaning:
+      "Bundling related data and behavior in one class, and exposing a clean interface to other code.",
+    example: `class BankAccount:
+    def __init__(self, balance):
+        self._balance = balance
+
+    def deposit(self, amount):
+        self._balance += amount`,
+    related: ["class", "method", "object (instance)"],
+  },
+  {
+    id: "list-pop",
+    term: "pop(...)",
+    category: "Data structures",
+    meaning:
+      "Removes and returns an item from a list. By default it removes the last item.",
+    example: `items = ["a", "b", "c"]
+last = items.pop()
+print(last)
+print(items)`,
+    related: ["list", "append(...)"],
+  },
+  {
+    id: "dict-setdefault-method",
+    term: "setdefault(...)",
+    category: "Data structures",
+    meaning:
+      "Gets a dictionary value by key, and if missing, inserts a default value first.",
+    example: `scores = {}
+scores.setdefault("math", []).append(90)
+scores.setdefault("math", []).append(95)
+print(scores)`,
+    related: ["dict", "dict keys/values/items"],
+  },
+  {
+    id: "membership-in",
+    term: "membership (`in`)",
+    category: "Core syntax",
+    meaning:
+      "Checks whether a value exists in a collection or appears in a string.",
+    example: `letters = ["a", "b", "c"]
+print("b" in letters)
+print("py" in "python")`,
+    related: ["list", "str", "if statement"],
+  },
+  {
+    id: "boolean-operators",
+    term: "boolean operators (`and`, `or`, `not`)",
+    category: "Control flow",
+    meaning:
+      "Combine or invert conditions to build more complex decision logic.",
+    example: `age = 20
+has_id = True
+if age >= 18 and has_id:
+    print("allow")`,
+    related: ["bool", "if statement"],
+  },
+  {
+    id: "ternary-expression",
+    term: "ternary expression",
+    category: "Control flow",
+    meaning:
+      "A short one-line `if/else` expression used to choose between two values.",
+    example: `score = 72
+label = "pass" if score >= 60 else "fail"
+print(label)`,
+    related: ["if statement", "expression"],
+  },
+  {
+    id: "global-keyword",
+    term: "global",
+    category: "Functions",
+    meaning:
+      "Lets a function assign to a name defined at module level. Use sparingly because it can make code harder to reason about.",
+    example: `count = 0
+
+def bump():
+    global count
+    count += 1`,
+    related: ["scope", "function"],
+  },
+  {
+    id: "kwargs",
+    term: "`*args` and `**kwargs`",
+    category: "Functions",
+    meaning:
+      "Collect extra positional and keyword arguments in flexible function definitions.",
+    example: `def show(*args, **kwargs):
+    print(args)
+    print(kwargs)
+
+show(1, 2, mode="fast")`,
+    related: ["argument", "parameter"],
+  },
+  {
+    id: "open-modes",
+    term: "file modes (`r`, `w`, `a`)",
+    category: "Files and errors",
+    meaning:
+      "`r` reads, `w` writes from scratch, and `a` appends to the end of a file.",
+    example: `with open("notes.txt", "w", encoding="utf-8") as f:
+    f.write("first line\\n")
+
+with open("notes.txt", "a", encoding="utf-8") as f:
+    f.write("second line\\n")`,
+    related: ["with open(...)", "file"],
+  },
+  {
+    id: "json-module",
+    term: "json",
+    category: "Modules and packages",
+    meaning:
+      "Standard library module for converting between Python objects and JSON text.",
+    example: `import json
+data = {"name": "Asha", "score": 95}
+raw = json.dumps(data)
+print(raw)
+print(json.loads(raw)["name"])`,
+    related: ["module", "dict"],
+  },
+  {
+    id: "pathlib",
+    term: "pathlib",
+    category: "Modules and packages",
+    meaning:
+      "Standard library module for file system paths with object-oriented operations.",
+    example: `from pathlib import Path
+p = Path("data") / "report.csv"
+print(p.name)
+print(p.suffix)`,
+    related: ["module", "with open(...)"],
+  },
+  {
+    id: "classmethod",
+    term: "@classmethod",
+    category: "OOP",
+    meaning:
+      "A method that receives the class (`cls`) instead of an instance. Often used for alternate constructors.",
+    example: `class User:
+    def __init__(self, name):
+        self.name = name
+
+    @classmethod
+    def guest(cls):
+        return cls("Guest")`,
+    related: ["class", "method", "staticmethod"],
+  },
+  {
+    id: "staticmethod",
+    term: "@staticmethod",
+    category: "OOP",
+    meaning:
+      "A method stored in a class namespace that does not use `self` or `cls`.",
+    example: `class MathTools:
+    @staticmethod
+    def add(a, b):
+        return a + b
+
+print(MathTools.add(2, 3))`,
+    related: ["class", "method", "classmethod"],
+  },
+  {
+    id: "vectorization",
+    term: "vectorization",
+    category: "Data and ML",
+    meaning:
+      "Applying operations to whole arrays at once instead of looping in pure Python, often much faster.",
+    example: `import numpy as np
+x = np.array([1, 2, 3])
+print(x * 10)`,
+    related: ["NumPy array", "pandas DataFrame"],
+  },
+  {
+    id: "feature-scaling",
+    term: "feature scaling",
+    category: "Data and ML",
+    meaning:
+      "Rescaling input features to similar ranges so some models train more reliably.",
+    example: `from sklearn.preprocessing import StandardScaler
+X_scaled = StandardScaler().fit_transform(X)`,
+    related: ["feature", "classification", "regression (ML)"],
+  },
+  {
+    id: "list-sort",
+    term: "list.sort(...)",
+    category: "Data structures",
+    meaning:
+      "Sorts a list in place, which means it changes the original list directly.",
+    example: `nums = [3, 1, 2]
+nums.sort()
+print(nums)`,
+    related: ["sorted(...)", "list"],
+  },
+  {
+    id: "dict-comprehension-term",
+    term: "dict comprehension",
+    category: "Data structures",
+    meaning:
+      "A compact way to build a dictionary from a loop expression.",
+    example: `nums = [1, 2, 3]
+squares = {n: n * n for n in nums}
+print(squares)`,
+    related: ["dict", "list comprehension"],
+  },
+  {
+    id: "set-comprehension",
+    term: "set comprehension",
+    category: "Data structures",
+    meaning:
+      "A compact way to build a set from an iterable, often to keep unique transformed values.",
+    example: `words = ["cat", "car", "dog"]
+first_letters = {w[0] for w in words}
+print(first_letters)`,
+    related: ["set", "list comprehension"],
+  },
+  {
+    id: "breakpoint",
+    term: "breakpoint()",
+    category: "Files and errors",
+    meaning:
+      "Pauses program execution and opens the debugger so you can inspect variables step by step.",
+    example: `x = 10
+y = x * 2
+breakpoint()
+z = y + 5`,
+    related: ["traceback", "exception"],
+  },
+  {
+    id: "stack-trace",
+    term: "stack frame",
+    category: "Files and errors",
+    meaning:
+      "One layer in the call stack, showing a function call context at a specific point in execution.",
+    example: `def a():
+    b()
+
+def b():
+    int("x")
+
+a()`,
+    related: ["traceback", "function"],
+  },
+  {
+    id: "logging",
+    term: "logging",
+    category: "Files and errors",
+    meaning:
+      "A structured way to report runtime events (info, warnings, errors) instead of using only print.",
+    example: `import logging
+logging.basicConfig(level=logging.INFO)
+logging.info("Started processing file")`,
+    related: ["exception", "traceback"],
+  },
+  {
+    id: "virtualenv-activate",
+    term: "activate virtual environment",
+    category: "Modules and packages",
+    meaning:
+      "Turns on an isolated environment so `python` and `pip` use project-specific packages.",
+    example: `python -m venv .venv
+# Windows PowerShell:
+.venv\\Scripts\\Activate.ps1`,
+    related: ["virtual environment", "pip"],
+  },
+  {
+    id: "requirements-txt",
+    term: "requirements.txt",
+    category: "Modules and packages",
+    meaning:
+      "A text file listing Python package dependencies so others can install the same environment.",
+    example: `pip freeze > requirements.txt
+pip install -r requirements.txt`,
+    related: ["pip", "package"],
+  },
+  {
+    id: "init-py",
+    term: "__init__.py",
+    category: "Modules and packages",
+    meaning:
+      "A file that marks a directory as a Python package and can define package-level exports.",
+    example: `# mypkg/__init__.py
+from .utils import add`,
+    related: ["package", "module"],
+  },
+  {
+    id: "property-decorator",
+    term: "@property",
+    category: "OOP",
+    meaning:
+      "Lets you access a method like an attribute, useful for computed read-only values.",
+    example: `class Circle:
+    def __init__(self, r):
+        self.r = r
+
+    @property
+    def area(self):
+        return 3.14 * self.r * self.r`,
+    related: ["class", "method", "encapsulation"],
+  },
+  {
+    id: "dunder-method",
+    term: "dunder method",
+    category: "OOP",
+    meaning:
+      "A special method with double underscores, like `__init__`, that customizes Python object behavior.",
+    example: `class User:
+    def __repr__(self):
+        return "User()"`,
+    related: ["__init__", "class"],
+  },
+  {
+    id: "random-seed",
+    term: "random seed",
+    category: "Data and ML",
+    meaning:
+      "A fixed starting value for random number generation so results are reproducible.",
+    example: `import random
+random.seed(42)
+print(random.random())`,
+    related: ["train/test split", "cross-validation"],
+  },
+  {
+    id: "data-leakage",
+    term: "data leakage",
+    category: "Data and ML",
+    meaning:
+      "When information from the future or test data leaks into training, causing overly optimistic performance.",
+    example: `# Bad pattern:
+# fit scaler on all data before train/test split`,
+    related: ["overfitting", "train/test split"],
+  },
+  {
+    id: "confusion-matrix",
+    term: "confusion matrix",
+    category: "Data and ML",
+    meaning:
+      "A table counting true/false positives and negatives for classification models.",
+    example: `from sklearn.metrics import confusion_matrix
+print(confusion_matrix(y_true, y_pred))`,
+    related: ["classification", "precision", "recall"],
+  },
+  {
+    id: "causal-estimand",
+    term: "estimand",
+    category: "Data and ML",
+    meaning:
+      "The exact quantity you want to estimate, such as average treatment effect over a defined population and period.",
+    example: `estimand = "Average treatment effect on test scores after one semester"
+print(estimand)`,
+    related: ["feature", "target label"],
+  },
 ];
 
 export const pythonDictionaryStarterTerms = [
