@@ -170,7 +170,7 @@ export function SiteFooter() {
           <div className="lg:col-span-1">
             <p className="text-xs font-bold tracking-wide text-[var(--muted)] uppercase">About</p>
             <p className="mt-3 text-sm leading-relaxed text-[var(--muted)]">
-              {SITE_NAME} is a free, browser-based introduction to Python—structured lessons, optional typing
+              {SITE_NAME} is a free, browser-based introduction to Python: structured lessons, optional typing
               checks on examples, flashcards, and plain-language companion readings. No account is required;
               this is study material, not a formal course provider.
             </p>
