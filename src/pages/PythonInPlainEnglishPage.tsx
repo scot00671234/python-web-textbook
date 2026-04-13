@@ -821,8 +821,8 @@ export function PythonInPlainEnglishPage() {
               </div>
 
               <footer className="shrink-0 border-t border-[var(--border)] bg-[var(--surface)]/95 px-4 py-4 backdrop-blur-md sm:px-6">
-                <div className="mx-auto flex max-w-5xl flex-col items-center gap-4">
-                  <div className="relative flex w-full max-w-3xl flex-wrap items-center justify-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-2 py-2 sm:px-3">
+                <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-5">
+                  <div className="relative flex w-full max-w-5xl flex-wrap items-center justify-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-2 py-2 sm:flex-nowrap sm:px-3">
                     <div className="inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface)] p-0.5">
                       <button
                         type="button"
@@ -1024,7 +1024,7 @@ export function PythonInPlainEnglishPage() {
                     ) : null}
                   </div>
 
-                  <div className="flex w-full max-w-2xl gap-2">
+                  <div className="flex w-full max-w-3xl gap-2">
                     <button
                       type="button"
                       className="min-h-11 flex-1 rounded-full border border-[var(--border)] bg-[var(--surface-2)] py-3 text-sm font-bold text-[var(--text)] transition hover:bg-[var(--surface)]"
