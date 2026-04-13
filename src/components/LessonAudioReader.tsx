@@ -6,6 +6,10 @@ type Props = {
   lesson: Lesson;
 };
 
+function formatRateLabel(rate: number): string {
+  return `${rate.toFixed(2).replace(/\.?0+$/, "")}x`;
+}
+
 export function LessonAudioReader({ lesson }: Props) {
   const id = useId();
   const voiceSelectId = `${id}-voice`;
@@ -91,13 +95,13 @@ export function LessonAudioReader({ lesson }: Props) {
               className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)]"
               htmlFor={rateId}
             >
-              Speed {rate.toFixed(1)}×
+              Speed {formatRateLabel(rate)}
             </label>
             <input
               id={rateId}
               type="range"
               min={0.8}
-              max={1.15}
+              max={2}
               step={0.05}
               value={rate}
               onChange={(e) => setRate(Number(e.target.value))}

@@ -132,7 +132,7 @@ export function useLessonSpeech(lesson: Lesson | undefined) {
       index += 1;
 
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = Math.min(1.35, Math.max(0.75, rateRef.current));
+      utterance.rate = Math.min(2, Math.max(0.75, rateRef.current));
       utterance.pitch = 1;
       const v = voiceRef.current;
       if (v) {
