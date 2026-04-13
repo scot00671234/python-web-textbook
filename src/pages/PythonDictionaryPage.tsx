@@ -65,6 +65,7 @@ export function PythonDictionaryPage() {
   const [letter, setLetter] = useState<typeof ALL | string>(ALL);
   const [focusMode, setFocusMode] = useState(false);
   const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
+  const [focusExpanded, setFocusExpanded] = useState(false);
 
   const categories = useMemo(
     () => Array.from(new Set(entries.map((e) => e.category))).sort((a, b) => a.localeCompare(b)),
@@ -142,12 +143,25 @@ export function PythonDictionaryPage() {
         moveFocusEntry(-1);
       } else if (event.key === "Escape") {
         event.preventDefault();
-        setFocusMode(false);
+        if (focusExpanded) {
+          setFocusExpanded(false);
+        } else {
+          setFocusMode(false);
+        }
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [focusMode, moveFocusEntry]);
+  }, [focusExpanded, focusMode, moveFocusEntry]);
+
+  useEffect(() => {
+    if (!focusExpanded) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [focusExpanded]);
 
   useEffect(() => {
     const raw = location.hash.replace(/^#/, "").trim();
@@ -324,6 +338,15 @@ export function PythonDictionaryPage() {
             <div className="flex items-center gap-2">
               <button
                 type="button"
+                onClick={() => setFocusExpanded(true)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] transition hover:border-[var(--accent)]/40"
+                aria-label="Expand focus card"
+              >
+                <ExpandIcon />
+                Expand
+              </button>
+              <button
+                type="button"
                 onClick={() => moveFocusEntry(-1)}
                 className="rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] transition hover:border-[var(--accent)]/40"
               >
@@ -419,7 +442,98 @@ export function PythonDictionaryPage() {
           ))}
         </ul>
       )}
+
+      {focusMode && activeEntry && focusExpanded ? (
+        <div
+          className="fixed inset-0 z-[70] grid place-items-center bg-black/65 p-4 sm:p-6"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Expanded dictionary term: ${activeEntry.term}`}
+        >
+          <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xl sm:p-6">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                Focus mode {activeIndex + 1}/{filtered.length}
+              </p>
+              <button
+                type="button"
+                onClick={() => setFocusExpanded(false)}
+                className="rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] transition hover:border-[var(--accent)]/40"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4 sm:p-5">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="font-sans text-2xl font-semibold text-[var(--text)]">{activeEntry.term}</h2>
+                <span className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-[var(--muted)] uppercase">
+                  {activeEntry.category}
+                </span>
+              </div>
+              <p className="mt-3 text-sm leading-relaxed text-[var(--muted)] sm:text-[16px]">
+                {activeEntry.meaning}
+              </p>
+              {activeEntry.example ? (
+                <div className="mt-3">
+                  <p className="text-[11px] font-semibold tracking-wide text-[var(--muted)] uppercase">
+                    Context snippet
+                  </p>
+                  <pre className="mt-1.5 overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--code-bg)] p-4 text-sm leading-relaxed">
+                    <code className="font-mono text-[var(--code-fg)]">{activeEntry.example}</code>
+                  </pre>
+                </div>
+              ) : null}
+              {activeEntry.related?.length ? (
+                <p className="mt-3 text-xs text-[var(--muted)]">
+                  Related:{" "}
+                  <span className="font-medium text-[var(--text)]">
+                    {activeEntry.related.join(", ")}
+                  </span>
+                </p>
+              ) : null}
+            </div>
+
+            <div className="mt-4 flex items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => moveFocusEntry(-1)}
+                className="rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] transition hover:border-[var(--accent)]/40"
+              >
+                Prev
+              </button>
+              <button
+                type="button"
+                onClick={() => moveFocusEntry(1)}
+                className="rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] transition hover:border-[var(--accent)]/40"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
+  );
+}
+
+function ExpandIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M8 4H4v4M20 8V4h-4M16 20h4v-4M4 16v4h4"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9 9 4 4M15 9l5-5M9 15l-5 5M15 15l5 5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
 
