@@ -65,7 +65,7 @@ function CodeTypewriter({ snippets }: { snippets: HeroSnippet[] }) {
   if (!current) return null;
 
   return (
-    <div className="overflow-hidden rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-md">
+    <div className="relative overflow-hidden rounded-[1.35rem] border border-[var(--border)] bg-[var(--surface)] shadow-[0_24px_60px_-36px_rgba(15,23,42,0.45)] ring-1 ring-black/5 dark:ring-white/10">
       <div className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-2.5">
         <p className="font-mono text-xs font-semibold text-[var(--accent)]">Live Python demo</p>
         <div className="flex items-center gap-2">
@@ -79,7 +79,7 @@ function CodeTypewriter({ snippets }: { snippets: HeroSnippet[] }) {
           </Link>
         </div>
       </div>
-      <pre className="min-h-[18rem] bg-[var(--code-bg)] p-4 text-[13px] leading-[1.7] sm:p-5 sm:text-sm">
+      <pre className="min-h-[19rem] bg-[var(--code-bg)] p-4 text-[13px] leading-[1.7] sm:p-5 sm:text-sm">
         <code className="font-mono text-[var(--code-fg)] [tab-size:2]">
           {current.code.slice(0, charIndex)}
           <span className="animate-pulse text-[var(--accent)]">|</span>
@@ -96,7 +96,7 @@ function PlainEnglishPreviewCarousel({ cards }: { cards: CarouselCard[] }) {
   if (!card) return null;
 
   return (
-    <div className="rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-md">
+    <div className="rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-[0_16px_36px_-28px_rgba(15,23,42,0.4)]">
       <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 sm:px-5">
         <div>
           <p className="font-mono text-xs font-semibold text-[var(--accent)]">
@@ -177,7 +177,7 @@ function HomeFlashcardViewer({
   if (!card) return null;
 
   return (
-    <div className="rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-md">
+    <div className="rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-[0_16px_36px_-28px_rgba(15,23,42,0.4)]">
       <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 sm:px-5">
         <p className="font-mono text-xs font-semibold text-[var(--accent)]">
           Flashcard {String(index + 1).padStart(2, "0")} of {cards.length}
@@ -278,20 +278,32 @@ export function HomePage() {
   }, []);
 
   return (
-    <div>
+    <div className="relative overflow-hidden bg-[var(--bg)]">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[36rem] bg-[linear-gradient(126deg,color-mix(in_oklab,var(--accent)_42%,#ffb347)_0%,color-mix(in_oklab,var(--accent)_38%,#ffa64d)_22%,color-mix(in_oklab,var(--accent)_32%,#f08cff)_52%,color-mix(in_oklab,var(--accent)_26%,#ffd7ef)_76%,color-mix(in_oklab,var(--accent)_18%,#ffffff)_100%)] opacity-80"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -left-28 top-0 z-0 h-[26rem] w-[26rem] rounded-full bg-[color-mix(in_oklab,var(--accent)_24%,#ff9a3d)] blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute right-0 top-10 z-0 h-[24rem] w-[24rem] rounded-full bg-[color-mix(in_oklab,var(--accent)_22%,#f79dff)] blur-3xl"
+      />
       <Seo
         title="Learn Python from the first click"
         description={DEFAULT_DESCRIPTION}
         keywords="pylearn, learn Python, Python tutorial, free Python course, Python for beginners, online Python textbook, Python flashcards"
         jsonLd={jsonLd}
       />
-      <section className="hero-grid border-b border-[var(--border)]">
+      <section className="hero-grid relative z-10 border-b border-[var(--border)] bg-[var(--surface)]">
         <div className="mx-auto grid max-w-6xl gap-14 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:gap-16 lg:px-8 lg:py-24">
           <div>
-            <h1 className="max-w-3xl font-serif text-4xl font-semibold tracking-tight text-balance text-[var(--text)] sm:text-5xl lg:text-[3.2rem] lg:leading-[1.06]">
+            <h1 className="max-w-3xl font-serif text-4xl font-semibold tracking-tight text-balance text-[var(--text)] sm:text-5xl lg:text-[3.25rem] lg:leading-[1.04]">
               Learn Python from the first click
             </h1>
-            <p className="mt-5 max-w-2xl text-lg leading-relaxed text-[var(--muted)]">
+            <p className="mt-5 max-w-xl text-lg leading-relaxed text-[var(--muted)]">
               Read short lessons, see working code, and translate syntax into plain English. Practice
               with built-in TYPE and flashcards as you go.
             </p>
@@ -311,7 +323,7 @@ export function HomePage() {
               </Link>
             </div>
 
-            <p className="mt-3 text-sm leading-relaxed text-[var(--muted)]">
+            <p className="mt-4 text-sm leading-relaxed text-[var(--muted)]">
               No install needed for this first page. It teaches how the site works and how to practice.
             </p>
 
@@ -351,23 +363,23 @@ export function HomePage() {
               </a>
             </div>
 
-            <p className="mt-8 text-sm text-[var(--muted)]">
+            <p className="mt-8 inline-flex flex-wrap items-center gap-x-3 gap-y-1 rounded-full border border-[var(--border)]/90 bg-[color-mix(in_oklab,var(--surface)_88%,transparent)] px-4 py-2 text-sm text-[var(--muted)]">
               <span className="font-semibold text-[var(--text)]">{totalLessons}</span> lessons
-              <span className="mx-2 text-[var(--border)]">·</span>
+              <span className="text-[var(--border)]">·</span>
               <span className="font-semibold text-[var(--text)]">{modules.length}</span> modules
-              <span className="mx-2 text-[var(--border)]">·</span>
+              <span className="text-[var(--border)]">·</span>
               <span className="font-semibold text-[var(--text)]">{totalFlashcards}</span> flashcards
             </p>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-4 lg:pl-4">
             <CodeTypewriter snippets={heroSnippets} />
           </div>
         </div>
       </section>
 
-      <section className="border-b border-[var(--border)] bg-[var(--surface)] py-12 sm:py-14">
+      <section className="relative z-10 border-b border-[var(--border)] bg-[var(--surface)] py-12 sm:py-14">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-6 rounded-card border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm md:grid-cols-[1.05fr_0.95fr] md:items-center md:p-6">
+          <div className="grid gap-6 rounded-card border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[0_14px_36px_-28px_rgba(15,23,42,0.45)] md:grid-cols-[1.05fr_0.95fr] md:items-center md:p-6">
             <div>
               <p className="text-xs font-semibold tracking-wide text-[var(--accent)] uppercase">Audio mode</p>
               <h2 className="mt-2 font-serif text-2xl font-semibold tracking-tight text-[var(--text)] sm:text-3xl">
@@ -392,7 +404,7 @@ export function HomePage() {
                 </Link>
               </div>
             </div>
-            <div className="rounded-card border border-[var(--border)] bg-[var(--surface-2)] p-4">
+            <div className="rounded-card border border-[var(--border)] bg-[var(--surface-2)] p-4 shadow-sm">
               <p className="text-xs font-semibold tracking-wide text-[var(--muted)] uppercase">How it works</p>
               <ol className="mt-3 space-y-3 text-sm leading-relaxed text-[var(--text)]">
                 <li>1. Open a lesson page.</li>
@@ -414,7 +426,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="border-b border-[var(--border)] bg-[var(--surface)] py-12 sm:py-14">
+      <section className="relative z-10 border-b border-[var(--border)] bg-[var(--surface)] py-12 sm:py-14">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <h2 className="font-serif text-2xl font-semibold tracking-tight sm:text-3xl">
             Practice and retention, built in
@@ -439,7 +451,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="border-b border-[var(--border)] bg-[var(--surface)] py-12 sm:py-14">
+      <section className="relative z-10 border-b border-[var(--border)] bg-[var(--surface)] py-12 sm:py-14">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <h2 className="font-serif text-2xl font-semibold tracking-tight sm:text-3xl">
@@ -460,7 +472,7 @@ export function HomePage() {
 
       <section
         id="course-map"
-        className="mx-auto max-w-6xl scroll-mt-24 px-4 py-14 sm:px-6 lg:px-8"
+        className="relative z-10 mx-auto max-w-6xl scroll-mt-24 px-4 py-14 sm:px-6 lg:px-8"
       >
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -534,7 +546,7 @@ export function HomePage() {
       <section
         id="faq"
         aria-labelledby="faq-heading"
-        className="border-t border-[var(--border)] bg-[var(--surface)] py-12 sm:py-14"
+        className="relative z-10 border-t border-[var(--border)] bg-[var(--surface)] py-12 sm:py-14"
       >
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <h2

@@ -852,8 +852,8 @@ export function PythonInPlainEnglishPage() {
               </div>
 
               <footer className="shrink-0 border-t border-[var(--border)] bg-[var(--surface)]/95 px-4 py-4 backdrop-blur-md sm:px-6">
-                <div className="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                  <div className="flex gap-2 sm:flex-1">
+                <div className="mx-auto flex max-w-6xl flex-col items-center gap-3">
+                  <div className="flex w-full max-w-3xl gap-2">
                     <button
                       type="button"
                       className="min-h-11 flex-1 rounded-full border border-[var(--border)] bg-[var(--surface-2)] py-3 text-sm font-bold text-[var(--text)] transition hover:bg-[var(--surface)] disabled:opacity-40"
@@ -875,7 +875,7 @@ export function PythonInPlainEnglishPage() {
                       Next →
                     </button>
                   </div>
-                  <div className="flex flex-col items-stretch gap-2 sm:w-auto sm:min-w-[15rem] sm:items-end">
+                  <div className="flex flex-col items-center gap-2">
                     <label
                       htmlFor="focus-jump-input"
                       className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-sm font-semibold text-[var(--muted)]"
@@ -901,7 +901,7 @@ export function PythonInPlainEnglishPage() {
                       />
                       <span className="font-mono text-xs text-[var(--text)]">/ {flatItems.length}</span>
                     </label>
-                    <p className="text-center text-[11px] leading-snug text-[var(--muted)] sm:text-right sm:text-xs">
+                    <p className="text-center text-[11px] leading-snug text-[var(--muted)] sm:text-xs">
                       Arrow keys · Esc exits · not while typing in TYPE
                     </p>
                   </div>
@@ -1318,8 +1318,8 @@ export function PythonInPlainEnglishPage() {
                 </div>
               </div>
               <footer className="shrink-0 border-t border-[var(--border)] bg-[var(--surface)]/95 px-4 py-4 backdrop-blur-md sm:px-6">
-                <div className="mx-auto flex w-full max-w-5xl flex-col gap-2 sm:flex-row sm:items-center">
-                  <div className="flex flex-1 gap-2">
+                <div className="mx-auto flex w-full max-w-5xl flex-col items-center gap-2">
+                  <div className="flex w-full max-w-3xl gap-2">
                     <button
                       type="button"
                       className="min-h-11 flex-1 rounded-full border border-[var(--border)] bg-[var(--surface-2)] py-3 text-sm font-bold text-[var(--text)] transition hover:bg-[var(--surface)] disabled:opacity-40"
