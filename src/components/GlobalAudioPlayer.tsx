@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getAllLessons, getLessonBySlug, getLessonContext } from "../content/curriculum";
 import type { Lesson } from "../content/types";
 import { lessonToSpeechChunks } from "../lib/lessonSpeechText";
@@ -24,6 +24,7 @@ function lessonSlugFromPath(pathname: string): string | null {
 
 export function GlobalAudioPlayer() {
   const location = useLocation();
+  const navigate = useNavigate();
   const id = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const supported = typeof window !== "undefined" && "speechSynthesis" in window;
@@ -38,6 +39,8 @@ export function GlobalAudioPlayer() {
   const [chunkIndex, setChunkIndex] = useState(0);
 
   const rateRef = useRef(rate);
+  const lessonIndexRef = useRef(lessonIndex);
+  const chunkIndexRef = useRef(chunkIndex);
   const cancelledRef = useRef(false);
   const voiceRef = useRef<SpeechSynthesisVoice | null>(null);
 
@@ -74,6 +77,12 @@ export function GlobalAudioPlayer() {
   useEffect(() => {
     rateRef.current = rate;
   }, [rate]);
+  useEffect(() => {
+    lessonIndexRef.current = lessonIndex;
+  }, [lessonIndex]);
+  useEffect(() => {
+    chunkIndexRef.current = chunkIndex;
+  }, [chunkIndex]);
 
   useEffect(() => {
     if (!voiceKey || voices.length === 0) {
@@ -215,14 +224,14 @@ export function GlobalAudioPlayer() {
   }, [chunkIndex, lessonIndex, speakFrom]);
 
   useEffect(() => {
-    if (status !== "playing") return;
+    if (!supported || status !== "playing") return;
     const t = window.setTimeout(() => {
       // Restart from the current passage so speed changes are felt immediately.
       stop();
-      speakFrom(lessonIndex, chunkIndex);
+      speakFrom(lessonIndexRef.current, chunkIndexRef.current);
     }, 120);
     return () => window.clearTimeout(t);
-  }, [chunkIndex, lessonIndex, rate, speakFrom, status, stop]);
+  }, [rate, speakFrom, status, stop, supported]);
 
   const jumpLesson = useCallback(
     (delta: number) => {
@@ -313,9 +322,22 @@ export function GlobalAudioPlayer() {
             </div>
           </div>
           <div className="mt-3 rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-2 text-[11px] text-[var(--muted)]">
-            <p className="font-semibold text-[var(--text)]">
-              {lessonIndex + 1}/{totalLessonCount}: {activeLesson?.title ?? "No lesson"}
-            </p>
+            {activeLesson ? (
+              <button
+                type="button"
+                onClick={() => {
+                  navigate(`/learn/${activeLesson.slug}`);
+                }}
+                className="font-semibold text-[var(--text)] underline-offset-2 transition hover:underline"
+                title="Open this lesson page"
+              >
+                {lessonIndex + 1}/{totalLessonCount}: {activeLesson.title}
+              </button>
+            ) : (
+              <p className="font-semibold text-[var(--text)]">
+                {lessonIndex + 1}/{totalLessonCount}: No lesson
+              </p>
+            )}
             <p className="mt-0.5">
               {mode === "lesson" ? "This lesson" : mode === "module" ? "This module" : "All lessons"}
               {" · "}
