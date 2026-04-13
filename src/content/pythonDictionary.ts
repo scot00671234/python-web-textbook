@@ -290,6 +290,10 @@ print(list(map(lambda n: n * 2, nums)))`,
     category: "Functions",
     meaning:
       "Where a variable name is visible. Local names exist inside a function unless explicitly shared.",
+    example: `x = 10
+def show():
+    x = 99
+    print(x)  # local x`,
     related: ["function", "global"],
   },
   {
@@ -410,6 +414,9 @@ print(math.sqrt(9))`,
     term: "module",
     category: "Modules and packages",
     meaning: "A Python file that contains code you can import.",
+    example: `# math_tools.py
+def add(a, b):
+    return a + b`,
     related: ["import", "package"],
   },
   {
@@ -417,6 +424,9 @@ print(math.sqrt(9))`,
     term: "package",
     category: "Modules and packages",
     meaning: "A collection of related modules, often installable with `pip`.",
+    example: `# mypkg/__init__.py
+# mypkg/utils.py
+from mypkg import utils`,
     related: ["module", "pip"],
   },
   {
@@ -434,6 +444,9 @@ print(math.sqrt(9))`,
     category: "Modules and packages",
     meaning:
       "An isolated Python environment so project dependencies do not conflict.",
+    example: `python -m venv .venv
+# activate, then:
+pip install pandas`,
     related: ["pip", "package"],
   },
   {
@@ -455,6 +468,7 @@ if __name__ == "__main__":
     category: "Files and errors",
     meaning:
       "A runtime error object. If not handled, it stops your program and prints a traceback.",
+    example: `x = int("abc")  # ValueError`,
     related: ["try/except", "traceback"],
   },
   {
@@ -475,6 +489,9 @@ except ValueError:
     category: "Files and errors",
     meaning:
       "A stack trace showing where an error happened and which calls led to it.",
+    example: `def f():
+    int("x")
+f()  # traceback shows call chain`,
     related: ["exception"],
   },
   {
@@ -541,6 +558,9 @@ finally:
     category: "OOP",
     meaning:
       "A special method that runs when an object is created, usually to set initial state.",
+    example: `class User:
+    def __init__(self, name):
+        self.name = name`,
     related: ["class", "object (instance)"],
   },
   {
@@ -549,6 +569,9 @@ finally:
     category: "OOP",
     meaning:
       "The current instance inside a method. It lets methods read and update that object's data.",
+    example: `class Counter:
+    def bump(self):
+        self.n += 1`,
     related: ["class", "method"],
   },
   {
@@ -616,6 +639,8 @@ df = pd.DataFrame({"x": [1, 2], "y": [3, 4]})`,
     category: "Data and ML",
     meaning:
       "A way to evaluate models by training on one part of data and testing on unseen data.",
+    example: `from sklearn.model_selection import train_test_split
+X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2)`,
     related: ["overfitting", "cross-validation"],
   },
   {
@@ -624,6 +649,8 @@ df = pd.DataFrame({"x": [1, 2], "y": [3, 4]})`,
     category: "Data and ML",
     meaning:
       "When a model memorizes training noise and performs poorly on new data.",
+    example: `print(model.score(X_train, y_train))  # high
+print(model.score(X_test, y_test))    # much lower`,
     related: ["train/test split", "cross-validation"],
   },
   {
@@ -632,6 +659,8 @@ df = pd.DataFrame({"x": [1, 2], "y": [3, 4]})`,
     category: "Data and ML",
     meaning:
       "Repeatedly splits training data into folds to estimate model performance more reliably.",
+    example: `from sklearn.model_selection import cross_val_score
+scores = cross_val_score(model, X, y, cv=5)`,
     related: ["train/test split", "overfitting"],
   },
   {
@@ -640,6 +669,7 @@ df = pd.DataFrame({"x": [1, 2], "y": [3, 4]})`,
     category: "Data and ML",
     meaning:
       "An input variable used by a model, such as age, income, or word count.",
+    example: `X = df[["age", "income", "sessions"]]`,
     related: ["target label", "pandas DataFrame"],
   },
   {
@@ -647,6 +677,7 @@ df = pd.DataFrame({"x": [1, 2], "y": [3, 4]})`,
     term: "target label",
     category: "Data and ML",
     meaning: "The outcome variable a model tries to predict.",
+    example: `y = df["churned"]`,
     related: ["feature", "classification", "regression (ML)"],
   },
   {
@@ -655,6 +686,8 @@ df = pd.DataFrame({"x": [1, 2], "y": [3, 4]})`,
     category: "Data and ML",
     meaning:
       "A supervised learning task where the output is a category, such as spam/not spam.",
+    example: `from sklearn.linear_model import LogisticRegression
+clf = LogisticRegression().fit(X_train, y_train)`,
     related: ["target label", "precision", "recall"],
   },
   {
@@ -663,6 +696,8 @@ df = pd.DataFrame({"x": [1, 2], "y": [3, 4]})`,
     category: "Data and ML",
     meaning:
       "A supervised learning task where the output is a numeric value.",
+    example: `from sklearn.linear_model import LinearRegression
+reg = LinearRegression().fit(X_train, y_train)`,
     related: ["target label", "MSE"],
   },
   {
@@ -671,6 +706,7 @@ df = pd.DataFrame({"x": [1, 2], "y": [3, 4]})`,
     category: "Data and ML",
     meaning:
       "Out of all predicted positives, the fraction that are truly positive.",
+    example: `precision = tp / (tp + fp)`,
     related: ["recall", "classification"],
   },
   {
@@ -679,6 +715,7 @@ df = pd.DataFrame({"x": [1, 2], "y": [3, 4]})`,
     category: "Data and ML",
     meaning:
       "Out of all truly positive examples, the fraction correctly predicted positive.",
+    example: `recall = tp / (tp + fn)`,
     related: ["precision", "classification"],
   },
   {
@@ -687,6 +724,7 @@ df = pd.DataFrame({"x": [1, 2], "y": [3, 4]})`,
     category: "Data and ML",
     meaning:
       "Mean squared error, a common regression metric averaging squared prediction errors.",
+    example: `mse = ((y_true - y_pred) ** 2).mean()`,
     related: ["regression (ML)"],
   },
 ];

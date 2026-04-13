@@ -243,9 +243,14 @@ export function PythonDictionaryPage() {
                 {entry.meaning}
               </p>
               {entry.example ? (
-                <pre className="mt-3 overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--code-bg)] p-3 text-xs leading-relaxed sm:text-sm">
-                  <code className="font-mono text-[var(--code-fg)]">{entry.example}</code>
-                </pre>
+                <div className="mt-3">
+                  <p className="text-[11px] font-semibold tracking-wide text-[var(--muted)] uppercase">
+                    Context snippet
+                  </p>
+                  <pre className="mt-1.5 overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--code-bg)] p-3 text-xs leading-relaxed sm:text-sm">
+                    <code className="font-mono text-[var(--code-fg)]">{entry.example}</code>
+                  </pre>
+                </div>
               ) : null}
               {entry.related?.length ? (
                 <p className="mt-3 text-xs text-[var(--muted)]">
