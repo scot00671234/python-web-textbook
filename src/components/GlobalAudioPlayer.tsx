@@ -281,6 +281,25 @@ export function GlobalAudioPlayer() {
     return () => document.removeEventListener("mousedown", onDown);
   }, [panelOpen]);
 
+  useEffect(() => {
+    if (!supported) return;
+    const params = new URLSearchParams(location.search);
+    const openAudio = params.get("audio");
+    if (openAudio !== "1" && openAudio !== "open") return;
+
+    setPanelOpen(true);
+    params.delete("audio");
+    const nextSearch = params.toString();
+    navigate(
+      {
+        pathname: location.pathname,
+        search: nextSearch ? `?${nextSearch}` : "",
+        hash: location.hash,
+      },
+      { replace: true },
+    );
+  }, [location.hash, location.pathname, location.search, navigate, supported]);
+
   const speak = useCallback(() => {
     speakFrom(lessonIndex, chunkIndex);
   }, [chunkIndex, lessonIndex, speakFrom]);

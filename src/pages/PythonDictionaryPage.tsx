@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Seo } from "../components/Seo";
 import {
   getPythonDictionaryEntries,
@@ -61,6 +61,8 @@ export function PythonDictionaryPage() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<PythonDictionaryCategory | typeof ALL>(ALL);
   const [letter, setLetter] = useState<typeof ALL | string>(ALL);
+  const [focusMode, setFocusMode] = useState(false);
+  const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
 
   const categories = useMemo(
     () => Array.from(new Set(entries.map((e) => e.category))).sort((a, b) => a.localeCompare(b)),
@@ -99,6 +101,52 @@ export function PythonDictionaryPage() {
       .filter((x): x is (typeof entries)[number] => x != null);
   }, [entries]);
 
+  const activeIndex = useMemo(() => {
+    if (!filtered.length) return -1;
+    if (!activeEntryId) return 0;
+    return Math.max(
+      0,
+      filtered.findIndex((entry) => entry.id === activeEntryId),
+    );
+  }, [activeEntryId, filtered]);
+
+  const activeEntry = activeIndex >= 0 ? filtered[activeIndex] : null;
+
+  useEffect(() => {
+    if (!filtered.length) {
+      setActiveEntryId(null);
+      setFocusMode(false);
+      return;
+    }
+    if (!activeEntryId || !filtered.some((entry) => entry.id === activeEntryId)) {
+      setActiveEntryId(filtered[0].id);
+    }
+  }, [activeEntryId, filtered]);
+
+  const moveFocusEntry = useCallback((delta: number) => {
+    if (!filtered.length) return;
+    const nextIndex = (activeIndex + delta + filtered.length) % filtered.length;
+    setActiveEntryId(filtered[nextIndex]?.id ?? null);
+  }, [activeIndex, filtered]);
+
+  useEffect(() => {
+    if (!focusMode) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        moveFocusEntry(1);
+      } else if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        moveFocusEntry(-1);
+      } else if (event.key === "Escape") {
+        event.preventDefault();
+        setFocusMode(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [focusMode, moveFocusEntry]);
+
   return (
     <div className="max-w-5xl py-8 lg:py-10">
       <Seo
@@ -120,6 +168,25 @@ export function PythonDictionaryPage() {
         <p className="mt-3 text-sm text-[var(--muted)]">
           {entries.length} terms total, {filtered.length} showing
         </p>
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setFocusMode((prev) => !prev)}
+            disabled={!filtered.length}
+            className={[
+              "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
+              focusMode
+                ? "border-[var(--text)] bg-[var(--text)] text-[var(--bg)]"
+                : "border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:border-[var(--accent)]/40",
+              !filtered.length ? "cursor-not-allowed opacity-50" : "",
+            ].join(" ")}
+          >
+            {focusMode ? "Exit focus mode" : "Focus mode"}
+          </button>
+          <p className="text-xs text-[var(--muted)]">
+            Click through with arrows, or use keyboard left/right.
+          </p>
+        </div>
       </header>
 
       <section className="mt-6 space-y-4 rounded-card border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5">
@@ -225,6 +292,61 @@ export function PythonDictionaryPage() {
         <p className="mt-8 rounded-card border border-[var(--border)] bg-[var(--surface)] p-6 text-sm text-[var(--muted)]">
           No terms match your current filters. Try clearing one filter or using fewer words.
         </p>
+      ) : focusMode && activeEntry ? (
+        <section className="mt-8 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+              Focus mode {activeIndex + 1}/{filtered.length}
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => moveFocusEntry(-1)}
+                className="rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] transition hover:border-[var(--accent)]/40"
+              >
+                Prev
+              </button>
+              <button
+                type="button"
+                onClick={() => moveFocusEntry(1)}
+                className="rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] transition hover:border-[var(--accent)]/40"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+          <div className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="font-sans text-xl font-semibold text-[var(--text)]">
+                {activeEntry.term}
+              </h2>
+              <span className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-[var(--muted)] uppercase">
+                {activeEntry.category}
+              </span>
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-[var(--muted)] sm:text-[15px]">
+              {activeEntry.meaning}
+            </p>
+            {activeEntry.example ? (
+              <div className="mt-3">
+                <p className="text-[11px] font-semibold tracking-wide text-[var(--muted)] uppercase">
+                  Context snippet
+                </p>
+                <pre className="mt-1.5 overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--code-bg)] p-3 text-xs leading-relaxed sm:text-sm">
+                  <code className="font-mono text-[var(--code-fg)]">{activeEntry.example}</code>
+                </pre>
+              </div>
+            ) : null}
+            {activeEntry.related?.length ? (
+              <p className="mt-3 text-xs text-[var(--muted)]">
+                Related:{" "}
+                <span className="font-medium text-[var(--text)]">
+                  {activeEntry.related.join(", ")}
+                </span>
+              </p>
+            ) : null}
+          </div>
+        </section>
       ) : (
         <ul className="mt-8 space-y-3">
           {filtered.map((entry) => (
@@ -258,6 +380,18 @@ export function PythonDictionaryPage() {
                   <span className="font-medium text-[var(--text)]">{entry.related.join(", ")}</span>
                 </p>
               ) : null}
+              <div className="mt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveEntryId(entry.id);
+                    setFocusMode(true);
+                  }}
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] transition hover:border-[var(--accent)]/40"
+                >
+                  Open in focus mode
+                </button>
+              </div>
             </li>
           ))}
         </ul>

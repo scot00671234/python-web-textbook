@@ -379,7 +379,7 @@ export function HomePage() {
               </p>
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 <Link
-                  to={LESSON_1}
+                  to={`${LESSON_1}?audio=1`}
                   className="inline-flex h-10 items-center justify-center rounded-full bg-[var(--text)] px-5 text-sm font-semibold text-[var(--bg)] no-underline transition hover:opacity-95"
                 >
                   Try lesson audio now
