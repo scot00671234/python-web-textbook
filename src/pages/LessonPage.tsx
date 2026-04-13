@@ -9,6 +9,7 @@ import {
   getLessonBySlug,
   getLessonContext,
 } from "../content/curriculum";
+import { estimateLessonReadMinutes } from "../lib/lessonReadTime";
 import { getCanonicalBase } from "../lib/site";
 import { breadcrumbJsonLd, learningResourceLessonJsonLd } from "../lib/structuredData";
 
@@ -87,6 +88,7 @@ export function LessonPage() {
   const hasPractice = (lesson.practicePrompts?.length ?? 0) > 0;
   const hasTakeaways = (lesson.keyTakeaways?.length ?? 0) > 0;
   const showJump = hasPractice || hasTakeaways;
+  const estimatedReadMinutes = estimateLessonReadMinutes(lesson);
 
   return (
     <article className="max-w-read py-8 lg:py-10">
@@ -128,11 +130,9 @@ export function LessonPage() {
       <header className="mt-8 border-b border-[var(--border)] pb-10">
         <div className="flex flex-wrap items-center gap-2">
           <LessonTierBadgeLarge lesson={lesson} />
-          {lesson.readingTimeMinutes ? (
-            <span className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-0.5 text-xs font-semibold text-[var(--muted)]">
-              About {lesson.readingTimeMinutes} min read
-            </span>
-          ) : null}
+          <span className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-0.5 text-xs font-semibold text-[var(--muted)]">
+            About {estimatedReadMinutes} min read
+          </span>
         </div>
 
         <h1 className="mt-5 font-serif text-3xl font-semibold tracking-tight text-balance sm:text-4xl lg:text-[2.4rem] lg:leading-tight">

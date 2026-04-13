@@ -390,6 +390,13 @@ export function PythonInPlainEnglishPage() {
           if (i === null) return 0;
           return (i - 1 + flatItems.length) % flatItems.length;
         });
+        return;
+      }
+      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        e.preventDefault();
+        setAnimationPlaybackMode("manual");
+        setAnimationPaused(true);
+        setManualAnimationPanel((panel) => (panel === "code" ? "english" : "code"));
       }
     };
     window.addEventListener("keydown", onKey);
@@ -782,7 +789,7 @@ export function PythonInPlainEnglishPage() {
               </div>
 
               <footer className="shrink-0 border-t border-[var(--border)] bg-[var(--surface)]/95 px-4 py-4 backdrop-blur-md sm:px-6">
-                <div className="mx-auto flex max-w-5xl flex-col items-center gap-3">
+                <div className="mx-auto flex max-w-5xl flex-col items-center gap-4">
                   <div className="flex w-full max-w-3xl flex-wrap items-center justify-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-2 py-2 sm:px-3">
                     <div className="inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface)] p-0.5">
                       <button

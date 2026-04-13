@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { LessonTierBadge } from "../components/LessonTierBadge";
 import { Seo } from "../components/Seo";
 import { getAllLessons, modules } from "../content/curriculum";
+import { estimateLessonReadMinutes } from "../lib/lessonReadTime";
 import { getCanonicalBase } from "../lib/site";
 import { breadcrumbJsonLd } from "../lib/structuredData";
 
@@ -91,6 +92,7 @@ export function LearnIndexPage() {
 
             <ul className="mt-5 divide-y divide-[var(--border)] overflow-hidden rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-sm">
               {module.lessons.map((lesson) => {
+                const estimatedReadMinutes = estimateLessonReadMinutes(lesson);
                 return (
                   <li key={lesson.slug}>
                     <Link
@@ -109,9 +111,7 @@ export function LearnIndexPage() {
                         </div>
                       </div>
                       <div className="flex shrink-0 items-center gap-3 text-xs font-semibold text-[var(--muted)]">
-                        {lesson.readingTimeMinutes ? (
-                          <span>~{lesson.readingTimeMinutes} min</span>
-                        ) : null}
+                        <span>~{estimatedReadMinutes} min</span>
                         <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-[var(--text)]">
                           Open →
                         </span>
