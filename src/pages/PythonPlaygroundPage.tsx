@@ -9,6 +9,7 @@ import {
 } from "../content/playgroundChallenges";
 import { ensurePyodide, PYODIDE_VERSION } from "../lib/pyodideSingleton";
 import { evaluatePlaygroundRun, type CheckOutcome } from "../lib/playgroundCheck";
+import { friendlyPlaygroundError } from "../lib/playgroundFriendlyError";
 import { getCanonicalBase } from "../lib/site";
 import { breadcrumbJsonLd } from "../lib/structuredData";
 
@@ -64,7 +65,7 @@ function persistDoneIds(ids: Set<string>) {
 
 type LoadState = "idle" | "loading" | "ready" | "error";
 
-const CATEGORY_ORDER = ["Warm-up", "Logic", "Data"] as const;
+const CATEGORY_ORDER = ["Warm-up", "Logic", "Data", "Stdlib"] as const;
 
 export function PythonPlaygroundPage() {
   const editorId = useId();
@@ -75,6 +76,8 @@ export function PythonPlaygroundPage() {
     readCodeDraft(readActiveChallengeId(), getPlaygroundChallenge(readActiveChallengeId()).starterCode),
   );
   const [hintsOpen, setHintsOpen] = useState(0);
+  /** Whether the hint list is expanded (hints stay “unlocked” when collapsed). */
+  const [hintsVisible, setHintsVisible] = useState(true);
   const [showSolution, setShowSolution] = useState(false);
   const [lastCheck, setLastCheck] = useState<CheckOutcome | null>(null);
 
@@ -104,6 +107,17 @@ export function PythonPlaygroundPage() {
       return { category: cat, items };
     }).filter((g) => g.items.length > 0);
   }, []);
+
+  const scoredMissions = useMemo(
+    () => PLAYGROUND_CHALLENGES.filter((c) => c.successCheck.kind !== "manual"),
+    [],
+  );
+  const passedScoredCount = useMemo(
+    () => scoredMissions.filter((c) => doneIds.has(c.id)).length,
+    [scoredMissions, doneIds],
+  );
+
+  const stderrFriendly = useMemo(() => friendlyPlaygroundError(stderr), [stderr]);
 
   useEffect(() => {
     try {
@@ -137,6 +151,7 @@ export function PythonPlaygroundPage() {
       setChallengeId(id);
       setCode(readCodeDraft(id, next.starterCode));
       setHintsOpen(0);
+      setHintsVisible(true);
       setShowSolution(false);
       setLastCheck(null);
       setStdout("");
@@ -240,6 +255,7 @@ export function PythonPlaygroundPage() {
 
   const revealNextHint = useCallback(() => {
     setHintsOpen((n) => Math.min(n + 1, challenge.hints.length));
+    setHintsVisible(true);
   }, [challenge.hints.length]);
 
   const base = getCanonicalBase();
@@ -287,18 +303,27 @@ export function PythonPlaygroundPage() {
         </p>
       </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(260px,300px)_1fr] lg:items-start">
-        <aside className="space-y-4 lg:sticky lg:top-24">
-          <div className="rounded-card border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
-            <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Mini-missions</p>
-            <p className="mt-1 text-sm leading-relaxed text-[var(--muted)]">
-              One small goal at a time. A check runs after each successful Run (no errors).
+      <div className="mx-auto mt-8 max-w-6xl xl:grid xl:max-w-[1180px] xl:grid-cols-[minmax(200px,240px)_minmax(0,1fr)] xl:items-start xl:gap-8">
+        <aside className="mb-6 xl:sticky xl:top-24 xl:mb-0 xl:self-start">
+          <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-md ring-1 ring-black/5 dark:ring-white/10">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] bg-[var(--surface-2)] px-3 py-2.5 sm:px-4">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">Missions</p>
+              <p className="tabular-nums text-xs font-medium text-[var(--text)]" aria-live="polite">
+                <span className="text-[var(--muted)]">Passed </span>
+                {passedScoredCount}/{scoredMissions.length}
+              </p>
+            </div>
+            <p className="border-b border-[var(--border)] px-3 py-2 text-xs leading-snug text-[var(--muted)] sm:px-4">
+              Choose a goal, then scroll down to the editor on smaller screens.
             </p>
-            <div className="mt-4 space-y-4">
+            <nav
+              className="max-h-[min(40vh,300px)] space-y-3 overflow-y-auto overscroll-y-contain p-2 sm:p-3 xl:max-h-[min(70vh,600px)]"
+              aria-label="Playground missions"
+            >
               {groupedChallenges.map(({ category, items }) => (
                 <div key={category}>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--text)]">{category}</p>
-                  <ul className="mt-2 space-y-1">
+                  <p className="px-1 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">{category}</p>
+                  <ul className="mt-1.5 space-y-1">
                     {items.map((c) => {
                       const active = c.id === challengeId;
                       const done = doneIds.has(c.id);
@@ -308,15 +333,15 @@ export function PythonPlaygroundPage() {
                             type="button"
                             onClick={() => pickChallenge(c.id)}
                             className={[
-                              "flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-sm transition",
+                              "flex w-full items-center gap-1.5 rounded-lg border px-2.5 py-2 text-left text-xs transition sm:text-[13px]",
                               active
-                                ? "border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_12%,var(--surface))] font-semibold text-[var(--text)]"
-                                : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--muted)] hover:border-[var(--accent)]/40 hover:text-[var(--text)]",
+                                ? "border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_14%,var(--surface))] font-semibold text-[var(--text)] shadow-sm"
+                                : "border-transparent bg-[var(--surface-2)] text-[var(--muted)] hover:border-[var(--border)] hover:text-[var(--text)]",
                             ].join(" ")}
                           >
                             <span className="min-w-0 flex-1 leading-snug">{c.title}</span>
                             {done ? (
-                              <span className="shrink-0 text-base text-[var(--callout-tip-border)]" title="Passed check">
+                              <span className="shrink-0 text-sm text-[var(--callout-tip-border)]" title="Passed check">
                                 ✓
                               </span>
                             ) : null}
@@ -327,71 +352,140 @@ export function PythonPlaygroundPage() {
                   </ul>
                 </div>
               ))}
-            </div>
+            </nav>
           </div>
+          <p className="mt-4 hidden text-xs leading-relaxed text-[var(--muted)] xl:block">
+            New to Python? Start with{" "}
+            <Link to="/learn/first-program" className="font-medium text-[var(--text)]">
+              First program
+            </Link>{" "}
+            in the main lessons.
+          </p>
+        </aside>
 
-          <div className="rounded-card border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
-            <h2 className="font-serif text-lg font-semibold text-[var(--text)]">{challenge.title}</h2>
-            <p className="mt-1 text-sm text-[var(--muted)]">{challenge.blurb}</p>
-            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-[var(--text)]">
-              {challenge.objectives.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
-
-            {challenge.successCheck.kind !== "manual" ? (
-              <p className="mt-3 text-xs leading-relaxed text-[var(--muted)]">
-                Tip: we only auto-check Standard output when there is nothing in Errors / stderr.
-              </p>
-            ) : null}
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={revealNextHint}
-                disabled={hintsOpen >= challenge.hints.length}
-                className="inline-flex items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] transition hover:bg-[var(--surface)] disabled:cursor-not-allowed disabled:opacity-40"
+        <div className="flex min-w-0 flex-col gap-6">
+          <section
+            className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-md ring-1 ring-black/5 dark:ring-white/10"
+            aria-labelledby="playground-mission-title"
+          >
+            <header className="border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-4 sm:px-5">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--accent)]">{challenge.category}</p>
+              <h2
+                id="playground-mission-title"
+                className="mt-1 font-serif text-xl font-semibold tracking-tight text-[var(--text)] sm:text-2xl"
               >
-                {hintsOpen >= challenge.hints.length
-                  ? "All hints open"
-                  : hintsOpen === 0
-                    ? "Show first hint"
-                    : `Next hint (${hintsOpen}/${challenge.hints.length})`}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowSolution((s) => !s)}
-                className="inline-flex items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] transition hover:bg-[var(--surface)]"
-              >
-                {showSolution ? "Hide sample answer" : "Peek sample answer"}
-              </button>
-              <button
-                type="button"
-                onClick={loadStarter}
-                className="inline-flex items-center justify-center rounded-full border border-transparent px-3 py-1.5 text-xs font-medium text-[var(--muted)] underline-offset-2 hover:text-[var(--text)] hover:underline"
-              >
-                Reset to starter code
-              </button>
-            </div>
+                {challenge.title}
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">{challenge.blurb}</p>
+            </header>
+            <div className="space-y-4 p-4 sm:p-5">
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Your goal</h3>
+                <ul className="mt-2 list-disc space-y-2 pl-5 text-sm leading-relaxed text-[var(--text)]">
+                  {challenge.objectives.map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              </div>
 
-            {hintsOpen > 0 ? (
-              <ul className="mt-3 space-y-2 rounded-xl border border-[var(--callout-note-border)] bg-[var(--callout-note-bg)] p-3 text-sm leading-relaxed text-[var(--text)]">
-                {challenge.hints.slice(0, hintsOpen).map((h, i) => (
-                  <li key={i}>
-                    <span className="font-semibold text-[var(--accent)]">Hint {i + 1}. </span>
-                    {h}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
+              <div className="rounded-xl border-2 border-[color-mix(in_oklab,var(--accent)_28%,var(--border))] bg-[color-mix(in_oklab,var(--surface-2)_85%,var(--accent)_8%)] p-4 shadow-sm dark:border-[color-mix(in_oklab,var(--accent)_35%,var(--border))]">
+                <p className="text-sm font-semibold text-[var(--text)]">Need help?</p>
+                <p className="mt-1 text-xs leading-relaxed text-[var(--muted)]">
+                  Same mission, same place every time: hints and a sample answer are in this box. The code editor is directly
+                  below.
+                </p>
+                <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowSolution((s) => !s)}
+                    className={
+                      showSolution
+                        ? "inline-flex min-h-[44px] items-center justify-center rounded-full border-2 border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-2)]"
+                        : "inline-flex min-h-[44px] items-center justify-center rounded-full bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--accent-fg)] shadow-sm transition hover:opacity-90"
+                    }
+                  >
+                    {showSolution ? "Hide sample answer" : "Peek sample answer"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={revealNextHint}
+                    disabled={hintsOpen >= challenge.hints.length}
+                    className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-2)] disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {hintsOpen >= challenge.hints.length
+                      ? "All hints open"
+                      : hintsOpen === 0
+                        ? "Show first hint"
+                        : `Next hint (${hintsOpen}/${challenge.hints.length})`}
+                  </button>
+                  {hintsOpen > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => setHintsVisible((v) => !v)}
+                      className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-2)]"
+                    >
+                      {hintsVisible ? "Hide hints" : `Show hints (${hintsOpen})`}
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={loadStarter}
+                    className="inline-flex min-h-[44px] items-center justify-center rounded-full px-4 py-2.5 text-sm font-medium text-[var(--muted)] underline decoration-dotted underline-offset-4 transition hover:text-[var(--text)]"
+                  >
+                    Reset to starter code
+                  </button>
+                </div>
+                {challenge.successCheck.kind !== "manual" ? (
+                  <p className="mt-3 border-t border-[var(--border)] pt-3 text-xs leading-relaxed text-[var(--muted)]">
+                    Auto-check runs on <span className="font-medium text-[var(--text)]">Standard output</span> only when{" "}
+                    <span className="font-medium text-[var(--text)]">Errors / stderr</span> is empty.
+                  </p>
+                ) : null}
+              </div>
 
             {showSolution ? (
-              <div className="mt-3 rounded-xl border border-[var(--border)] bg-[var(--code-bg)] p-3">
+              <div className="mt-3 rounded-xl border border-[var(--border)] bg-[var(--code-bg)] p-3 shadow-inner">
                 <p className="text-xs font-semibold text-[var(--code-fg)]/80">Sample answer (many solutions are valid)</p>
                 <pre className="mt-2 overflow-x-auto whitespace-pre-wrap font-mono text-xs leading-relaxed text-[var(--code-fg)]">
                   {challenge.solutionCode}
                 </pre>
               </div>
+            ) : null}
+
+            {hintsOpen > 0 && hintsVisible ? (
+              <div className="mt-3 overflow-hidden rounded-xl border border-[var(--callout-note-border)] bg-[var(--callout-note-bg)]">
+                <div className="flex items-center justify-between gap-2 border-b border-[var(--callout-note-border)] px-3 py-2">
+                  <span className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Hints</span>
+                  <button
+                    type="button"
+                    onClick={() => setHintsVisible(false)}
+                    className="shrink-0 rounded-lg px-2 py-1 text-xs font-semibold text-[var(--accent)] transition hover:bg-[color-mix(in_oklab,var(--accent)_12%,transparent)]"
+                    aria-label="Hide hints"
+                  >
+                    Hide
+                  </button>
+                </div>
+                <ul className="space-y-2 p-3 text-sm leading-relaxed text-[var(--text)]">
+                  {challenge.hints.slice(0, hintsOpen).map((h, i) => (
+                    <li key={i}>
+                      <span className="font-semibold text-[var(--accent)]">Hint {i + 1}. </span>
+                      {h}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+            {hintsOpen > 0 && !hintsVisible ? (
+              <p className="mt-3 text-sm text-[var(--muted)]">
+                {hintsOpen} hint{hintsOpen === 1 ? "" : "s"} hidden.{" "}
+                <button
+                  type="button"
+                  onClick={() => setHintsVisible(true)}
+                  className="font-semibold text-[var(--accent)] underline-offset-2 hover:underline"
+                >
+                  Show hints
+                </button>
+              </p>
             ) : null}
 
             {lastCheck === "pass" ? (
@@ -414,89 +508,138 @@ export function PythonPlaygroundPage() {
                 Free canvas: no auto-check here. Experiment freely or pick a mini-mission for a concrete target.
               </p>
             ) : null}
-          </div>
+            </div>
+          </section>
 
-          <p className="text-xs leading-relaxed text-[var(--muted)]">
-            Want the full story?{" "}
+          <section
+            className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-md ring-1 ring-black/5 dark:ring-white/10"
+            aria-labelledby="playground-editor-heading"
+          >
+            <div className="flex flex-col gap-3 border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-4">
+              <div className="min-w-0">
+                <h2 id="playground-editor-heading" className="text-base font-semibold text-[var(--text)]">
+                  Code editor
+                </h2>
+                <p className="mt-0.5 text-xs leading-relaxed text-[var(--muted)]">
+                  Type below, then <span className="font-medium text-[var(--text)]">Run</span>. Output appears under the
+                  editor.
+                </p>
+              </div>
+              <div className="flex shrink-0 flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => void run()}
+                  disabled={busy}
+                  className="inline-flex min-h-[44px] min-w-[5.5rem] items-center justify-center rounded-full bg-[var(--text)] px-6 py-2.5 text-sm font-semibold text-[var(--bg)] shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {runState === "running" ? "Running…" : loadState === "loading" ? "Loading…" : "Run"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void preload()}
+                  disabled={loadState === "loading" || loadState === "ready"}
+                  className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface)] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {loadState === "ready" ? "Ready" : "Preload Pyodide"}
+                </button>
+              </div>
+            </div>
+
+            <div className="p-4 sm:p-5">
+              {loadState === "idle" ? (
+                <p className="mb-4 rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--muted)]">
+                  First visit: <span className="font-medium text-[var(--text)]">Run</span> downloads Pyodide once, then your
+                  browser caches it.
+                </p>
+              ) : null}
+
+              {loadError ? (
+                <p className="mb-4 rounded-lg border border-[var(--callout-warn-border)] bg-[var(--callout-warn-bg)] px-3 py-2 text-sm text-[var(--text)]">
+                  Could not load Pyodide: {loadError}
+                </p>
+              ) : null}
+
+              <label htmlFor={editorId} className="sr-only">
+                Python code
+              </label>
+              <textarea
+                id={editorId}
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                spellCheck={false}
+                className="min-h-[280px] w-full resize-y rounded-xl border-2 border-[var(--border)] bg-[var(--code-bg)] px-4 py-3 font-mono text-sm leading-relaxed text-[var(--code-fg)] shadow-inner outline-none transition-colors focus:border-[var(--accent)] focus:ring-2 focus:ring-[color-mix(in_oklab,var(--accent)_35%,transparent)]"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+              />
+
+              <div className="mt-6 grid gap-4 lg:grid-cols-2">
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Standard output</h3>
+                  <pre
+                    className="mt-2 min-h-[140px] overflow-x-auto whitespace-pre-wrap rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-3 font-mono text-sm text-[var(--text)]"
+                    aria-live="polite"
+                  >
+                    {stdout || (runState === "running" ? "…" : "—")}
+                  </pre>
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Problems</h3>
+                  {stderr.trim() ? (
+                    <div className="mt-2 min-h-[140px] overflow-hidden rounded-xl border border-[var(--callout-warn-border)] bg-[var(--callout-warn-bg)]">
+                      {stderrFriendly ? (
+                        <div className="border-b border-[var(--callout-warn-border)] p-3">
+                          <p className="text-xs font-bold uppercase tracking-wide text-[var(--text)]">
+                            Plain-language summary
+                          </p>
+                          <p className="mt-2 text-sm leading-relaxed text-[var(--text)]">{stderrFriendly}</p>
+                          <details className="group mt-3 rounded-lg border border-[var(--border)] bg-[var(--surface)]">
+                            <summary className="cursor-pointer list-none px-3 py-2 text-xs font-semibold text-[var(--accent)] marker:content-none [&::-webkit-details-marker]:hidden">
+                              <span className="underline decoration-dotted underline-offset-2">
+                                Show technical details
+                              </span>
+                            </summary>
+                            <pre className="max-h-52 overflow-auto border-t border-[var(--border)] p-3 font-mono text-[11px] leading-relaxed text-[var(--muted)]">
+                              {stderr}
+                            </pre>
+                          </details>
+                        </div>
+                      ) : (
+                        <pre
+                          className="max-h-60 overflow-auto whitespace-pre-wrap p-3 font-mono text-xs text-[var(--text)]"
+                          aria-live="assertive"
+                        >
+                          {stderr}
+                        </pre>
+                      )}
+                    </div>
+                  ) : (
+                    <pre
+                      className="mt-2 min-h-[140px] overflow-x-auto whitespace-pre-wrap rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-3 font-mono text-sm text-[var(--muted)]"
+                      aria-live="assertive"
+                    >
+                      —
+                    </pre>
+                  )}
+                </div>
+              </div>
+
+              <p className="mt-4 text-xs leading-relaxed text-[var(--muted)]">
+                This is real Python: functions, loops, <code className="inline-code">import math</code>,{" "}
+                <code className="inline-code">json</code>, and in-memory files with{" "}
+                <code className="inline-code">open()</code> all work. Missions check your answer from Standard output, so
+                use <code className="inline-code">print</code> where the prompt asks. Standard library only (no{" "}
+                <code className="inline-code">pip install</code>). <code className="inline-code">input()</code> does not
+                work in this browser runtime. Long loops can freeze the tab.
+              </p>
+            </div>
+          </section>
+
+          <p className="text-xs leading-relaxed text-[var(--muted)] xl:hidden">
             <Link to="/learn/first-program" className="font-medium text-[var(--text)]">
               First program
             </Link>{" "}
-            and the rest of the course explain every idea step by step.
-          </p>
-        </aside>
-
-        <div className="rounded-card border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm sm:p-5">
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => void run()}
-              disabled={busy}
-              className="inline-flex items-center justify-center rounded-full bg-[var(--text)] px-5 py-2.5 text-sm font-semibold text-[var(--bg)] shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {runState === "running" ? "Running…" : loadState === "loading" ? "Loading…" : "Run"}
-            </button>
-            <button
-              type="button"
-              onClick={() => void preload()}
-              disabled={loadState === "loading" || loadState === "ready"}
-              className="inline-flex items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface)] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {loadState === "ready" ? "Ready" : "Preload Pyodide"}
-            </button>
-          </div>
-
-          {loadState === "idle" ? (
-            <p className="mt-3 text-sm text-[var(--muted)]">
-              Click <span className="font-medium text-[var(--text)]">Run</span> to load Pyodide the first time, or preload
-              first if you prefer.
-            </p>
-          ) : null}
-
-          {loadError ? (
-            <p className="mt-3 rounded-lg border border-[var(--callout-warn-border)] bg-[var(--callout-warn-bg)] px-3 py-2 text-sm text-[var(--text)]">
-              Could not load Pyodide: {loadError}
-            </p>
-          ) : null}
-
-          <label htmlFor={editorId} className="mt-5 block text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
-            Your code
-          </label>
-          <textarea
-            id={editorId}
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            spellCheck={false}
-            className="mt-2 min-h-[260px] w-full resize-y rounded-xl border border-[var(--border)] bg-[var(--code-bg)] px-4 py-3 font-mono text-sm leading-relaxed text-[var(--code-fg)] shadow-inner outline-none ring-[var(--accent)] focus:ring-2"
-            autoComplete="off"
-            autoCorrect="off"
-            autoCapitalize="off"
-          />
-
-          <div className="mt-6 grid gap-4 lg:grid-cols-2">
-            <div>
-              <h2 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Standard output</h2>
-              <pre
-                className="mt-2 min-h-[120px] overflow-x-auto whitespace-pre-wrap rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-3 font-mono text-sm text-[var(--text)]"
-                aria-live="polite"
-              >
-                {stdout || (runState === "running" ? "…" : "—")}
-              </pre>
-            </div>
-            <div>
-              <h2 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Errors / stderr</h2>
-              <pre
-                className="mt-2 min-h-[120px] overflow-x-auto whitespace-pre-wrap rounded-xl border border-[var(--callout-warn-border)] bg-[var(--callout-warn-bg)] p-3 font-mono text-sm text-[var(--text)]"
-                aria-live="assertive"
-              >
-                {stderr || "—"}
-              </pre>
-            </div>
-          </div>
-
-          <p className="mt-4 text-xs leading-relaxed text-[var(--muted)]">
-            Standard library only (no <code className="inline-code">pip install</code> on this page). Avoid{" "}
-            <code className="inline-code">input()</code>
-            : the browser runtime does not provide an interactive terminal. Long loops can freeze the tab.
+            in the main course walks through every idea step by step.
           </p>
         </div>
       </div>
