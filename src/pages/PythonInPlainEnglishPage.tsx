@@ -182,6 +182,7 @@ export function PythonInPlainEnglishPage() {
   const [quizScore, setQuizScore] = useState(0);
   const [quizSelectedCardId, setQuizSelectedCardId] = useState<string | null>(null);
   const [quizAnswered, setQuizAnswered] = useState(false);
+  const [quizJumpInput, setQuizJumpInput] = useState("");
 
   useEffect(() => {
     try {
@@ -297,6 +298,16 @@ export function PythonInPlainEnglishPage() {
     setAnimationIndex(clamped - 1);
     setAnimationJumpInput(String(clamped));
   }, [animationJumpInput, flatItems.length]);
+
+  const applyQuizJumpToQuestion = useCallback(() => {
+    const parsed = Number.parseInt(quizJumpInput.trim(), 10);
+    if (Number.isNaN(parsed)) return;
+    const clamped = Math.max(1, Math.min(flatItems.length, parsed));
+    setQuizIndex(clamped - 1);
+    setQuizJumpInput(String(clamped));
+    setQuizSelectedCardId(null);
+    setQuizAnswered(false);
+  }, [flatItems.length, quizJumpInput]);
 
   const onArticleBackgroundClick = useCallback(
     (globalIndex: number, e: React.MouseEvent) => {
@@ -421,6 +432,11 @@ export function PythonInPlainEnglishPage() {
     if (animationIndex === null) return;
     setAnimationJumpInput(String(animationIndex + 1));
   }, [animationIndex]);
+
+  useEffect(() => {
+    if (quizIndex === null) return;
+    setQuizJumpInput(String(quizIndex + 1));
+  }, [quizIndex]);
 
   useEffect(() => {
     if (!focusModeActive) return;
@@ -1243,7 +1259,7 @@ export function PythonInPlainEnglishPage() {
                 </button>
               </header>
               <div className="min-h-0 flex-1 overflow-y-auto">
-                <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+                <div className="mx-auto flex min-h-full w-full max-w-5xl items-center px-4 py-6 sm:px-6 lg:px-8">
                   <article className="overflow-hidden rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-lg ring-1 ring-black/5 dark:ring-white/10">
                     <p className="border-b border-[var(--border)] bg-[var(--surface-2)]/80 px-5 py-3 text-sm font-bold tracking-wide text-[var(--muted)] uppercase">
                       Python
@@ -1302,31 +1318,58 @@ export function PythonInPlainEnglishPage() {
                 </div>
               </div>
               <footer className="shrink-0 border-t border-[var(--border)] bg-[var(--surface)]/95 px-4 py-4 backdrop-blur-md sm:px-6">
-                <div className="mx-auto flex w-full max-w-5xl gap-2">
-                  <button
-                    type="button"
-                    className="min-h-11 flex-1 rounded-full border border-[var(--border)] bg-[var(--surface-2)] py-3 text-sm font-bold text-[var(--text)] transition hover:bg-[var(--surface)] disabled:opacity-40"
-                    onClick={() => {
-                      setQuizIndex((prev) => (prev === null ? 0 : Math.max(0, prev - 1)));
-                      setQuizSelectedCardId(null);
-                      setQuizAnswered(false);
-                    }}
-                    disabled={quizIndex <= 0}
+                <div className="mx-auto flex w-full max-w-5xl flex-col gap-2 sm:flex-row sm:items-center">
+                  <div className="flex flex-1 gap-2">
+                    <button
+                      type="button"
+                      className="min-h-11 flex-1 rounded-full border border-[var(--border)] bg-[var(--surface-2)] py-3 text-sm font-bold text-[var(--text)] transition hover:bg-[var(--surface)] disabled:opacity-40"
+                      onClick={() => {
+                        setQuizIndex((prev) => (prev === null ? 0 : Math.max(0, prev - 1)));
+                        setQuizSelectedCardId(null);
+                        setQuizAnswered(false);
+                      }}
+                      disabled={quizIndex <= 0}
+                    >
+                      ← Previous
+                    </button>
+                    <button
+                      type="button"
+                      className="min-h-11 flex-1 rounded-full bg-[var(--text)] py-3 text-sm font-bold text-[var(--bg)] transition hover:opacity-95 disabled:opacity-40"
+                      onClick={() => {
+                        setQuizIndex((prev) => (prev === null ? 0 : Math.min(flatItems.length - 1, prev + 1)));
+                        setQuizSelectedCardId(null);
+                        setQuizAnswered(false);
+                      }}
+                      disabled={!quizAnswered || quizIndex >= flatItems.length - 1}
+                    >
+                      Next question →
+                    </button>
+                  </div>
+                  <label
+                    htmlFor="quiz-jump-input"
+                    className="inline-flex items-center justify-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold text-[var(--muted)] sm:text-sm"
                   >
-                    ← Previous
-                  </button>
-                  <button
-                    type="button"
-                    className="min-h-11 flex-1 rounded-full bg-[var(--text)] py-3 text-sm font-bold text-[var(--bg)] transition hover:opacity-95 disabled:opacity-40"
-                    onClick={() => {
-                      setQuizIndex((prev) => (prev === null ? 0 : Math.min(flatItems.length - 1, prev + 1)));
-                      setQuizSelectedCardId(null);
-                      setQuizAnswered(false);
-                    }}
-                    disabled={!quizAnswered || quizIndex >= flatItems.length - 1}
-                  >
-                    Next question →
-                  </button>
+                    <span>Question</span>
+                    <input
+                      id="quiz-jump-input"
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={flatItems.length}
+                      value={quizJumpInput}
+                      onChange={(e) => setQuizJumpInput(e.target.value)}
+                      onBlur={applyQuizJumpToQuestion}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          applyQuizJumpToQuestion();
+                        }
+                      }}
+                      className="h-7 w-14 rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-2 text-center text-xs text-[var(--text)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/25 sm:h-8 sm:w-16 sm:text-sm"
+                      aria-label={`Question number from 1 to ${flatItems.length}`}
+                    />
+                    <span className="font-mono text-[11px] text-[var(--text)] sm:text-xs">/ {flatItems.length}</span>
+                  </label>
                 </div>
               </footer>
             </div>,
