@@ -310,7 +310,7 @@ export const lessonCausalQuestionsBeforePackages: Lesson = {
   title: "Causal questions before fancy packages",
   subtitle: subAdv,
   summary:
-    "Packages run math. Causal claims need designs: what would you compare if you could randomize? Draw the directed graph of how you think variables influence each other before you install new tools.",
+    "Vocabulary and habits for asking whether a claim is causal, not a full causal inference course. Packages run math; identification lives in study design, assumptions, and domain knowledge. Sketch what you would compare under randomization and draw a DAG before reaching for new tools.",
   tier: "advanced",
   isPractical: true,
   readingTimeMinutes: 18,
@@ -334,6 +334,11 @@ export const lessonCausalQuestionsBeforePackages: Lesson = {
         "Write a critique without new installs",
       ],
     ),
+    {
+      type: "callout",
+      variant: "warn",
+      text: "Expect to study causal inference properly (books, coursework, advisors) if your job depends on causal claims. This lesson orients you so API tutorials make sense; it cannot replace careful identification work.",
+    },
     {
       type: "h2",
       text: "Selection vs confounding",
@@ -371,7 +376,7 @@ export const lessonPredictionVsExplanationMindset: Lesson = {
   title: "Prediction mindset vs explanation mindset",
   subtitle: subInt,
   summary:
-    "Prediction scores how well you fill unknown labels. Explanation asks which inputs move the outcome under a model's assumptions. One workflow can support both, but the metrics differ.",
+    "A short map of two goals: prediction scores how well you fill unknown labels; explanation asks which inputs move the outcome under a model's assumptions. One workflow can support both, but the metrics and pitfalls differ. Follow with dedicated ML coursework if you build production models.",
   tier: "intermediate",
   isPractical: true,
   readingTimeMinutes: 16,
@@ -395,6 +400,11 @@ export const lessonPredictionVsExplanationMindset: Lesson = {
         "Link to calibration and thresholds",
       ],
     ),
+    {
+      type: "callout",
+      variant: "note",
+      text: "Machine learning is a large field. These applied lessons stress honest evaluation and clear questions, not comprehensive theory (optimization, generalization bounds, architecture design, etc.).",
+    },
     {
       type: "h2",
       text: "Same model, two questions",
@@ -427,7 +437,7 @@ export const lessonScikitLearnPipelines: Lesson = {
   title: "scikit-learn pipelines and preprocessing",
   subtitle: subInt,
   summary:
-    "A `Pipeline` chains steps so preprocessing parameters are learned only from training folds during cross-validation. That prevents subtle leakage where scaling used test statistics.",
+    "Hands-on pattern: a `Pipeline` chains steps so preprocessing parameters are learned only from training data during cross-validation, which blocks a common leakage mistake. Enough to follow sklearn docs; model choice and tuning strategy still need deeper study.",
   tier: "intermediate",
   isPractical: true,
   readingTimeMinutes: 20,
@@ -485,7 +495,7 @@ export const lessonMlEvaluationAndLeakage: Lesson = {
   title: "Evaluation, leakage, and reality checks",
   subtitle: subAdv,
   summary:
-    "Leakage makes validation scores lie. Temporal splits, group-wise splits, and careful feature timing defend against optimism you cannot spend in production.",
+    "Why naive validation lies: leakage from future data, duplicated rows, or mistimed features. Sketch time-aware and group-wise splits and always compare to a dumb baseline. A primer on evaluation hygiene, not a full experimental-design course.",
   tier: "advanced",
   isPractical: true,
   readingTimeMinutes: 18,
@@ -509,6 +519,11 @@ export const lessonMlEvaluationAndLeakage: Lesson = {
         "Compare honest vs optimistic validation",
       ],
     ),
+    {
+      type: "callout",
+      variant: "note",
+      text: "Teams shipping ML spend serious effort on data contracts, monitoring drift, and offline vs online metrics. Treat this lesson as a checklist starter, not the end of the story.",
+    },
     {
       type: "h2",
       text: "Classic leakage examples",

@@ -193,7 +193,7 @@ const decks: FlashcardDeck[] = [
       {
         id: "ff-3",
         front: "What does return do?",
-        back: "It ends the function call and sends a value back to the caller. If you omit return, the function returns None.",
+        back: "It exits the function call immediately. With an expression, that value becomes the call’s result; bare return or no return path means the call evaluates to None. Code in finally still runs on the way out.",
       },
       {
         id: "ff-4",

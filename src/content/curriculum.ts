@@ -337,11 +337,15 @@ const variablesAndNames: Lesson = {
     },
     {
       type: "h3",
-      text: "Tiny analogy",
+      text: "How to picture a variable",
     },
     {
       type: "p",
-      text: "Think of a variable like a sticky note on a box. The sticky note is the name; the box holds the value. Python lets you swap what is inside the box, while the sticky note stays in place.",
+      text: "In Python, a variable name is a label that refers to an object in memory. Assignment moves that label: `a = 1` then `a = 2` means the name `a` now refers to a different object, not that the integer 1 was edited in place.",
+    },
+    {
+      type: "p",
+      text: "Some people still imagine a name as a sticky note that you move from one value to another. That image helps for numbers and short strings, but it breaks down for mutable values: two names can refer to the same list, so a change through one name shows up through the other. When you reach lists and dicts, think \"names refer to objects\" first.",
     },
     {
       type: "code",
@@ -372,7 +376,7 @@ const variablesAndNames: Lesson = {
     {
       type: "callout",
       variant: "note",
-      text: "Later you will learn that variables are actually names bound to objects. For now, the “labeled box” mental model is enough to write correct programs.",
+      text: "If you only remember one idea from this lesson, remember: assignment attaches a name to an object. The next lessons on lists and dicts show why that matters when objects can change.",
     },
   ],
 };
@@ -408,7 +412,8 @@ export const modules: Module[] = [
   {
     id: "data",
     title: "Data in memory",
-    blurb: "Lists, tuples, dictionaries, and sets: how Python groups information.",
+    blurb:
+      "Lists, tuples, dictionaries, and sets: ordered sequences, key lookups, and uniqueness. We use plain language, then tie it to how Python actually stores references.",
     lessons: [
       lessonLists,
       lessonTuples,
@@ -419,7 +424,8 @@ export const modules: Module[] = [
   {
     id: "functions-modules",
     title: "Functions and modules",
-    blurb: "Reuse logic, organize files, and read stack traces calmly.",
+    blurb:
+      "Define and call functions, return values correctly, understand scope (LEGB), import modules without surprises.",
     lessons: [lessonFunctionsBasics, lessonImports],
   },
   {
@@ -507,7 +513,7 @@ export const modules: Module[] = [
     id: "econometrics-economics",
     title: "Econometrics and quantitative economics",
     blurb:
-      "Models for measurement, time and panels, and causal questions before fancy machinery.",
+      "Orientation to workflows and vocabulary: measurement, time series, and how to frame causal questions. Not a substitute for a full econometrics or causal inference course.",
     lessons: [
       lessonLinearModelsInferenceStatsmodels,
       lessonTimeSeriesAndPanelsIntro,
@@ -518,7 +524,7 @@ export const modules: Module[] = [
     id: "policy-evaluation",
     title: "Policy evaluation",
     blurb:
-      "Causal design, implementation in Python, and clear communication of policy effects with uncertainty.",
+      "How to structure evaluation in code and in writing. Assumes you will deepen identification and study design elsewhere; these lessons focus on clarity and honest limits.",
     lessons: [
       lessonPolicyEvaluationMethodology,
       lessonPolicyEvaluationWithPython,
@@ -529,7 +535,7 @@ export const modules: Module[] = [
     id: "machine-learning-practice",
     title: "Machine learning in practice",
     blurb:
-      "Prediction mindset, scikit-learn-shaped code, and evaluation that survives deployment.",
+      "First steps: prediction vs explanation, pipelines, and leakage-aware validation. Enough to read tutorials and write careful prototypes; expect to study ML theory and practice beyond this track.",
     lessons: [
       lessonPredictionVsExplanationMindset,
       lessonScikitLearnPipelines,

@@ -136,8 +136,8 @@ while n < 3:
 print(square(5))`,
     bullets: [
       "Define a small recipe called square. It expects one input you will call x.",
-      "The recipe answers with x multiplied by itself.",
-      "Later, run the recipe with the number 5 plugged in, and print whatever answer comes back (25).",
+      "`return` stops the recipe right there and hands the caller the value of the expression after it (here x times x).",
+      "Later, run the recipe with the number 5 plugged in. The call `square(5)` evaluates to 25, which `print` displays.",
     ],
   },
   {
@@ -175,9 +175,9 @@ print(len(words))`,
     code: `prices = {"apple": 1.2, "banana": 0.5}
 print(prices["apple"])`,
     bullets: [
-      "Keep a small table: apple maps to 1.2, banana maps to 0.5.",
-      "Look up the entry for apple and print that number.",
-      "If you asked for a key that is not in the table, Python would raise an error unless you use a safer lookup pattern.",
+      "A dict maps each key to one value, like a two-column lookup table (not alphabetical like a paper dictionary, and keys can be many immutable types, not only strings).",
+      "Look up the entry for apple with bracket syntax and print that number.",
+      "If you asked for a key that is not in the dict, Python raises `KeyError` unless you use `.get` or another safe pattern.",
     ],
   },
   {
@@ -563,7 +563,7 @@ for name, age in ages.items():
   {
     id: "shallow-copy-list",
     level: 2,
-    title: "Copying the list box but not deep cloning nested lists",
+    title: "Shallow copy of a list: new list, same inner objects",
     code: `a = [1, 2, 3]
 b = a[:]
 b[0] = 99

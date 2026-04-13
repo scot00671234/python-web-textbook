@@ -269,7 +269,8 @@ while n < 3:
     id: "return",
     term: "return",
     category: "Functions",
-    meaning: "Sends a value back from a function to the caller.",
+    meaning:
+      "Ends the current function call immediately. With an expression, that expression becomes the call’s value; with no expression, or if execution falls off the end of the function, the call’s value is `None`.",
     example: `def square(x):
     return x * x`,
     related: ["function"],
@@ -289,7 +290,7 @@ print(list(map(lambda n: n * 2, nums)))`,
     term: "scope",
     category: "Functions",
     meaning:
-      "Where a variable name is visible. Local names exist inside a function unless explicitly shared.",
+      "The region where a name binding is visible. Python looks up bare names using LEGB order: Local, Enclosing (nested functions), Global (module), Builtins. Assigning inside a function creates a local binding for the whole function unless you use `global` or `nonlocal`.",
     example: `x = 10
 def show():
     x = 99

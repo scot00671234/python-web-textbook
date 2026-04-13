@@ -348,6 +348,15 @@ export function HomePage() {
               </span>
               <Link
                 className="font-medium text-[var(--muted)] no-underline hover:text-[var(--text)]"
+                to="/learn/playground"
+              >
+                Playground
+              </Link>
+              <span className="hidden text-[var(--border)] sm:inline" aria-hidden>
+                ·
+              </span>
+              <Link
+                className="font-medium text-[var(--muted)] no-underline hover:text-[var(--text)]"
                 to={LESSON_3}
               >
                 Skip to first code

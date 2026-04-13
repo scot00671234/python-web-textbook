@@ -72,6 +72,14 @@ export function SiteHeader() {
               Dictionary
             </NavLink>
             <NavLink
+              to="/learn/playground"
+              className={({ isActive }) =>
+                [linkClass, isActive ? activeClass : ""].join(" ")
+              }
+            >
+              Playground
+            </NavLink>
+            <NavLink
               to="/learn"
               end
               className={({ isActive }) =>

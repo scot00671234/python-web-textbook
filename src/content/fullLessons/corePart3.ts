@@ -38,6 +38,11 @@ export const lessonDictionaries: Lesson = {
       code: `scores = {"Ada": 99, "Lin": 88}\nscores["Lin"] = 90\nprint(scores.get("Sam", 0))`,
     },
     {
+      type: "callout",
+      variant: "note",
+      text: "Paper dictionaries are alphabetized and fuzzy to flip through. A Python dict is a hash map: you jump straight to an exact key, keys must be hashable (often strings, numbers, tuples of immutables), and CPython keeps insertion order. Use the word-to-definition story as a first-day hint, then lean on this behavior.",
+    },
+    {
       type: "h2",
       text: "Counting pattern",
     },
@@ -129,14 +134,16 @@ export const lessonFunctionsBasics: Lesson = {
   keyTakeaways: [
     "Use `None` as a sentinel default, then assign `items = items if items is not None else []` (or `or []` only when empty list is acceptable).",
     "Keyword arguments improve readability at call sites: `save(path, overwrite=True)`.",
+    "`return expr` exits the current call immediately and makes the call’s value `expr`; bare `return` or falling off the end returns `None`.",
+    "Name resolution uses LEGB (local, enclosing, global, builtins). Assigning inside a function binds a local name for the whole function unless you use `global` or `nonlocal`.",
   ],
   sections: [
     ...ql(
-      "A function names a chunk of work; call it with arguments; `return` hands a value back.",
+      "A function names a chunk of work; you call it with arguments; `return` ends the call and optionally passes a value to the caller.",
       [
         "Define and call a small function",
         "Learn the mutable-default trap",
-        "Scope in one paragraph",
+        "How Python looks up names across scopes",
       ],
     ),
     {
@@ -151,11 +158,31 @@ export const lessonFunctionsBasics: Lesson = {
     },
     {
       type: "h2",
-      text: "Scope (intro)",
+      text: "What `return` really does",
     },
     {
       type: "p",
-      text: "Assignment inside a function creates a local name unless declared `global` or `nonlocal`. Reading a name searches outward through enclosing scopes.",
+      text: "When Python hits `return`, it stops executing the function body right away and resumes the caller. The expression after `return` (if any) becomes the value of the call, so `y = f()` stores whatever `f` returned. If you write `return` with nothing after it, or you run out of body without hitting `return`, the call’s value is `None`.",
+    },
+    {
+      type: "callout",
+      variant: "note",
+      text: "`return` is not a print or a log: the caller must use the value (assign it, pass it, print it, etc.). Side effects like `print` inside the function still run before `return` on that path.",
+    },
+    {
+      type: "h2",
+      text: "Scope: where names mean what",
+    },
+    {
+      type: "p",
+      text: "Python resolves a bare name using LEGB: Local (inside the current function), Enclosing (outer functions, for nested defs), Global (module level), Builtins (`len`, `str`, …).",
+    },
+    {
+      type: "ul",
+      items: [
+        "If you assign to a name anywhere in a function, Python treats that name as local to the whole function unless you declare `global x` or `nonlocal x`. That matters if you read `x` before assigning: you can get `UnboundLocalError` even when a global `x` exists.",
+        "`global` and `nonlocal` are rare in application code; prefer passing values in and returning results so data flow stays obvious.",
+      ],
     },
     {
       type: "practice",

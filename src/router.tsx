@@ -7,6 +7,7 @@ import { FlashcardsPage } from "./pages/FlashcardsPage";
 import { PythonInPlainEnglishPage } from "./pages/PythonInPlainEnglishPage";
 import { PythonDictionaryPage } from "./pages/PythonDictionaryPage";
 import { LessonPage } from "./pages/LessonPage";
+import { PythonPlaygroundPage } from "./pages/PythonPlaygroundPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { SearchPage } from "./pages/SearchPage";
 import { BlogIndexPage } from "./pages/BlogIndexPage";
@@ -28,6 +29,7 @@ export const router = createBrowserRouter([
           { path: "flashcards", element: <FlashcardsPage /> },
           { path: "python-in-plain-english", element: <PythonInPlainEnglishPage /> },
           { path: "python-dictionary", element: <PythonDictionaryPage /> },
+          { path: "playground", element: <PythonPlaygroundPage /> },
           { path: ":slug", element: <LessonPage /> },
         ],
       },

@@ -35,7 +35,11 @@ export function LearnIndexPage() {
         <p className="mt-4 text-base leading-relaxed text-[var(--muted)]">
           Scroll to browse every module and work top to bottom inside each
           section. When you see &quot;Lab&quot; or &quot;Your turn,&quot; try the
-          smallest version at the keyboard.
+          smallest version at the keyboard. For a full in-browser interpreter, open the{" "}
+          <Link to="/learn/playground" className="font-medium text-[var(--text)]">
+            Python playground
+          </Link>
+          .
         </p>
       </header>
 

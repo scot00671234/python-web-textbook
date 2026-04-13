@@ -56,6 +56,9 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react(), seoArtifactsPlugin(siteUrl)],
+    optimizeDeps: {
+      exclude: ["pyodide"],
+    },
     resolve: {
       alias: {
         "@": path.resolve(dirname, "./src"),
