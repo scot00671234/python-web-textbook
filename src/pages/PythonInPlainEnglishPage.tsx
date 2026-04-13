@@ -377,26 +377,40 @@ export function PythonInPlainEnglishPage() {
   }, [flatItems.length, manualAnimationPanel]);
 
   const stepAnimationForward = useCallback(() => {
+    if (!flatItems.length) return;
     if (animationPlaybackMode === "manual") {
       stepManualAnimationForward();
+      return;
+    }
+    const showingCode = animationPhase === "typingCode" || animationPhase === "holdCode";
+    if (showingCode) {
+      setAnimationPhase("typingEnglish");
+      setAnimationChars(0);
       return;
     }
     setAnimationIndex((i) => {
       if (i === null) return 0;
       return (i + 1) % flatItems.length;
     });
-  }, [animationPlaybackMode, flatItems.length, stepManualAnimationForward]);
+  }, [animationPhase, animationPlaybackMode, flatItems.length, stepManualAnimationForward]);
 
   const stepAnimationBackward = useCallback(() => {
+    if (!flatItems.length) return;
     if (animationPlaybackMode === "manual") {
       stepManualAnimationBackward();
+      return;
+    }
+    const showingEnglish = animationPhase === "typingEnglish" || animationPhase === "holdEnglish";
+    if (showingEnglish) {
+      setAnimationPhase("typingCode");
+      setAnimationChars(0);
       return;
     }
     setAnimationIndex((i) => {
       if (i === null) return 0;
       return (i - 1 + flatItems.length) % flatItems.length;
     });
-  }, [animationPlaybackMode, flatItems.length, stepManualAnimationBackward]);
+  }, [animationPhase, animationPlaybackMode, flatItems.length, stepManualAnimationBackward]);
 
   useEffect(() => {
     if (browseIndex === null) return;
@@ -1161,7 +1175,7 @@ export function PythonInPlainEnglishPage() {
                         <ul className="mt-2 space-y-1.5 leading-relaxed">
                           <li>
                             <span className="font-semibold text-[var(--text)]">← / →</span>: previous / next step
-                            (in Manual: Python, then English, then next card)
+                            (Python, then English, then next card)
                           </li>
                           <li>
                             <span className="font-semibold text-[var(--text)]">↑ / ↓</span>: toggle Python and
@@ -1180,7 +1194,7 @@ export function PythonInPlainEnglishPage() {
                       type="button"
                       className="min-h-11 flex-1 rounded-full border border-[var(--border)] bg-[var(--surface-2)] py-3 text-sm font-bold text-[var(--text)] transition hover:bg-[var(--surface)]"
                       onClick={stepAnimationBackward}
-                      aria-label="Previous animation card"
+                      aria-label="Previous animation step"
                     >
                       ← Previous
                     </button>
@@ -1188,7 +1202,7 @@ export function PythonInPlainEnglishPage() {
                       type="button"
                       className="min-h-11 flex-1 rounded-full bg-[var(--text)] py-3 text-sm font-bold text-[var(--bg)] transition hover:opacity-95"
                       onClick={stepAnimationForward}
-                      aria-label="Next animation card"
+                      aria-label="Next animation step"
                     >
                       Next →
                     </button>
