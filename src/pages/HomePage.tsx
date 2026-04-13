@@ -1,17 +1,248 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Seo } from "../components/Seo";
 import { HOME_FAQ_ITEMS } from "../content/homeFaq";
 import { getAllLessons, modules } from "../content/curriculum";
+import { getFlashcardDecks } from "../content/flashcards";
+import { getPlainEnglishCards } from "../content/pythonInPlainEnglish";
 import { DEFAULT_DESCRIPTION, SITE_NAME, getCanonicalBase } from "../lib/site";
 import { faqPageJsonLd, organizationJsonLd, websiteJsonLd } from "../lib/structuredData";
 
 const LESSON_1 = "/learn/how-to-use-this-site";
-const LESSON_2 = "/learn/what-is-python";
 const LESSON_3 = "/learn/first-program";
+
+type CarouselCard = {
+  id: string;
+  title: string;
+  code: string;
+  bullets: string[];
+};
+
+type HeroSnippet = {
+  title: string;
+  code: string;
+};
+
+function CodeTypewriter({ snippets }: { snippets: HeroSnippet[] }) {
+  const [snippetIndex, setSnippetIndex] = useState(0);
+  const [charIndex, setCharIndex] = useState(0);
+  const [deleting, setDeleting] = useState(false);
+
+  const current = snippets[snippetIndex];
+
+  useEffect(() => {
+    if (!current) return;
+    const full = current.code;
+    let delay = deleting ? 16 : 28;
+
+    if (!deleting && charIndex === full.length) {
+      delay = 1100;
+    }
+    if (deleting && charIndex === 0) {
+      delay = 260;
+    }
+
+    const timer = window.setTimeout(() => {
+      if (!deleting && charIndex < full.length) {
+        setCharIndex((n) => n + 1);
+        return;
+      }
+      if (!deleting && charIndex === full.length) {
+        setDeleting(true);
+        return;
+      }
+      if (deleting && charIndex > 0) {
+        setCharIndex((n) => n - 1);
+        return;
+      }
+      setDeleting(false);
+      setSnippetIndex((n) => (n + 1) % snippets.length);
+    }, delay);
+
+    return () => window.clearTimeout(timer);
+  }, [charIndex, current, deleting, snippets.length]);
+
+  if (!current) return null;
+
+  return (
+    <div className="overflow-hidden rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-md">
+      <div className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-2.5">
+        <p className="font-mono text-xs font-semibold text-[var(--accent)]">Live Python demo</p>
+        <p className="text-xs text-[var(--muted)]">{current.title}</p>
+      </div>
+      <pre className="min-h-[16rem] bg-[var(--code-bg)] p-4 text-[13px] leading-[1.7] sm:p-5 sm:text-sm">
+        <code className="font-mono text-[var(--code-fg)] [tab-size:2]">
+          {current.code.slice(0, charIndex)}
+          <span className="animate-pulse text-[var(--accent)]">|</span>
+        </code>
+      </pre>
+    </div>
+  );
+}
+
+function PlainEnglishPreviewCarousel({ cards }: { cards: CarouselCard[] }) {
+  const [index, setIndex] = useState(0);
+
+  const card = cards[index];
+  if (!card) return null;
+
+  return (
+    <div className="rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-md">
+      <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 sm:px-5">
+        <div>
+          <p className="font-mono text-xs font-semibold text-[var(--accent)]">
+            Card {String(index + 1).padStart(2, "0")}
+          </p>
+          <h3 className="mt-1 font-serif text-lg font-semibold text-[var(--text)] sm:text-xl">
+            {card.title}
+          </h3>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIndex((i) => (i - 1 + cards.length) % cards.length)}
+            className="grid h-9 w-9 place-items-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] transition hover:bg-[var(--surface-2)]"
+            aria-label="Previous preview card"
+          >
+            ←
+          </button>
+          <button
+            type="button"
+            onClick={() => setIndex((i) => (i + 1) % cards.length)}
+            className="grid h-9 w-9 place-items-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] transition hover:bg-[var(--surface-2)]"
+            aria-label="Next preview card"
+          >
+            →
+          </button>
+        </div>
+      </div>
+      <div className="grid lg:grid-cols-2">
+        <div className="border-b border-[var(--border)] lg:border-r lg:border-b-0">
+          <p className="border-b border-[var(--border)] bg-[var(--surface-2)]/80 px-4 py-2 text-xs font-bold tracking-wide text-[var(--muted)] uppercase sm:px-5">
+            Python
+          </p>
+          <pre className="overflow-auto bg-[var(--code-bg)] p-4 text-[13px] leading-[1.65] sm:p-5 sm:text-sm">
+            <code className="font-mono text-[var(--code-fg)] [tab-size:2]">{card.code}</code>
+          </pre>
+        </div>
+        <div>
+          <p className="border-b border-[var(--border)] bg-[var(--surface-2)]/80 px-4 py-2 text-xs font-bold tracking-wide text-[var(--muted)] uppercase sm:px-5">
+            Plain English
+          </p>
+          <ul className="space-y-3 p-4 text-sm leading-relaxed text-[var(--text)] sm:p-5 sm:text-base">
+            {card.bullets.map((b, i) => (
+              <li key={i} className="flex gap-3">
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]" aria-hidden />
+                <span>{b}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <div className="flex items-center justify-between border-t border-[var(--border)] px-4 py-3 sm:px-5">
+        <p className="text-xs text-[var(--muted)]">Live sample from Python in Plain English</p>
+        <Link
+          to="/learn/python-in-plain-english"
+          className="text-sm font-semibold text-[var(--accent)] no-underline hover:underline"
+        >
+          Open full card library
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function HomeFlashcardViewer({
+  cards,
+}: {
+  cards: { id: string; front: string; back: string }[];
+}) {
+  const [index, setIndex] = useState(0);
+  const [flipped, setFlipped] = useState(false);
+
+  useEffect(() => {
+    setFlipped(false);
+  }, [index]);
+
+  const card = cards[index];
+  if (!card) return null;
+
+  return (
+    <div className="rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-md">
+      <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 sm:px-5">
+        <p className="font-mono text-xs font-semibold text-[var(--accent)]">
+          Flashcard {String(index + 1).padStart(2, "0")} of {cards.length}
+        </p>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIndex((i) => (i - 1 + cards.length) % cards.length)}
+            className="grid h-9 w-9 place-items-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] transition hover:bg-[var(--surface-2)]"
+            aria-label="Previous flashcard"
+          >
+            ←
+          </button>
+          <button
+            type="button"
+            onClick={() => setIndex((i) => (i + 1) % cards.length)}
+            className="grid h-9 w-9 place-items-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] transition hover:bg-[var(--surface-2)]"
+            aria-label="Next flashcard"
+          >
+            →
+          </button>
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={() => setFlipped((v) => !v)}
+        className="block w-full p-6 text-left transition hover:bg-[var(--surface-2)]/35"
+        aria-label={flipped ? "Show front of flashcard" : "Show back of flashcard"}
+      >
+        <p className="text-xs font-bold tracking-wide text-[var(--accent)] uppercase">
+          {flipped ? "Answer" : "Question"}
+        </p>
+        <p className="mt-3 font-serif text-2xl font-semibold leading-tight text-[var(--text)]">
+          {flipped ? card.back : card.front}
+        </p>
+      </button>
+      <div className="flex items-center justify-between border-t border-[var(--border)] px-4 py-3 sm:px-5">
+        <p className="text-xs text-[var(--muted)]">Click card to flip</p>
+        <button
+          type="button"
+          onClick={() => setFlipped((v) => !v)}
+          className="text-sm font-semibold text-[var(--accent)]"
+        >
+          {flipped ? "Show question" : "Reveal answer"}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export function HomePage() {
   const totalLessons = getAllLessons().length;
+  const flashcardDecks = useMemo(() => getFlashcardDecks(), []);
+  const totalFlashcards = useMemo(
+    () => flashcardDecks.reduce((sum, deck) => sum + deck.cards.length, 0),
+    [flashcardDecks],
+  );
+  const featuredFlashcards = useMemo(() => flashcardDecks.flatMap((d) => d.cards).slice(0, 3), [flashcardDecks]);
+  const plainEnglishPreviewCards = useMemo(
+    () =>
+      getPlainEnglishCards()
+        .filter((c) => c.level === 1)
+        .slice(0, 5)
+        .map((c) => ({ id: c.id, title: c.title, code: c.code, bullets: c.bullets })),
+    [],
+  );
+  const heroSnippets = useMemo(
+    () =>
+      plainEnglishPreviewCards.slice(0, 4).map((c) => ({
+        title: c.title,
+        code: c.code,
+      })),
+    [plainEnglishPreviewCards],
+  );
 
   const jsonLd = useMemo(() => {
     const base = getCanonicalBase();
@@ -39,238 +270,140 @@ export function HomePage() {
         jsonLd={jsonLd}
       />
       <section className="hero-grid border-b border-[var(--border)]">
-        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-semibold text-[var(--muted)] shadow-sm">
-            <span
-              className="h-1.5 w-1.5 rounded-full bg-emerald-500"
-              aria-hidden
-            />
-            Free · in your browser · no account
-          </div>
-
-          <h1 className="mt-4 max-w-3xl font-serif text-4xl font-semibold tracking-tight text-balance text-[var(--text)] sm:text-5xl lg:text-[3.1rem] lg:leading-[1.08]">
-            Learn Python from the first click
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-[var(--muted)]">
-            Short lessons in order, like a textbook. Open{" "}
-            <strong className="font-semibold text-[var(--text)]">lesson 1</strong>{" "}
-            below: it explains how to study here. You add Python on your computer
-            when you reach the &quot;first program&quot; lesson.
-          </p>
-
-          <div className="mt-8 max-w-xl rounded-card border-2 border-[var(--accent)]/35 bg-[var(--surface)] p-5 shadow-md sm:p-6">
-            <p className="text-xs font-bold tracking-wide text-[var(--accent)] uppercase">
-              If you only do one thing
+        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:gap-12 lg:px-8 lg:py-20">
+          <div>
+            <h1 className="mt-4 max-w-3xl font-serif text-4xl font-semibold tracking-tight text-balance text-[var(--text)] sm:text-5xl lg:text-[3.1rem] lg:leading-[1.08]">
+              Learn Python from the first click
+            </h1>
+            <p className="mt-4 max-w-2xl text-lg leading-relaxed text-[var(--muted)]">
+              Read short lessons, see working code, and translate syntax into plain English. Practice
+              with built-in TYPE and flashcards as you go.
             </p>
-            <Link
-              className="mt-3 flex w-full items-center justify-center rounded-full bg-[var(--text)] py-3.5 text-center text-sm font-bold text-[var(--bg)] no-underline shadow-md transition hover:opacity-95 active:scale-[0.99] sm:text-base"
-              to={LESSON_1}
-            >
-              Start lesson 1 (about 8 minutes)
-            </Link>
-            <p className="mt-3 text-center text-xs leading-relaxed text-[var(--muted)]">
-              No install needed for this first page. It teaches how the site works
-              and how to practice.
-            </p>
-          </div>
 
-          <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-            <Link
-              className="font-semibold text-[var(--accent)] no-underline hover:underline"
-              to="/learn"
-            >
-              See all {totalLessons} lessons (overview)
-            </Link>
-            <span className="hidden text-[var(--border)] sm:inline" aria-hidden>
-              |
-            </span>
-            <Link
-              className="font-semibold text-[var(--accent)] no-underline hover:underline"
-              to="/learn/flashcards"
-            >
-              Flashcards
-            </Link>
-            <span className="hidden text-[var(--border)] sm:inline" aria-hidden>
-              |
-            </span>
-            <Link
-              className="font-semibold text-[var(--accent)] no-underline hover:underline"
-              to="/learn/python-in-plain-english"
-            >
-              Plain English
-            </Link>
-            <span className="hidden text-[var(--border)] sm:inline" aria-hidden>
-              |
-            </span>
-            <Link
-              className="font-semibold text-[var(--accent)] no-underline hover:underline"
-              to={LESSON_3}
-            >
-              I already have Python: skip to first code
-            </Link>
-            <span className="hidden text-[var(--border)] sm:inline" aria-hidden>
-              |
-            </span>
-            <a
-              className="font-semibold text-[var(--accent)] no-underline hover:underline"
-              href="#course-map"
-            >
-              Jump to topic list
-            </a>
-          </div>
+            <div className="mt-8 max-w-xl rounded-card border-2 border-[var(--accent)]/35 bg-[var(--surface)] p-5 shadow-md sm:p-6">
+              <p className="text-xs font-bold tracking-wide text-[var(--accent)] uppercase">
+                If you only do one thing
+              </p>
+              <Link
+                className="mt-3 flex w-full items-center justify-center rounded-full bg-[var(--text)] py-3.5 text-center text-sm font-bold text-[var(--bg)] no-underline shadow-md transition hover:opacity-95 active:scale-[0.99] sm:text-base"
+                to={LESSON_1}
+              >
+                Start lesson 1 (about 8 minutes)
+              </Link>
+              <p className="mt-3 text-center text-xs leading-relaxed text-[var(--muted)]">
+                No install needed for this first page. It teaches how the site works and how to practice.
+              </p>
+            </div>
 
-          <dl className="mt-10 grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
-              <dt className="text-xs font-bold tracking-wide text-[var(--muted)] uppercase">
-                Lessons
-              </dt>
-              <dd className="mt-1 font-serif text-2xl font-semibold text-[var(--text)]">
-                {totalLessons}
-              </dd>
+            <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+              <Link
+                className="font-semibold text-[var(--accent)] no-underline hover:underline"
+                to="/learn"
+              >
+                See all {totalLessons} lessons (overview)
+              </Link>
+              <span className="hidden text-[var(--border)] sm:inline" aria-hidden>
+                |
+              </span>
+              <Link
+                className="font-semibold text-[var(--accent)] no-underline hover:underline"
+                to="/learn/flashcards"
+              >
+                Flashcards
+              </Link>
+              <span className="hidden text-[var(--border)] sm:inline" aria-hidden>
+                |
+              </span>
+              <Link
+                className="font-semibold text-[var(--accent)] no-underline hover:underline"
+                to="/learn/python-in-plain-english"
+              >
+                Plain English
+              </Link>
+              <span className="hidden text-[var(--border)] sm:inline" aria-hidden>
+                |
+              </span>
+              <Link
+                className="font-semibold text-[var(--accent)] no-underline hover:underline"
+                to={LESSON_3}
+              >
+                I already have Python: skip to first code
+              </Link>
+              <span className="hidden text-[var(--border)] sm:inline" aria-hidden>
+                |
+              </span>
+              <a
+                className="font-semibold text-[var(--accent)] no-underline hover:underline"
+                href="#course-map"
+              >
+                Jump to topic list
+              </a>
             </div>
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
-              <dt className="text-xs font-bold tracking-wide text-[var(--muted)] uppercase">
-                Modules
-              </dt>
-              <dd className="mt-1 font-serif text-2xl font-semibold text-[var(--text)]">
-                {modules.length}
-              </dd>
-            </div>
-            <div className="col-span-2 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm sm:col-span-1">
-              <dt className="text-xs font-bold tracking-wide text-[var(--muted)] uppercase">
-                Pace
-              </dt>
-              <dd className="mt-1 text-sm font-semibold leading-snug text-[var(--text)]">
-                Your schedule
-              </dd>
-            </div>
-          </dl>
+
+            <dl className="mt-10 grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
+                <dt className="text-xs font-bold tracking-wide text-[var(--muted)] uppercase">Lessons</dt>
+                <dd className="mt-1 font-serif text-2xl font-semibold text-[var(--text)]">{totalLessons}</dd>
+              </div>
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
+                <dt className="text-xs font-bold tracking-wide text-[var(--muted)] uppercase">Modules</dt>
+                <dd className="mt-1 font-serif text-2xl font-semibold text-[var(--text)]">{modules.length}</dd>
+              </div>
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
+                <dt className="text-xs font-bold tracking-wide text-[var(--muted)] uppercase">Flashcards</dt>
+                <dd className="mt-1 font-serif text-2xl font-semibold text-[var(--text)]">{totalFlashcards}</dd>
+              </div>
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
+                <dt className="text-xs font-bold tracking-wide text-[var(--muted)] uppercase">Pace</dt>
+                <dd className="mt-1 text-sm font-semibold leading-snug text-[var(--text)]">Your schedule</dd>
+              </div>
+            </dl>
+          </div>
+          <div className="space-y-4">
+            <CodeTypewriter snippets={heroSnippets} />
+          </div>
         </div>
       </section>
 
       <section className="border-b border-[var(--border)] bg-[var(--surface)] py-12 sm:py-14">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <h2 className="font-serif text-2xl font-semibold tracking-tight sm:text-3xl">
-            Your first three lessons (in order)
+            Practice and retention, built in
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">
-            The site is built as a path. These three lessons are the on-ramp
-            before variables and harder topics.
+            Use flashcards while you learn. These are real cards from the site, not placeholder content.
           </p>
-
-          <ol className="mt-8 grid gap-4 sm:grid-cols-3">
-            <li className="flex gap-4 rounded-card border border-[var(--border)] bg-[var(--bg)] p-4 shadow-sm">
-              <span
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--text)] text-sm font-bold text-[var(--bg)]"
-                aria-hidden
-              >
-                1
-              </span>
-              <div className="min-w-0">
-                <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
-                  Start
-                </p>
-                <Link
-                  className="mt-1 block font-semibold text-[var(--accent)] no-underline hover:underline"
-                  to={LESSON_1}
-                >
-                  How to use this textbook
-                </Link>
-                <p className="mt-1 text-xs leading-relaxed text-[var(--muted)]">
-                  How to read lessons, practice, and not get lost.
-                </p>
-              </div>
-            </li>
-            <li className="flex gap-4 rounded-card border border-[var(--border)] bg-[var(--bg)] p-4 shadow-sm">
-              <span
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--surface-2)] text-sm font-bold text-[var(--text)] ring-1 ring-[var(--border)]"
-                aria-hidden
-              >
-                2
-              </span>
-              <div className="min-w-0">
-                <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
-                  Then
-                </p>
-                <Link
-                  className="mt-1 block font-semibold text-[var(--accent)] no-underline hover:underline"
-                  to={LESSON_2}
-                >
-                  What is Python, really?
-                </Link>
-                <p className="mt-1 text-xs leading-relaxed text-[var(--muted)]">
-                  Plain-language picture of what runs on your machine.
-                </p>
-              </div>
-            </li>
-            <li className="flex gap-4 rounded-card border border-[var(--border)] bg-[var(--bg)] p-4 shadow-sm">
-              <span
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--surface-2)] text-sm font-bold text-[var(--text)] ring-1 ring-[var(--border)]"
-                aria-hidden
-              >
-                3
-              </span>
-              <div className="min-w-0">
-                <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
-                  Then
-                </p>
-                <Link
-                  className="mt-1 block font-semibold text-[var(--accent)] no-underline hover:underline"
-                  to={LESSON_3}
-                >
-                  Your first program
-                </Link>
-                <p className="mt-1 text-xs leading-relaxed text-[var(--muted)]">
-                  Needs Python installed. The lesson tells you how to check.
-                </p>
-              </div>
-            </li>
-          </ol>
+          <div className="mt-8 max-w-3xl">
+            <HomeFlashcardViewer cards={featuredFlashcards} />
+          </div>
+          <div className="mt-6">
+            <Link
+              className="inline-flex items-center gap-1 font-semibold text-[var(--accent)] no-underline hover:underline"
+              to="/learn/flashcards"
+            >
+              Open all flashcards
+              <span aria-hidden>→</span>
+            </Link>
+          </div>
         </div>
       </section>
 
-      <section className="border-b border-[var(--border)] py-12 sm:py-14">
+      <section className="border-b border-[var(--border)] bg-[var(--surface)] py-12 sm:py-14">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <h2 className="font-serif text-2xl font-semibold tracking-tight sm:text-3xl">
-            How you use this site (simple loop)
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">
-            Reading alone is not enough. Each lesson is built around this habit.
-          </p>
-          <ol className="mt-8 grid gap-4 md:grid-cols-3">
-            {[
-              {
-                n: "01",
-                t: "Read one screen at a time",
-                d: "Stop after each section if you want. Re-read one paragraph instead of rushing.",
-              },
-              {
-                n: "02",
-                t: "Type the example code",
-                d: "Use your own editor when the lesson shows code. Typing beats copy-paste for memory.",
-              },
-              {
-                n: "03",
-                t: "Run it and say what changed",
-                d: "Run the file, look at the output, then say in one sentence what happened.",
-              },
-            ].map((step) => (
-              <li
-                key={step.n}
-                className="rounded-card border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm"
-              >
-                <span className="font-mono text-xs font-bold text-[var(--accent)]">
-                  {step.n}
-                </span>
-                <h3 className="mt-2 font-serif text-lg font-semibold text-[var(--text)]">
-                  {step.t}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">
-                  {step.d}
-                </p>
-              </li>
-            ))}
-          </ol>
+          <div className="max-w-3xl">
+            <h2 className="font-serif text-2xl font-semibold tracking-tight sm:text-3xl">
+              See the value in 30 seconds
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-[var(--muted)] sm:text-base">
+              This is how the site teaches: short runnable Python on the left, direct plain-English
+              meaning on the right. You can step cards now, then jump into lessons when you are ready.
+            </p>
+          </div>
+
+          <div className="mt-8">
+            <PlainEnglishPreviewCarousel cards={plainEnglishPreviewCards} />
+          </div>
+
         </div>
       </section>
 
@@ -374,27 +507,6 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="border-t border-[var(--border)] bg-[var(--surface-2)] py-12">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <h2 className="font-serif text-2xl font-semibold tracking-tight">
-            When it feels hard
-          </h2>
-          <ul className="mt-6 grid gap-4 sm:grid-cols-3">
-            {[
-              "If a word is new, treat it like vocabulary: write it on a sticky note, do not stop to memorize everything.",
-              "If code fails, read the last line of the error first; it usually names the kind of problem.",
-              "If you are tired, stop mid-lesson on purpose. Small daily sessions beat heroic cramming.",
-            ].map((text) => (
-              <li
-                key={text}
-                className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 text-sm leading-relaxed text-[var(--muted)] shadow-sm"
-              >
-                {text}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
     </div>
   );
 }

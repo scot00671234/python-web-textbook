@@ -1,8 +1,8 @@
 import type { Lesson } from "../types";
 import { check, ql } from "./pedagogy";
 
-const subInt = "Intermediate track: plain English, bigger ideas per page.";
-const subAdv = "Advanced track: depth that still moves one step at a time.";
+const subInt = "";
+const subAdv = "";
 
 export const lessonCashflowsNpvAndScenarios: Lesson = {
   slug: "cashflows-npv-and-scenarios",

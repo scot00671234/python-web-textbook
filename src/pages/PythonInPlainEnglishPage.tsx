@@ -14,6 +14,7 @@ import {
 const LAYOUT_STORAGE_KEY = "python-plain-english-layout";
 
 type LayoutMode = "split" | "stacked";
+type AnimationPhase = "typingCode" | "holdCode" | "typingEnglish" | "holdEnglish";
 
 function readStoredLayout(): LayoutMode {
   try {
@@ -163,6 +164,10 @@ export function PythonInPlainEnglishPage() {
   const [layout, setLayout] = useState<LayoutMode>(() => readStoredLayout());
   /** Index into `flatItems` while stepping with arrows; null = not stepping. */
   const [browseIndex, setBrowseIndex] = useState<number | null>(null);
+  const [animationIndex, setAnimationIndex] = useState<number | null>(null);
+  const [animationPhase, setAnimationPhase] = useState<AnimationPhase>("typingCode");
+  const [animationChars, setAnimationChars] = useState(0);
+  const [animationSpeed, setAnimationSpeed] = useState(90);
   const [jumpInput, setJumpInput] = useState("");
 
   useEffect(() => {
@@ -183,13 +188,13 @@ export function PythonInPlainEnglishPage() {
 
   /** Lock page scroll while focus mode (full-screen card) is open. */
   useEffect(() => {
-    if (browseIndex === null) return;
+    if (browseIndex === null && animationIndex === null) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = prev;
     };
-  }, [browseIndex]);
+  }, [animationIndex, browseIndex]);
 
   /** Keep the URL hash in sync while stepping (React Router + no extra history entries). */
   useEffect(() => {
@@ -218,6 +223,23 @@ export function PythonInPlainEnglishPage() {
     navigate({ pathname: location.pathname, search: location.search, hash: "" }, { replace: true });
   }, [flatItems, location.pathname, location.search, navigate]);
 
+  const exitAnimationMode = useCallback(() => {
+    setAnimationIndex((prev) => {
+      if (prev != null) {
+        const id = flatItems[prev]?.card.id;
+        if (id) {
+          requestAnimationFrame(() => {
+            document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          });
+        }
+      }
+      return null;
+    });
+    setAnimationPhase("typingCode");
+    setAnimationChars(0);
+    navigate({ pathname: location.pathname, search: location.search, hash: "" }, { replace: true });
+  }, [flatItems, location.pathname, location.search, navigate]);
+
   const applyJumpToSlide = useCallback(() => {
     const parsed = Number.parseInt(jumpInput.trim(), 10);
     if (Number.isNaN(parsed)) return;
@@ -235,6 +257,7 @@ export function PythonInPlainEnglishPage() {
   );
 
   const focusModeActive = browseIndex !== null;
+  const animationModeActive = animationIndex !== null;
 
   useEffect(() => {
     if (browseIndex === null) return;
@@ -269,6 +292,89 @@ export function PythonInPlainEnglishPage() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [exitFocusMode, flatItems.length, focusModeActive]);
+
+  useEffect(() => {
+    if (!animationModeActive || animationIndex === null) return;
+
+    const card = flatItems[animationIndex]?.card;
+    if (!card) return;
+    const typingDelayMs = Math.max(2, 122 - animationSpeed);
+
+    const englishText = card.bullets.map((b) => `- ${b}`).join("\n");
+    const activeText = animationPhase === "typingCode" || animationPhase === "holdCode" ? card.code : englishText;
+    const isTyping = animationPhase === "typingCode" || animationPhase === "typingEnglish";
+    const fullLength = activeText.length;
+
+    if (isTyping && animationChars < fullLength) {
+      const timer = window.setTimeout(() => {
+        setAnimationChars((n) => n + 1);
+      }, typingDelayMs);
+      return () => window.clearTimeout(timer);
+    }
+
+    if (animationPhase === "typingCode" && animationChars >= fullLength) {
+      const timer = window.setTimeout(() => setAnimationPhase("holdCode"), 450);
+      return () => window.clearTimeout(timer);
+    }
+
+    if (animationPhase === "holdCode") {
+      const timer = window.setTimeout(() => {
+        setAnimationPhase("typingEnglish");
+        setAnimationChars(0);
+      }, 650);
+      return () => window.clearTimeout(timer);
+    }
+
+    if (animationPhase === "typingEnglish" && animationChars >= fullLength) {
+      const timer = window.setTimeout(() => setAnimationPhase("holdEnglish"), 700);
+      return () => window.clearTimeout(timer);
+    }
+
+    if (animationPhase === "holdEnglish") {
+      const timer = window.setTimeout(() => {
+        setAnimationIndex((i) => {
+          if (i === null) return 0;
+          return (i + 1) % flatItems.length;
+        });
+      }, 1200);
+      return () => window.clearTimeout(timer);
+    }
+  }, [animationChars, animationIndex, animationModeActive, animationPhase, animationSpeed, flatItems]);
+
+  useEffect(() => {
+    if (animationIndex === null) return;
+    setAnimationPhase("typingCode");
+    setAnimationChars(0);
+  }, [animationIndex]);
+
+  useEffect(() => {
+    if (!animationModeActive) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (shouldIgnoreCardStepArrows()) return;
+      if (e.key === "Escape") {
+        e.preventDefault();
+        exitAnimationMode();
+        return;
+      }
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        setAnimationIndex((i) => {
+          if (i === null) return 0;
+          return (i + 1) % flatItems.length;
+        });
+        return;
+      }
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        setAnimationIndex((i) => {
+          if (i === null) return 0;
+          return (i - 1 + flatItems.length) % flatItems.length;
+        });
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [animationModeActive, exitAnimationMode, flatItems.length]);
 
   const jsonLd = useMemo(() => {
     const base = getCanonicalBase();
@@ -363,6 +469,15 @@ export function PythonInPlainEnglishPage() {
             className="inline-flex h-10 shrink-0 items-center justify-center self-start rounded-full bg-[var(--text)] px-4 text-sm font-semibold text-[var(--bg)] shadow-md transition hover:opacity-95 sm:self-center sm:px-5"
           >
             Focus mode
+          </button>
+          <button
+            type="button"
+            onClick={() => setAnimationIndex(0)}
+            title="Autoplay typewriter: code first, then plain English translation."
+            aria-label="Open animation mode with typewriter playback."
+            className="inline-flex h-10 shrink-0 items-center justify-center self-start rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--text)] shadow-sm transition hover:bg-[var(--surface-2)] sm:self-center sm:px-5"
+          >
+            Animation mode
           </button>
         </div>
       </header>
@@ -562,6 +677,121 @@ export function PythonInPlainEnglishPage() {
                       Arrow keys · Esc exits · not while typing in TYPE
                     </p>
                   </div>
+                </div>
+              </footer>
+            </div>,
+            document.body,
+          )
+        : null}
+
+      {animationIndex !== null && flatItems[animationIndex] && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="plain-english-animation-title"
+              className="fixed inset-0 z-[210] flex flex-col bg-[var(--bg)] text-[var(--text)]"
+            >
+              <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--surface)]/95 px-4 py-3 backdrop-blur-md sm:px-6">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--muted)]">
+                    Python in plain English · Animation
+                  </p>
+                  <h2
+                    id="plain-english-animation-title"
+                    className="mt-0.5 truncate font-serif text-lg font-semibold tracking-tight sm:text-xl"
+                  >
+                    {flatItems[animationIndex].card.title}
+                  </h2>
+                  <p className="mt-1 font-mono text-xs font-semibold text-[var(--accent)]">
+                    {String(flatItems[animationIndex].number).padStart(2, "0")} · {animationIndex + 1} of{" "}
+                    {flatItems.length}
+                  </p>
+                </div>
+                <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                  <label className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-semibold text-[var(--muted)] sm:text-sm">
+                    Speed
+                    <input
+                      type="range"
+                      min={2}
+                      max={120}
+                      step={1}
+                      value={animationSpeed}
+                      onChange={(e) => setAnimationSpeed(Number(e.target.value))}
+                      className="w-20 accent-[var(--accent)]"
+                      aria-label="Animation typing speed where higher is faster"
+                    />
+                    <span className="font-mono text-[var(--text)]">{animationSpeed}</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={exitAnimationMode}
+                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--text)] transition hover:bg-[var(--surface-2)] sm:text-sm"
+                  >
+                    Exit
+                  </button>
+                </div>
+              </header>
+
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                <div className="mx-auto flex min-h-full w-full max-w-5xl items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
+                  <article className="w-full overflow-hidden rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-lg ring-1 ring-black/5 dark:ring-white/10">
+                    <p className="border-b border-[var(--border)] bg-[var(--surface-2)]/80 px-5 py-3 text-sm font-bold tracking-wide text-[var(--muted)] uppercase sm:px-6">
+                      {animationPhase === "typingCode" || animationPhase === "holdCode"
+                        ? "Python"
+                        : "Plain English"}
+                    </p>
+                    <pre className="max-h-[min(70vh,40rem)] overflow-auto bg-[var(--code-bg)] p-5 text-[15px] leading-[1.75] sm:p-6 sm:text-base">
+                      <code className="font-mono text-[var(--code-fg)] [tab-size:2]">
+                        {(() => {
+                          const card = flatItems[animationIndex].card;
+                          const englishText = card.bullets.map((b) => `- ${b}`).join("\n");
+                          const activeText =
+                            animationPhase === "typingCode" || animationPhase === "holdCode"
+                              ? card.code
+                              : englishText;
+                          return activeText.slice(0, animationChars);
+                        })()}
+                        <span className="animate-pulse text-[var(--accent)]">|</span>
+                      </code>
+                    </pre>
+                  </article>
+                </div>
+              </div>
+
+              <footer className="shrink-0 border-t border-[var(--border)] bg-[var(--surface)]/95 px-4 py-4 backdrop-blur-md sm:px-6">
+                <div className="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                  <div className="flex gap-2 sm:flex-1">
+                    <button
+                      type="button"
+                      className="min-h-11 flex-1 rounded-full border border-[var(--border)] bg-[var(--surface-2)] py-3 text-sm font-bold text-[var(--text)] transition hover:bg-[var(--surface)]"
+                      onClick={() =>
+                        setAnimationIndex((i) => {
+                          if (i === null) return 0;
+                          return (i - 1 + flatItems.length) % flatItems.length;
+                        })
+                      }
+                      aria-label="Previous animation card"
+                    >
+                      ← Previous
+                    </button>
+                    <button
+                      type="button"
+                      className="min-h-11 flex-1 rounded-full bg-[var(--text)] py-3 text-sm font-bold text-[var(--bg)] transition hover:opacity-95"
+                      onClick={() =>
+                        setAnimationIndex((i) => {
+                          if (i === null) return 0;
+                          return (i + 1) % flatItems.length;
+                        })
+                      }
+                      aria-label="Next animation card"
+                    >
+                      Next →
+                    </button>
+                  </div>
+                  <p className="text-center text-[11px] leading-snug text-[var(--muted)] sm:text-right sm:text-xs">
+                    Arrow keys · Esc exits · code types, then translation types
+                  </p>
                 </div>
               </footer>
             </div>,

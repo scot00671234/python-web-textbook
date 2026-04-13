@@ -173,11 +173,12 @@ export function CodeRetypePractice({ expectedCode, title, storageKey, source = "
                   <span className="font-normal text-[var(--muted)]"> · {title}</span>
                 ) : null}
               </h3>
-              <p className="mt-1 max-w-prose text-xs leading-relaxed text-[var(--muted)] sm:text-sm">
-                {isPlainEnglish
-                  ? "The snippet stays in the Python panel above. Type what you remember here. Tab inserts two spaces. We trim trailing spaces per line before comparing."
-                  : "The example stays in the code block above. Type what you remember here. Tab inserts two spaces. We trim trailing spaces per line before comparing."}
-              </p>
+              {!isPlainEnglish ? (
+                <p className="mt-1 max-w-prose text-xs leading-relaxed text-[var(--muted)] sm:text-sm">
+                  The example stays in the code block above. Type what you remember here. Tab inserts
+                  two spaces. We trim trailing spaces per line before comparing.
+                </p>
+              ) : null}
             </div>
             <button
               type="button"

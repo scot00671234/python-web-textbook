@@ -1,7 +1,7 @@
 import type { Lesson } from "../types";
 import { check, ql } from "./pedagogy";
 
-const subInt = "Intermediate track: plain English, bigger ideas per page.";
+const subInt = "";
 
 export const lessonClassesAndState: Lesson = {
   slug: "classes-and-state",
