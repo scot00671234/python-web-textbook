@@ -78,6 +78,7 @@ export const lessonMethodsAndDundersIntro: Lesson = {
   keyTakeaways: [
     "`__str__` is for humans; `__repr__` is for developers (ideally unambiguous).",
     "Operator overloading should mirror math intuition, not surprise readers.",
+    "Dunder methods define protocol behavior, so consistency matters more than cleverness.",
   ],
   sections: [
     ...ql(
@@ -97,6 +98,10 @@ export const lessonMethodsAndDundersIntro: Lesson = {
       text: "Python constructs the object, then calls `__init__` to initialize it. Rarely you also touch `__new__` for metaclass tricks; ignore until needed.",
     },
     {
+      type: "p",
+      text: "Treat dunders as protocol hooks. If you implement one, readers expect the object to behave like built-in types for that protocol. For example, implementing `__iter__` suggests stable iteration semantics, and implementing `__len__` suggests length is cheap and coherent with iteration.",
+    },
+    {
       type: "code",
       title: "Vector addition sketch",
       code: `class Vec2:\n    def __init__(self, x: float, y: float) -> None:\n        self.x = x\n        self.y = y\n\n    def __add__(self, other: "Vec2") -> "Vec2":\n        return Vec2(self.x + other.x, self.y + other.y)\n\n    def __repr__(self) -> str:\n        return f"Vec2({self.x}, {self.y})"\n\nprint(Vec2(1, 2) + Vec2(3, 4))`,
@@ -105,6 +110,19 @@ export const lessonMethodsAndDundersIntro: Lesson = {
       type: "callout",
       variant: "warn",
       text: "Do not overload operators for unrelated meanings (`__add__` that writes to disk). That confuses every reader and tooling.",
+    },
+    {
+      type: "h3",
+      text: "Key terms (plain language)",
+    },
+    {
+      type: "ul",
+      items: [
+        "Protocol: behavioral contract expected by Python features such as iteration or arithmetic.",
+        "Dunder method: special method with double underscores used by interpreter hooks.",
+        "Representation invariant: property that should remain true for every valid instance state.",
+        "Operator overloading: defining arithmetic or comparison behavior for user-defined objects.",
+      ],
     },
     {
       type: "practice",
@@ -135,6 +153,7 @@ export const lessonInheritanceAndComposition: Lesson = {
   keyTakeaways: [
     "Deep inheritance trees are hard to reason about; shallow trees plus protocols often age better.",
     "Abstract base classes (`abc.ABC`) document required methods when subclasses must stay compatible.",
+    "Composition often gives clearer boundaries and easier testing than rigid inheritance chains.",
   ],
   sections: [
     ...ql(
@@ -157,6 +176,23 @@ export const lessonInheritanceAndComposition: Lesson = {
     {
       type: "p",
       text: "`Notifier` holds a `Transport` (`EmailTransport`, `SmsTransport`). Swapping transport does not fork the whole class tree.",
+    },
+    {
+      type: "p",
+      text: "Composition works well when behavior varies independently across dimensions. Inheritance tends to multiply classes when variation axes combine. Composition keeps those axes separate, so extension usually means adding a collaborator rather than rewriting ancestry.",
+    },
+    {
+      type: "h3",
+      text: "Key terms (plain language)",
+    },
+    {
+      type: "ul",
+      items: [
+        "Inheritance: subtype relationship where child class extends or specializes a base class.",
+        "Composition: object design where one object holds another as a collaborator.",
+        "Liskov substitutability: subtype should work where base type is expected without breaking behavior assumptions.",
+        "Coupling: degree to which one component depends on details of another.",
+      ],
     },
     {
       type: "practice",
@@ -187,6 +223,7 @@ export const lessonComprehensionsAndIteration: Lesson = {
   keyTakeaways: [
     "Walrus operator `:=` can share subexpressions inside comprehensions (Python 3.8+).",
     "Generator expressions save memory when passed to functions like `sum` or `any`.",
+    "Readable iteration code is a correctness tool, not only a style preference.",
   ],
   sections: [
     ...ql(
@@ -210,6 +247,23 @@ export const lessonComprehensionsAndIteration: Lesson = {
       type: "code",
       title: "Pairs",
       code: `matrix = [[1, 2], [3, 4]]\nflat = [x for row in matrix for x in row]\nprint(flat)`,
+    },
+    {
+      type: "p",
+      text: "Comprehensions are strongest when the transformation is short and single-purpose. As logic grows, a standard loop with named intermediate variables often communicates intent better and makes debugging easier.",
+    },
+    {
+      type: "h3",
+      text: "Key terms (plain language)",
+    },
+    {
+      type: "ul",
+      items: [
+        "Comprehension: compact loop expression that builds a collection.",
+        "Generator expression: lazy comprehension-like expression that yields values on demand.",
+        "Guard clause: filtering condition inside comprehension after `if`.",
+        "Flattening: converting nested iterables into one linear iterable.",
+      ],
     },
     {
       type: "practice",

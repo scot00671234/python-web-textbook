@@ -22,6 +22,7 @@ export const lessonPathlibWorkflows: Lesson = {
   keyTakeaways: [
     "`Path.resolve()` canonicalizes; `Path.cwd()` answers \"where am I\".",
     "Text vs bytes: pick `read_text` or `read_bytes` deliberately.",
+    "Path objects clarify intent by separating path logic from string manipulation.",
   ],
   sections: [
     ...ql(
@@ -45,6 +46,23 @@ export const lessonPathlibWorkflows: Lesson = {
       type: "code",
       title: "rglob",
       code: `for py in Path("src").rglob("*.py"):\n    if "test" in py.name:\n        print(py)`,
+    },
+    {
+      type: "p",
+      text: "A practical advantage of `pathlib` is conceptual consistency. Joining, checking, iterating, and metadata queries all happen through one object model. This reduces subtle bugs from manual slash handling or mixed absolute and relative string paths.",
+    },
+    {
+      type: "h3",
+      text: "Key terms (plain language)",
+    },
+    {
+      type: "ul",
+      items: [
+        "Absolute path: full location from filesystem root.",
+        "Relative path: location interpreted from current working directory.",
+        "Glob pattern: wildcard path rule such as `*.csv`.",
+        "Metadata: file properties such as size, modification time, and permissions.",
+      ],
     },
     {
       type: "practice",
@@ -186,6 +204,7 @@ export const lessonBigOWithoutTerror: Lesson = {
   keyTakeaways: [
     "Amortized cost matters: dict insertion is average O(1) with rare worst cases.",
     "Generators can change memory complexity even when time stays similar.",
+    "Complexity analysis guides algorithm choice before premature micro-optimizations.",
   ],
   sections: [
     ...ql(
@@ -210,6 +229,10 @@ export const lessonBigOWithoutTerror: Lesson = {
       ],
     },
     {
+      type: "p",
+      text: "Big-O is an asymptotic language, so it ignores constants and low-order terms. For small inputs, constants can dominate runtime. For large inputs, growth class usually dominates. Use this distinction to reason first, then verify with timing on realistic workloads.",
+    },
+    {
       type: "code",
       title: "Hidden quadratic",
       code: `def has_pair_sum(nums, target):\n    for i in range(len(nums)):\n        for j in range(i + 1, len(nums)):\n            if nums[i] + nums[j] == target:\n                return True\n    return False`,
@@ -217,6 +240,19 @@ export const lessonBigOWithoutTerror: Lesson = {
     {
       type: "p",
       text: "For sorted numbers, two-pointer scan is O(n). For unsorted with hash set of complements, also O(n) average time.",
+    },
+    {
+      type: "h3",
+      text: "Key terms (plain language)",
+    },
+    {
+      type: "ul",
+      items: [
+        "Asymptotic growth: how runtime or memory changes as input size grows.",
+        "Amortized cost: average operation cost over a sequence, including occasional expensive steps.",
+        "Hot path: code section that consumes most execution time.",
+        "Space complexity: how memory usage grows with input size.",
+      ],
     },
     {
       type: "practice",

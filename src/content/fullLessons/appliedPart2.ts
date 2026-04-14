@@ -600,6 +600,7 @@ export const lessonExperimentsAndAbTesting: Lesson = {
     "Randomization is a design choice that gives causal leverage, not a statistical decoration.",
     "Always report uncertainty with the estimate, not estimate alone.",
     "Stopping-rule discipline is essential if you want trustworthy p-values.",
+    "Effect size should be interpreted with baseline context and operational constraints.",
   ],
   sections: [
     ...ql(
@@ -650,6 +651,36 @@ print("estimated_lift", round(float(ate_hat), 3))`,
       text: "For approximately normal continuous outcomes, a two-sample t-test is a common start. For proportions, use methods designed for rates, such as Wilson intervals or logistic models.",
     },
     {
+      type: "p",
+      text: "In practical A/B testing, decision quality depends on more than significance. Teams should define minimum meaningful effect, expected implementation cost, and downside risk before declaring a rollout. A small positive estimate may still be unhelpful if it does not offset operational burden.",
+    },
+    {
+      type: "h3",
+      text: "Key terms (plain language)",
+    },
+    {
+      type: "ul",
+      items: [
+        "Average treatment effect: mean outcome difference attributable to assignment.",
+        "Power: probability that the test detects a real effect of chosen size.",
+        "Type I error: false positive claim when true effect is zero.",
+        "Sequential peeking: repeated significance checks before planned sample size is reached.",
+      ],
+    },
+    {
+      type: "h2",
+      text: "A compact reporting standard",
+    },
+    {
+      type: "ol",
+      items: [
+        "Report baseline level and effect size in original units.",
+        "Report uncertainty interval and sample size by group.",
+        "State stopping rule and any deviations from pre-analysis plan.",
+        "State one plausible external-validity limit.",
+      ],
+    },
+    {
       type: "callout",
       variant: "warn",
       text: "Common mistake: checking p-values repeatedly and stopping when one dips below 0.05. This inflates false positives unless your design accounts for sequential looks.",
@@ -688,6 +719,7 @@ export const lessonTextAsDataIntro: Lesson = {
   keyTakeaways: [
     "`str.split()` is a crude tokenizer; `nltk` or `spaCy` add linguistic awareness when you need it.",
     "Stopwords lists are language- and domain-specific.",
+    "Text preprocessing choices are measurement choices, not only engineering choices.",
   ],
   sections: [
     ...ql(
@@ -710,6 +742,31 @@ export const lessonTextAsDataIntro: Lesson = {
     {
       type: "p",
       text: "Tiny linear models on bag-of-words features train fast and expose data bugs. They are weak on semantics but excellent sanity checks.",
+    },
+    {
+      type: "p",
+      text: "Methodological quality in text analysis starts with transparent preprocessing decisions. Lowercasing, punctuation handling, token boundaries, and stopword choices change the measured representation of language. Document those decisions because they affect reproducibility and interpretation.",
+    },
+    {
+      type: "h3",
+      text: "Key terms (plain language)",
+    },
+    {
+      type: "ul",
+      items: [
+        "Tokenization: splitting raw text into analysis units such as words or subwords.",
+        "Normalization: transforming text into a consistent representation.",
+        "Stopwords: high-frequency words often removed for specific tasks.",
+        "Bag-of-words: representation based on token counts without word order.",
+      ],
+    },
+    {
+      type: "h2",
+      text: "Interpretation caution",
+    },
+    {
+      type: "p",
+      text: "A text model can detect association patterns in language use, but association is not causal explanation. If one group uses more of a term, that pattern may reflect context, demographics, platform norms, or measurement artifacts. Treat text outputs as evidence to investigate, not final causal conclusions.",
     },
     {
       type: "practice",

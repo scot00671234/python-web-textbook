@@ -151,6 +151,7 @@ export const lessonMiniProjectIdeas: Lesson = {
     "A small working tool teaches more than a large unfinished plan.",
     "Clear inputs and outputs matter more than advanced architecture at this stage.",
     "Real-world examples become easy when your project mirrors a task you already do.",
+    "Project quality grows when you define scope and evidence of success before coding.",
   ],
   sections: [
     ...ql(
@@ -214,6 +215,23 @@ print("Saved:", row.strip())`,
         "Define one sentence for success, for example: `I can log one expense and print this month's total.`",
         "Implement only what is needed for that sentence.",
         "Test with real inputs, not only ideal fake examples.",
+      ],
+    },
+    {
+      type: "p",
+      text: "A common beginner failure mode is choosing projects by technical novelty instead of user need. A stronger method is to list repeated tasks from your week, then select the one with clear pain and simple measurable outcome. This keeps motivation and evaluation aligned.",
+    },
+    {
+      type: "h3",
+      text: "Key terms (plain language)",
+    },
+    {
+      type: "ul",
+      items: [
+        "Definition of done: specific condition that tells you version one is complete.",
+        "Scope creep: uncontrolled growth of features during implementation.",
+        "End-to-end workflow: complete path from input to useful output.",
+        "Iteration: cycle of improve, test, and ship based on observed behavior.",
       ],
     },
     {

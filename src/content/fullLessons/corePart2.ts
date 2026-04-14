@@ -234,6 +234,7 @@ export const lessonTuples: Lesson = {
   keyTakeaways: [
     "One-item tuples need a trailing comma: `(42,)`.",
     "Named tuples (`collections.namedtuple` or `typing.NamedTuple`) document fields without a full class.",
+    "Tuples are best for fixed-shape records where position and stability matter.",
   ],
   sections: [
     ...ql(
@@ -256,6 +257,43 @@ export const lessonTuples: Lesson = {
     {
       type: "p",
       text: "You cannot change a tuple in place, but mutable objects inside a tuple can still change (for example a list member). The tuple holds references.",
+    },
+    {
+      type: "h2",
+      text: "When tuples are the right modeling choice",
+    },
+    {
+      type: "p",
+      text: "Use tuples when a record has a fixed meaning by position, such as `(latitude, longitude)` or `(year, quarter)`. This makes accidental mutation less likely and signals to readers that the record shape is stable.",
+    },
+    {
+      type: "p",
+      text: "If fields need names for readability, move to `NamedTuple` or dataclasses. The key point is not tuple versus class ideology, but choosing a representation that matches data semantics and expected change frequency.",
+    },
+    {
+      type: "h3",
+      text: "Key terms (plain language)",
+    },
+    {
+      type: "ul",
+      items: [
+        "Immutable object: object whose container shape cannot be changed in place.",
+        "Hashable value: value that can be used as a dict key or set element.",
+        "Tuple unpacking: assigning tuple positions to multiple variables at once.",
+        "Reference: pointer-like link to an object, not a deep copy of that object.",
+      ],
+    },
+    {
+      type: "h2",
+      text: "Tuple pitfalls to watch",
+    },
+    {
+      type: "ul",
+      items: [
+        "Forgetting the comma in one-item tuples, which changes type silently.",
+        "Using position-heavy tuples where named fields would improve clarity.",
+        "Assuming inner mutable objects become immutable just because outer tuple is immutable.",
+      ],
     },
     {
       type: "practice",

@@ -90,6 +90,7 @@ export const lessonSets: Lesson = {
   keyTakeaways: [
     "Set membership is average O(1); list membership is O(n).",
     "Empty set is `set()`, not `{}` (that is an empty dict).",
+    "Set operations are about meaning, not just syntax: union combines, intersection overlaps, difference isolates.",
   ],
   sections: [
     ...ql(
@@ -104,6 +105,43 @@ export const lessonSets: Lesson = {
       type: "code",
       title: "Operations",
       code: `a = {1, 2, 3}\nb = {3, 4, 5}\nprint(a | b)   # union\nprint(a & b)   # intersection\nprint(a - b)   # difference`,
+    },
+    {
+      type: "h2",
+      text: "When sets make analysis clearer",
+    },
+    {
+      type: "p",
+      text: "Sets are useful when your question is about membership and overlap, not order. For example: which students appeared in both attendance logs, which tags are unique across reports, or which ids are missing from one data source.",
+    },
+    {
+      type: "p",
+      text: "A good rule is simple. If duplicates carry no information and order is not part of the question, convert early to a set. This reduces both conceptual clutter and runtime cost in many scripts.",
+    },
+    {
+      type: "h3",
+      text: "Key terms (plain language)",
+    },
+    {
+      type: "ul",
+      items: [
+        "Membership test: checking whether a value is present, for example `x in s`.",
+        "Union: all unique values that appear in either set.",
+        "Intersection: values shared by both sets.",
+        "Difference: values in one set but not the other.",
+      ],
+    },
+    {
+      type: "h2",
+      text: "Choosing set vs list in practice",
+    },
+    {
+      type: "ul",
+      items: [
+        "Use a list when order matters for output, indexing, or narrative sequence.",
+        "Use a set when you need fast existence checks and uniqueness constraints.",
+        "Use both when needed: keep original list for order, plus a set for fast lookups.",
+      ],
     },
     {
       type: "practice",

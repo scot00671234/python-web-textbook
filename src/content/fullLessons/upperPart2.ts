@@ -289,6 +289,7 @@ export const lessonLoggingAndObservability: Lesson = {
   keyTakeaways: [
     "`logging.exception` inside `except` includes stack traces automatically.",
     "Correlation IDs propagate across services when you add them to the `LoggerAdapter`.",
+    "Observability quality depends on consistent event structure, not log volume.",
   ],
   sections: [
     ...ql(
@@ -308,6 +309,36 @@ export const lessonLoggingAndObservability: Lesson = {
       type: "callout",
       variant: "note",
       text: "Libraries should log to named loggers (`logging.getLogger(__name__)`) so apps can tune verbosity per module.",
+    },
+    {
+      type: "p",
+      text: "Effective logs answer operational questions quickly: what happened, where, for which request, and with what consequence. Messages without context fields become hard to use under incident pressure. Prefer structured fields over prose when possible.",
+    },
+    {
+      type: "h3",
+      text: "Key terms (plain language)",
+    },
+    {
+      type: "ul",
+      items: [
+        "Log level: severity category such as DEBUG, INFO, WARNING, ERROR.",
+        "Handler: output destination such as console, file, or remote sink.",
+        "Formatter: rule that turns log record fields into output text or JSON.",
+        "Correlation id: identifier that links events from one request across components.",
+      ],
+    },
+    {
+      type: "h2",
+      text: "A minimal logging standard for teams",
+    },
+    {
+      type: "ol",
+      items: [
+        "Initialize logging once at process entry point.",
+        "Use named loggers by module.",
+        "Include request or job identifier for traceability.",
+        "Avoid logging secrets, tokens, and personal identifiers.",
+      ],
     },
     {
       type: "practice",
