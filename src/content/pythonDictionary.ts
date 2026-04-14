@@ -1196,6 +1196,98 @@ print(confusion_matrix(y_true, y_pred))`,
 print(estimand)`,
     related: ["feature", "target label"],
   },
+  {
+    id: "counterfactual",
+    term: "counterfactual",
+    category: "Data and ML",
+    meaning:
+      "The unobserved outcome for the same unit under an alternative treatment state.",
+    example: `# Conceptual example:
+# observed: student had tutoring
+# counterfactual: same student without tutoring`,
+    related: ["estimand", "overfitting"],
+  },
+  {
+    id: "confounder",
+    term: "confounder",
+    category: "Data and ML",
+    meaning:
+      "A variable that influences both treatment and outcome, which can bias naive comparisons.",
+    example: `# Prior achievement can confound tutoring -> test score analysis`,
+    related: ["estimand", "data leakage"],
+  },
+  {
+    id: "collider",
+    term: "collider",
+    category: "Data and ML",
+    meaning:
+      "A variable caused by two other variables. Conditioning on it can introduce bias.",
+    example: `# Conceptual: hiring decision influenced by skill and interview luck`,
+    related: ["confounder", "estimand"],
+  },
+  {
+    id: "intention-to-treat",
+    term: "intention-to-treat (ITT)",
+    category: "Data and ML",
+    meaning:
+      "Effect of assignment to treatment, regardless of whether participants actually complied.",
+    example: `# Compare outcomes by assigned group, not only by actual uptake`,
+    related: ["estimand", "confounder"],
+  },
+  {
+    id: "parallel-trends",
+    term: "parallel trends",
+    category: "Data and ML",
+    meaning:
+      "A key Difference-in-Differences assumption that treated and comparison groups would have moved similarly without treatment.",
+    example: `# Check pre-treatment trend alignment before using DiD`,
+    related: ["estimand", "confounder"],
+  },
+  {
+    id: "bandwidth-rdd",
+    term: "bandwidth (RDD)",
+    category: "Data and ML",
+    meaning:
+      "Window around a cutoff used in regression discontinuity analyses.",
+    example: `# Keep observations with score in [cutoff - bw, cutoff + bw]`,
+    related: ["estimand", "parallel trends"],
+  },
+  {
+    id: "synthetic-control",
+    term: "synthetic control",
+    category: "Data and ML",
+    meaning:
+      "A weighted combination of untreated units used as a comparison path for one treated unit.",
+    example: `effect = treated_post - synthetic_post`,
+    related: ["estimand", "parallel trends"],
+  },
+  {
+    id: "asymptotic-growth",
+    term: "asymptotic growth",
+    category: "Core syntax",
+    meaning:
+      "How runtime or memory grows as input size becomes large, which Big-O summarizes.",
+    example: `# O(n) usually scales better than O(n^2) as n grows`,
+    related: ["operator precedence", "expression"],
+  },
+  {
+    id: "amortized-cost",
+    term: "amortized cost",
+    category: "Core syntax",
+    meaning:
+      "Average cost per operation over many operations, including occasional expensive ones.",
+    example: `# Dict insertion is average O(1) amortized`,
+    related: ["asymptotic growth", "list"],
+  },
+  {
+    id: "correlation-id",
+    term: "correlation id",
+    category: "Files and errors",
+    meaning:
+      "An identifier attached to logs/events so one request can be traced across multiple components.",
+    example: `logging.info("processed order", extra={"correlation_id": req_id})`,
+    related: ["logging", "traceback"],
+  },
 ];
 
 export const pythonDictionaryStarterTerms = [
