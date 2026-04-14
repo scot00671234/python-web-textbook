@@ -1,12 +1,12 @@
 import type { Lesson, Module } from "./types";
 import {
   lessonAiSafetyPrivacyAndData,
-  lessonArraysTablesAndMeasurements,
   lessonBacktestsAndOverfitting,
   lessonBigOWithoutTerror,
   lessonBooleansAndConditions,
   lessonCashflowsNpvAndScenarios,
   lessonCausalQuestionsBeforePackages,
+  lessonCausalityAndVariablesFoundations,
   lessonClassesAndState,
   lessonComprehensionsAndIteration,
   lessonDataclassesAndSlots,
@@ -16,6 +16,7 @@ import {
   lessonEmbeddingsAndRetrievalSketch,
   lessonErrorsAndDebugging,
   lessonExperimentsAndAbTesting,
+  lessonDifferenceInDifferencesResearchDesign,
   lessonForLoops,
   lessonFunctionsBasics,
   lessonGeneratorsAndLazyPipelines,
@@ -36,6 +37,7 @@ import {
   lessonMonteCarloForDecisions,
   lessonNumbersAndStrings,
   lessonPathlibWorkflows,
+  lessonMatchingAndSyntheticControl,
   lessonPolicyEvaluationInterpretation,
   lessonPolicyEvaluationMethodology,
   lessonPolicyEvaluationWithPython,
@@ -43,7 +45,8 @@ import {
   lessonProtocolsAndTyping,
   lessonReadingFiles,
   lessonReadingProfessionalCode,
-  lessonReproducibleResearchHabits,
+  lessonRandomizedControlledTrialsInPractice,
+  lessonRegressionDiscontinuityForPolicy,
   lessonScikitLearnPipelines,
   lessonSets,
   lessonTestingWithPytest,
@@ -52,7 +55,6 @@ import {
   lessonTuples,
   lessonTypeAnnotationsBasics,
   lessonVenvsAndDependencies,
-  lessonVisualizationForEvidence,
   lessonWhileLoops,
 } from "./fullLessons";
 
@@ -502,18 +504,20 @@ export const modules: Module[] = [
     id: "science-research-methods",
     title: "Science and research methods",
     blurb:
-      "Reproducible workflows, arrays and tables, and figures that support real claims.",
+      "Causal research design from variable definition to core identification strategies. Focus on high-quality reasoning for RCT, DiD, RDD, matching, and synthetic control.",
     lessons: [
-      lessonReproducibleResearchHabits,
-      lessonArraysTablesAndMeasurements,
-      lessonVisualizationForEvidence,
+      lessonCausalityAndVariablesFoundations,
+      lessonRandomizedControlledTrialsInPractice,
+      lessonDifferenceInDifferencesResearchDesign,
+      lessonRegressionDiscontinuityForPolicy,
+      lessonMatchingAndSyntheticControl,
     ],
   },
   {
     id: "econometrics-economics",
     title: "Econometrics and quantitative economics",
     blurb:
-      "Orientation to workflows and vocabulary: measurement, time series, and how to frame causal questions. Not a substitute for a full econometrics or causal inference course.",
+      "Method-first econometrics for applied work: variable definition, model specification, uncertainty choices, and causal interpretation discipline across time series and panel settings.",
     lessons: [
       lessonLinearModelsInferenceStatsmodels,
       lessonTimeSeriesAndPanelsIntro,
@@ -524,7 +528,7 @@ export const modules: Module[] = [
     id: "policy-evaluation",
     title: "Policy evaluation",
     blurb:
-      "How to structure evaluation in code and in writing. Assumes you will deepen identification and study design elsewhere; these lessons focus on clarity and honest limits.",
+      "High-standard evaluation design and communication: estimands, identification assumptions, diagnostics, uncertainty, and policy-usable interpretation without overstating certainty.",
     lessons: [
       lessonPolicyEvaluationMethodology,
       lessonPolicyEvaluationWithPython,
@@ -535,7 +539,7 @@ export const modules: Module[] = [
     id: "machine-learning-practice",
     title: "Machine learning in practice",
     blurb:
-      "First steps: prediction vs explanation, pipelines, and leakage-aware validation. Enough to read tutorials and write careful prototypes; expect to study ML theory and practice beyond this track.",
+      "Applied ML with methodological rigor: metric alignment to decisions, pipeline discipline, leakage control, calibration, and evaluation that mirrors deployment reality.",
     lessons: [
       lessonPredictionVsExplanationMindset,
       lessonScikitLearnPipelines,
@@ -546,7 +550,7 @@ export const modules: Module[] = [
     id: "finance-quantitative",
     title: "Finance and quantitative analysis",
     blurb:
-      "Cash flows, simulation, and honest backtests. Methods education, not investment advice.",
+      "Quantitative finance methods with explicit assumptions: valuation logic, uncertainty simulation, and robust backtesting standards under realistic execution constraints.",
     lessons: [
       lessonCashflowsNpvAndScenarios,
       lessonMonteCarloForDecisions,

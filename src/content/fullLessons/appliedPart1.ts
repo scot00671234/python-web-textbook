@@ -191,7 +191,7 @@ export const lessonLinearModelsInferenceStatsmodels: Lesson = {
   title: "Linear models and inference with statsmodels (shape of the craft)",
   subtitle: subInt,
   summary:
-    "statsmodels emphasizes estimation plus inference: standard errors, p-values, confidence intervals. Treat output as something you must translate into domain language.",
+    "statsmodels emphasizes estimation with inference, including standard errors and confidence intervals. The core skill is not pressing fit, it is connecting coefficients to a research question, assumptions, and decision context.",
   tier: "intermediate",
   isPractical: true,
   readingTimeMinutes: 20,
@@ -205,6 +205,7 @@ export const lessonLinearModelsInferenceStatsmodels: Lesson = {
   keyTakeaways: [
     "`smf.ols(..., data=df).fit()` returns a `Results` object rich with diagnostics.",
     "Statistical assumptions are not Python's job: the code will run even when assumptions fail.",
+    "Coefficient interpretation should always specify unit, conditioning set, and uncertainty.",
   ],
   sections: [
     ...ql(
@@ -234,6 +235,36 @@ export const lessonLinearModelsInferenceStatsmodels: Lesson = {
       text: "Homoskedasticity-classic SEs, HC robust variants, and cluster-robust SEs answer different data-generating stories. Read the statsmodels docs for `cov_type` options when you move beyond toy lines.",
     },
     {
+      type: "p",
+      text: "In applied econometrics, uncertainty choice is part of model design. If errors are correlated within schools, firms, or regions, cluster-robust uncertainty at that level is often more credible than assuming independent residuals.",
+    },
+    {
+      type: "h3",
+      text: "Key terms (plain language)",
+    },
+    {
+      type: "ul",
+      items: [
+        "Coefficient: estimated change in the outcome linked to one-unit change in a predictor, holding others fixed in the model.",
+        "Standard error: estimated uncertainty of the coefficient under chosen assumptions.",
+        "Confidence interval: a range of plausible coefficient values under the model and sampling assumptions.",
+        "Heteroskedasticity: error variability differs across observations.",
+      ],
+    },
+    {
+      type: "h2",
+      text: "From coefficient table to evidence",
+    },
+    {
+      type: "ol",
+      items: [
+        "State the estimand in words before reading the table.",
+        "Translate coefficient scale into domain units.",
+        "Report interval estimates, not only significance stars.",
+        "Name one threat to validity and one robustness check.",
+      ],
+    },
+    {
       type: "practice",
       title: "Lab",
       steps: [
@@ -249,7 +280,7 @@ export const lessonTimeSeriesAndPanelsIntro: Lesson = {
   title: "Time series and panels: when you need them",
   subtitle: subInt,
   summary:
-    "Time order matters: shocks persist, seasons repeat, and policies phase in. Panels add another index (entity) so you must respect both dimensions before modeling.",
+    "Time order matters because observations carry memory, seasonality, and policy timing. Panel data adds an entity dimension, so good analysis must preserve both temporal order and unit identity before estimation.",
   tier: "intermediate",
   isPractical: true,
   readingTimeMinutes: 18,
@@ -263,6 +294,7 @@ export const lessonTimeSeriesAndPanelsIntro: Lesson = {
   keyTakeaways: [
     "Plot the series first. Models are downstream of eyes.",
     "Naive regression on levels can imply nonsense dynamics; differences or explicit dynamics models exist for a reason.",
+    "Panel methods succeed when indexing and timing are correct, not when formulas look advanced.",
   ],
   sections: [
     ...ql(
@@ -295,6 +327,35 @@ export const lessonTimeSeriesAndPanelsIntro: Lesson = {
       ],
     },
     {
+      type: "h3",
+      text: "Key terms (plain language)",
+    },
+    {
+      type: "ul",
+      items: [
+        "Time series: observations indexed by time for one unit.",
+        "Panel data: observations indexed by both entity and time.",
+        "Fixed effects: unit-specific intercepts that absorb time-invariant differences.",
+        "Resampling: aggregating time-indexed data into a new frequency such as weekly or monthly.",
+      ],
+    },
+    {
+      type: "p",
+      text: "A practical discipline is to audit panel integrity before modeling: each row should represent one entity-time observation, each entity should have interpretable coverage, and missing periods should be documented because they can bias trend interpretation.",
+    },
+    {
+      type: "h2",
+      text: "Frequent mistakes in early panel work",
+    },
+    {
+      type: "ul",
+      items: [
+        "Mixing levels and growth rates in one regression without clear interpretation.",
+        "Computing lags across entity boundaries because sorting was incomplete.",
+        "Treating irregularly spaced observations as if intervals were equal.",
+      ],
+    },
+    {
       type: "practice",
       title: "Lab",
       steps: [
@@ -310,7 +371,7 @@ export const lessonCausalQuestionsBeforePackages: Lesson = {
   title: "Causal questions before fancy packages",
   subtitle: subAdv,
   summary:
-    "Vocabulary and habits for asking whether a claim is causal, not a full causal inference course. Packages run math; identification lives in study design, assumptions, and domain knowledge. Sketch what you would compare under randomization and draw a DAG before reaching for new tools.",
+    "This lesson builds causal discipline before software choice. Packages implement estimators, but identification comes from design logic, assumptions, and domain knowledge. A clear counterfactual story should exist before model specification begins.",
   tier: "advanced",
   isPractical: true,
   readingTimeMinutes: 18,
@@ -324,6 +385,7 @@ export const lessonCausalQuestionsBeforePackages: Lesson = {
   keyTakeaways: [
     "Regression coefficients condition on whatever you put in the model; omitted variables still hurt.",
     "Sensitivity analyses (placebo tests, alternative specs) belong in the workflow, not as afterthoughts.",
+    "Credible causal work starts with a transparent estimand and identification argument.",
   ],
   sections: [
     ...ql(
@@ -348,12 +410,42 @@ export const lessonCausalQuestionsBeforePackages: Lesson = {
       text: "Selection: who enters the sample differs systematically. Confounding: a third variable drives both treatment and outcome. Different fixes, same symptom: biased naive comparisons.",
     },
     {
+      type: "p",
+      text: "This distinction affects method choice. Selection into sample may require redesigning data collection or weighting. Confounding may require design changes, stronger controls, or quasi-experimental structure. Treating both as generic bias can lead to incorrect fixes.",
+    },
+    {
       type: "h2",
       text: "When experiments help",
     },
     {
       type: "p",
       text: "Random assignment breaks confounding links on average. In code, analyze experiments with simple differences or regression with treatment indicators; keep preregistration and intent-to-treat concepts in your head even if this lesson stays code-light.",
+    },
+    {
+      type: "h2",
+      text: "Minimal causal design checklist",
+    },
+    {
+      type: "ol",
+      items: [
+        "Define treatment timing and assignment mechanism.",
+        "Define outcome window and measurement process.",
+        "State primary estimand and target population.",
+        "State one falsification or placebo test.",
+      ],
+    },
+    {
+      type: "h3",
+      text: "Key terms (plain language)",
+    },
+    {
+      type: "ul",
+      items: [
+        "Estimand: the specific causal quantity you want to estimate.",
+        "Confounder: variable that influences both treatment and outcome.",
+        "Collider: common effect of two causes, which can induce bias if controlled improperly.",
+        "Placebo test: diagnostic where no effect should appear if design assumptions are valid.",
+      ],
     },
     {
       type: "callout",
@@ -376,13 +468,14 @@ export const lessonPredictionVsExplanationMindset: Lesson = {
   title: "Prediction mindset vs explanation mindset",
   subtitle: subInt,
   summary:
-    "A short map of two goals: prediction scores how well you fill unknown labels; explanation asks which inputs move the outcome under a model's assumptions. One workflow can support both, but the metrics and pitfalls differ. Follow with dedicated ML coursework if you build production models.",
+    "Prediction asks how well you forecast unseen outcomes under deployment-like conditions. Explanation asks how model outputs change with features under explicit assumptions. The workflows overlap, but metric choice, validation design, and communication duties are different in professional ML teams.",
   tier: "intermediate",
   isPractical: true,
   readingTimeMinutes: 16,
   objectives: [
     "Pick a metric aligned with costs of false positives vs false negatives",
     "Describe calibration in plain language",
+    "Differentiate ranking quality (AUC) from probability quality (Brier/log loss)",
   ],
   practicePrompts: [
     "For a skewed medical screening story, argue for precision vs recall as headline metric.",
@@ -390,6 +483,7 @@ export const lessonPredictionVsExplanationMindset: Lesson = {
   keyTakeaways: [
     "Accuracy hides imbalance; inspect confusion matrices.",
     "Calibration matters when probabilities drive decisions (thresholds on predicted risk).",
+    "A model can rank well and still produce badly calibrated probabilities.",
   ],
   sections: [
     ...ql(
@@ -410,6 +504,10 @@ export const lessonPredictionVsExplanationMindset: Lesson = {
       text: "Same model, two questions",
     },
     {
+      type: "p",
+      text: "In professional settings, confusion starts when teams use one model output for two different decisions. Product teams may need ranked priorities for intervention, while policy or operations teams may need calibrated probabilities for budgeting and staffing. The algorithm can be identical, but the evidence standard is not.",
+    },
+    {
       type: "ul",
       items: [
         "Prediction: will this customer churn in 30 days?",
@@ -417,9 +515,52 @@ export const lessonPredictionVsExplanationMindset: Lesson = {
       ],
     },
     {
+      type: "p",
+      text: "Explanation language should stay disciplined. A feature with strong importance in a predictive model means the model relied on it for forecast accuracy in this dataset. It does not, by itself, prove that changing that feature will change outcomes in the real world.",
+    },
+    {
       type: "callout",
       variant: "note",
       text: "Interpretability tools (SHAP, partial dependence) summarize models; they are not automatic causal truth.",
+    },
+    {
+      type: "h2",
+      text: "Metrics for different decision types",
+    },
+    {
+      type: "p",
+      text: "Metric choice should be linked to consequence, not habit. A fraud team that misses true fraud cases may prioritize recall. A clinical triage model with limited specialist capacity may prioritize precision at the top of the queue. Choosing metrics without decision context produces attractive dashboards with weak operational value.",
+    },
+    {
+      type: "ul",
+      items: [
+        "Ranking decision: use AUC-ROC or precision-recall AUC when class imbalance is strong.",
+        "Probability decision: inspect Brier score or log loss, then check calibration plots.",
+        "Threshold decision: report confusion matrix at the chosen threshold, not only at 0.5.",
+      ],
+    },
+    {
+      type: "code",
+      title: "Threshold-sensitive reporting sketch",
+      code: `import numpy as np
+from sklearn.metrics import precision_score, recall_score, f1_score
+
+y_true = np.array([1, 0, 1, 0, 1, 0, 0, 1])
+y_prob = np.array([0.92, 0.61, 0.55, 0.40, 0.49, 0.31, 0.20, 0.79])
+
+for t in [0.3, 0.5, 0.7]:
+    y_pred = (y_prob >= t).astype(int)
+    print(
+        f"threshold={t:.1f}",
+        "precision=", round(precision_score(y_true, y_pred), 3),
+        "recall=", round(recall_score(y_true, y_pred), 3),
+        "f1=", round(f1_score(y_true, y_pred), 3),
+    )`,
+    },
+    {
+      type: "callout",
+      variant: "tip",
+      text: "When reporting model quality, include one ranking metric, one threshold metric at the deployment cutoff, and one calibration metric. This three-part view prevents overconfident claims from a single number.",
     },
     {
       type: "practice",
@@ -437,13 +578,14 @@ export const lessonScikitLearnPipelines: Lesson = {
   title: "scikit-learn pipelines and preprocessing",
   subtitle: subInt,
   summary:
-    "Hands-on pattern: a `Pipeline` chains steps so preprocessing parameters are learned only from training data during cross-validation, which blocks a common leakage mistake. Enough to follow sklearn docs; model choice and tuning strategy still need deeper study.",
+    "Production ML needs repeatable preprocessing and evaluation. `Pipeline` and `ColumnTransformer` keep transformations tied to folds and train data only, which prevents leakage and makes deployment behavior match training behavior.",
   tier: "intermediate",
   isPractical: true,
   readingTimeMinutes: 20,
   objectives: [
     "Fit a `Pipeline` with preprocessing plus classifier on synthetic data",
     "Explain why `fit` must not see test rows",
+    "Use cross-validation on a full pipeline, not on preprocessed arrays built outside folds",
   ],
   practicePrompts: [
     "Wrap the example pipeline in `GridSearchCV` tuning `C` for logistic regression (small grid).",
@@ -451,6 +593,7 @@ export const lessonScikitLearnPipelines: Lesson = {
   keyTakeaways: [
     "`pipeline.named_steps` documents the chain; use meaningful step names.",
     "`ColumnTransformer` routes different columns through different preprocessors.",
+    "Treat the pipeline object as the deployable artifact, not only the final estimator.",
   ],
   sections: [
     ...ql(
@@ -480,6 +623,32 @@ export const lessonScikitLearnPipelines: Lesson = {
       text: "Serialize the entire `Pipeline` (joblib) so production uses the same scaling constants learned in training.",
     },
     {
+      type: "p",
+      text: "This point is central in real ML operations. If preprocessing logic is reimplemented manually in a service layer, small mismatches accumulate: different missing-value defaults, changed category handling, or stale feature order. Packaging preprocessing and model steps together reduces that operational risk.",
+    },
+    {
+      type: "h2",
+      text: "Fold-safe model selection",
+    },
+    {
+      type: "p",
+      text: "Tune hyperparameters with cross-validation around the full pipeline. If scaling or encoding happens outside CV, validation is optimistic because fold boundaries were ignored.",
+    },
+    {
+      type: "p",
+      text: "A practical mental model is this: every transformation that can learn from data must be treated as a model component and fit only within training folds. This includes scaling, imputation, target encoding, dimensionality reduction, and feature selection.",
+    },
+    {
+      type: "code",
+      title: "Cross-validate the whole pipeline",
+      code: `from sklearn.model_selection import StratifiedKFold, cross_val_score
+
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=0)
+scores = cross_val_score(pipe, X, y, cv=cv, scoring="roc_auc")
+print("cv_auc_mean", round(float(scores.mean()), 3))
+print("cv_auc_std", round(float(scores.std()), 3))`,
+    },
+    {
       type: "practice",
       title: "Lab",
       steps: [
@@ -495,13 +664,14 @@ export const lessonMlEvaluationAndLeakage: Lesson = {
   title: "Evaluation, leakage, and reality checks",
   subtitle: subAdv,
   summary:
-    "Why naive validation lies: leakage from future data, duplicated rows, or mistimed features. Sketch time-aware and group-wise splits and always compare to a dumb baseline. A primer on evaluation hygiene, not a full experimental-design course.",
+    "Most disappointing ML launches fail at evaluation hygiene, not model architecture. This lesson covers leakage patterns, split design, baseline discipline, and why offline scores must be interpreted next to deployment constraints.",
   tier: "advanced",
   isPractical: true,
   readingTimeMinutes: 18,
   objectives: [
     "Implement a time-aware split sketch for ordered observations",
     "Name three feature types that often leak target information",
+    "Plan one offline-to-online sanity check before shipping",
   ],
   practicePrompts: [
     "Write pseudocode for `GroupKFold` when rows share a user id.",
@@ -509,6 +679,7 @@ export const lessonMlEvaluationAndLeakage: Lesson = {
   keyTakeaways: [
     "Target encoding without inner-CV leaks badly when computed on the full set.",
     "Always compare against a dumb baseline (majority class, last value forecast).",
+    "Use split strategy that matches real deployment timing and entity boundaries.",
   ],
   sections: [
     ...ql(
@@ -529,6 +700,10 @@ export const lessonMlEvaluationAndLeakage: Lesson = {
       text: "Classic leakage examples",
     },
     {
+      type: "p",
+      text: "Leakage usually appears when feature engineering is faster than data governance. Analysts join tables that contain post-outcome updates, include labels created by downstream workflows, or compute aggregates over windows that extend past prediction time. The model then learns information that would not exist at decision time.",
+    },
+    {
       type: "ul",
       items: [
         "Future aggregates merged back into past rows.",
@@ -537,9 +712,42 @@ export const lessonMlEvaluationAndLeakage: Lesson = {
       ],
     },
     {
+      type: "h2",
+      text: "Split strategy by deployment reality",
+    },
+    {
+      type: "p",
+      text: "The split is an argument about future use. If the model predicts next month from this month, validation should mimic that temporal boundary. If the model predicts for new users, avoid placing the same user in both train and test. Evaluation should mirror deployment, not only optimize sample efficiency.",
+    },
+    {
+      type: "ul",
+      items: [
+        "Time-dependent labels: train on past, validate on future windows.",
+        "Repeated entities (users, patients, firms): use group-aware splits to avoid same-entity bleed.",
+        "Rare events: stratify where valid, but never violate temporal order to force balance.",
+      ],
+    },
+    {
       type: "code",
       title: "Time-ordered split sketch",
       code: `import numpy as np\n\ndef time_split_indices(dates, frac_train=0.7):\n    order = np.argsort(dates)\n    cut = int(len(order) * frac_train)\n    train_idx = order[:cut]\n    test_idx = order[cut:]\n    return train_idx, test_idx`,
+    },
+    {
+      type: "h2",
+      text: "Reality checks before launch",
+    },
+    {
+      type: "ol",
+      items: [
+        "Compare to a dumb baseline and document lift in absolute terms.",
+        "Stress test one plausible shift, for example class prevalence change.",
+        "Define what metric decline triggers rollback in production.",
+      ],
+    },
+    {
+      type: "callout",
+      variant: "warn",
+      text: "A model that beats baseline offline can still fail in production when labels are delayed, user behavior shifts, or decision thresholds are misaligned with business capacity. Pair offline validation with clear online monitoring criteria.",
     },
     {
       type: "practice",

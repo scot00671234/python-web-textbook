@@ -9,7 +9,7 @@ export const lessonCashflowsNpvAndScenarios: Lesson = {
   title: "Cash flows, NPV, and scenarios in code",
   subtitle: subInt,
   summary:
-    "Net present value (NPV) converts future cash flows into today's value using a discount rate you must state clearly. This lets you compare projects in one unit and test how sensitive conclusions are to assumptions.",
+    "Net present value converts future cash flows into present terms through an explicit discount structure. The analytical value is comparison under stated assumptions, not certainty about future performance.",
   tier: "intermediate",
   isPractical: true,
   readingTimeMinutes: 18,
@@ -26,6 +26,7 @@ export const lessonCashflowsNpvAndScenarios: Lesson = {
     "NPV is not a fact, it is a model output tied to assumptions you choose and must report.",
     "Always show a small sensitivity table. One single discount rate can hide decision risk.",
     "The same cash flows can look attractive or weak depending on timing and discount rate.",
+    "Decision quality improves when financing assumptions and operating assumptions are separated clearly.",
   ],
   sections: [
     ...ql(
@@ -82,6 +83,10 @@ print(f"NPV = {result:.2f}")`,
       text: "The final NPV is the net value of all discounted flows. Positive NPV means value creation under your assumptions. Negative NPV means value destruction under those assumptions.",
     },
     {
+      type: "p",
+      text: "Interpretation should include scale and alternatives. A project with slightly positive NPV may still be dominated by another project with better risk profile, lower capital lock-up, or stronger strategic fit. NPV is one decision input, not the entire decision.",
+    },
+    {
       type: "h2",
       text: "Scenario and sensitivity check",
     },
@@ -95,6 +100,19 @@ for rate in [0.06, 0.08, 0.12]:
     {
       type: "p",
       text: "This tiny loop prevents overconfidence. If your decision flips between 6 percent and 12 percent, the project is assumption-sensitive and needs careful discussion, not a single-number conclusion.",
+    },
+    {
+      type: "h3",
+      text: "Key terms (plain language)",
+    },
+    {
+      type: "ul",
+      items: [
+        "Discount rate: rate used to convert future cash flows into present-value terms.",
+        "Present value: value today of money received in the future under a discount assumption.",
+        "Sensitivity analysis: evaluating how conclusions change when assumptions vary.",
+        "Scenario analysis: comparing coherent sets of assumptions such as base and conservative cases.",
+      ],
     },
     {
       type: "callout",
@@ -121,7 +139,7 @@ export const lessonMonteCarloForDecisions: Lesson = {
   title: "Monte Carlo for decisions under uncertainty",
   subtitle: subInt,
   summary:
-    "Monte Carlo simulation helps you reason under uncertainty by generating many possible futures from explicit assumptions. Instead of one point estimate, you inspect a distribution and ask what can go wrong.",
+    "Monte Carlo simulation converts uncertain inputs into outcome distributions. It is most useful when you need to compare strategies under downside risk, tail behavior, and model assumption stress.",
   tier: "intermediate",
   isPractical: true,
   readingTimeMinutes: 18,
@@ -138,6 +156,7 @@ export const lessonMonteCarloForDecisions: Lesson = {
     "Monte Carlo does not remove uncertainty, it makes uncertainty visible.",
     "Always document seed, distribution assumptions, and why those choices are defensible.",
     "Tail metrics can change decisions even when means look similar.",
+    "Scenario transparency matters more than simulation size once draws are sufficiently large.",
   ],
   sections: [
     ...ql(
@@ -189,6 +208,23 @@ print("10th_pct", round(float(np.percentile(year_profit, 10)), 2))`,
       text: "If two strategies have similar means but different 10th percentiles, risk-sensitive teams often prefer the strategy with better downside protection.",
     },
     {
+      type: "p",
+      text: "In professional settings, report both central tendency and downside metrics in the same table. This keeps stakeholder discussions anchored to tradeoffs instead of single-number optimism.",
+    },
+    {
+      type: "h3",
+      text: "Key terms (plain language)",
+    },
+    {
+      type: "ul",
+      items: [
+        "Monte Carlo simulation: repeated random draws from stated distributions to generate outcome distributions.",
+        "Percentile: cutoff below which a chosen share of simulated outcomes falls.",
+        "Downside risk: magnitude or probability of unfavorable outcomes.",
+        "Assumption set: explicit distributional and structural choices that define the simulation world.",
+      ],
+    },
+    {
       type: "callout",
       variant: "warn",
       text: "Common mistake: presenting simulation outputs as predictions. They are conditional on your input assumptions, not guaranteed future truth.",
@@ -212,13 +248,14 @@ export const lessonBacktestsAndOverfitting: Lesson = {
   title: "Backtests, overfitting, and humility",
   subtitle: subAdv,
   summary:
-    "A backtest replays history with a strategy. If you peek at test data while designing rules, you manufacture performance. Honest workflows separate design, validation, and holdout.",
+    "A backtest is a historical simulation under assumptions about data, execution, and costs. Without strict separation of design and evaluation, backtests often overstate edge and understate fragility.",
   tier: "advanced",
   isPractical: true,
   readingTimeMinutes: 18,
   objectives: [
     "Describe walk-forward validation in words",
     "List researcher degrees of freedom that inflate backtest returns",
+    "Explain why execution assumptions can dominate modeled alpha",
   ],
   practicePrompts: [
     "Write a checklist of five questions you would ask a colleague who shows a 20% annualized backtest.",
@@ -226,6 +263,7 @@ export const lessonBacktestsAndOverfitting: Lesson = {
   keyTakeaways: [
     "Transaction costs, borrow constraints, and corporate actions change realized performance.",
     "Multiple testing without correction rewards luck.",
+    "Backtest credibility depends on process discipline as much as code quality.",
   ],
   sections: [
     ...ql(
@@ -243,6 +281,35 @@ export const lessonBacktestsAndOverfitting: Lesson = {
     {
       type: "p",
       text: "Fit parameters on an early window, evaluate on the next chunk, roll forward. Random cross-section splits lie when regimes shift.",
+    },
+    {
+      type: "p",
+      text: "Walk-forward structure reflects actual research workflow: you only know the past when setting rules. This temporal discipline is essential because many apparent strategies rely on future information leakage when evaluated with naive splits.",
+    },
+    {
+      type: "h2",
+      text: "Execution realism checklist",
+    },
+    {
+      type: "ul",
+      items: [
+        "Include transaction costs and slippage assumptions.",
+        "State turnover and capacity implications.",
+        "Document data revisions and survivorship handling.",
+      ],
+    },
+    {
+      type: "h3",
+      text: "Key terms (plain language)",
+    },
+    {
+      type: "ul",
+      items: [
+        "Walk-forward validation: repeated train-then-test over advancing time windows.",
+        "Overfitting: learning patterns that do not generalize out of sample.",
+        "Slippage: difference between intended execution price and realized price.",
+        "Survivorship bias: bias from excluding assets or entities that disappeared.",
+      ],
     },
     {
       type: "callout",
@@ -265,13 +332,14 @@ export const lessonLlmsAsToolsNotOracles: Lesson = {
   title: "LLMs as tools, not oracles",
   subtitle: subInt,
   summary:
-    "Large language models complete plausible text. Ground outputs in sources you control, surface confidence limits, and design human review for high-stakes fields.",
+    "Large language models generate plausible text, not guaranteed truth. Production quality comes from retrieval grounding, constrained output formats, evaluation sets, and fallback behavior when model responses are weak or unsafe.",
   tier: "intermediate",
   isPractical: true,
   readingTimeMinutes: 16,
   objectives: [
     "Sketch a request/response loop with system vs user messages",
     "List three failure modes you have personally seen in model outputs",
+    "Define one measurable quality target for an LLM feature (for example citation validity rate)",
   ],
   practicePrompts: [
     "Write a policy: which user inputs may never be sent to a third-party API?",
@@ -279,6 +347,7 @@ export const lessonLlmsAsToolsNotOracles: Lesson = {
   keyTakeaways: [
     "Temperature and top-p change creativity vs determinism; default low for extraction tasks.",
     "Log prompts and responses with redaction when debugging, not raw secrets.",
+    "LLM systems need product metrics, not only prompt tweaks.",
   ],
   sections: [
     ...ql(
@@ -294,11 +363,31 @@ export const lessonLlmsAsToolsNotOracles: Lesson = {
       text: "Grounding pattern",
     },
     {
+      type: "p",
+      text: "Grounding should be treated as an information-contract problem. The model is allowed to answer only from a bounded evidence set, and the system must verify that each claim is traceable to that evidence. Without this contract, high fluency can hide unsupported statements.",
+    },
+    {
       type: "ol",
       items: [
         "Retrieve candidate documents (search, files).",
         "Ask the model to cite passage ids or quotes limited to those docs.",
         "Programmatically verify citations exist before showing users the answer.",
+      ],
+    },
+    {
+      type: "h2",
+      text: "Add measurable quality checks",
+    },
+    {
+      type: "p",
+      text: "Teams improve quality when they measure failure modes directly. Instead of saying the assistant feels better, define test cases and track pass rates by category: citation correctness, policy compliance, refusal behavior, and task completion. Measurement converts prompt iteration into engineering work.",
+    },
+    {
+      type: "ul",
+      items: [
+        "Citation validity rate: share of answers where cited evidence actually supports the claim.",
+        "Refusal quality: harmful or unsupported requests should fail safely with useful guidance.",
+        "Task success rate: user can complete the intended workflow after one model response.",
       ],
     },
     {
@@ -327,13 +416,14 @@ export const lessonEmbeddingsAndRetrievalSketch: Lesson = {
   title: "Embeddings and retrieval (sketch)",
   subtitle: subInt,
   summary:
-    "An embedding maps text (or images) to a vector so that similar items sit nearby in space. Retrieval returns top-k neighbors to stuff into a prompt window.",
+    "Embeddings map content to vectors so semantic neighbors sit nearby. Retrieval quality depends on chunking, metadata filters, and evaluation protocol, not only on vector database choice.",
   tier: "intermediate",
   isPractical: true,
   readingTimeMinutes: 18,
   objectives: [
     "Compute cosine similarity between two small vectors by hand in code",
     "Explain chunking tradeoffs for long documents",
+    "Name at least two retrieval metrics used in offline evaluation",
   ],
   practicePrompts: [
     "Implement brute-force `top_k(query_vec, corpus_matrix)` with NumPy dot products and argsort.",
@@ -341,6 +431,7 @@ export const lessonEmbeddingsAndRetrievalSketch: Lesson = {
   keyTakeaways: [
     "Normalize vectors before cosine similarity if you use dot products.",
     "Vector databases optimize nearest neighbor at scale; start in-memory for learning.",
+    "Retrieval should be evaluated with labeled queries, not only anecdotal prompts.",
   ],
   sections: [
     ...ql(
@@ -365,10 +456,31 @@ export const lessonEmbeddingsAndRetrievalSketch: Lesson = {
       text: "Too small: context fragments. Too large: many unrelated ideas in one vector. Metadata (title, section, page) helps filters before vector search.",
     },
     {
+      type: "p",
+      text: "A strong retrieval system balances semantic recall and contextual precision. Chunks should contain a coherent unit of meaning, such as one claim with supporting detail, so that retrieved passages are both relevant and interpretable when shown to users.",
+    },
+    {
+      type: "h2",
+      text: "How to evaluate retrieval quality",
+    },
+    {
+      type: "p",
+      text: "Evaluation should use representative query sets from real tasks, not synthetic questions only. If users ask multi-step questions, a retrieval benchmark with single-fact queries will overestimate field performance. Alignment between evaluation data and production demand is essential.",
+    },
+    {
+      type: "ul",
+      items: [
+        "Recall@k: did any relevant chunk appear in the top-k?",
+        "MRR (mean reciprocal rank): how early did the first relevant chunk appear?",
+        "nDCG: rewards ranked lists that place multiple relevant chunks near the top.",
+      ],
+    },
+    {
       type: "practice",
       title: "Lab",
       steps: [
         "Token-count a paragraph with a tokenizer from `tiktoken` for OpenAI models or `transformers` if installed; compare counts for two chunk sizes.",
+        "Create five labeled query -> relevant chunk pairs and compute recall@3 manually.",
       ],
     },
     check("If chunks are huge, why might top-k retrieval return irrelevant passages even when cosine scores look high?"),
@@ -380,13 +492,14 @@ export const lessonAiSafetyPrivacyAndData: Lesson = {
   title: "Safety, privacy, and data handling for AI features",
   subtitle: subAdv,
   summary:
-    "Treat prompts like sensitive inputs: minimize retention, scrub PII, and design kill switches. Monitor cost and latency because models fail open when overloaded.",
+    "Treat prompts as sensitive data flows. Mature AI systems combine data minimization, redaction, safety policy enforcement, and incident response playbooks so failures degrade safely instead of exposing users or organizations.",
   tier: "advanced",
   isPractical: true,
   readingTimeMinutes: 16,
   objectives: [
     "Write a data classification table: public, internal, restricted",
     "Plan backoff and user-visible errors when the model API times out",
+    "Define one security control for prompt injection and one for secret exfiltration",
   ],
   practicePrompts: [
     "List five fields that must never be logged verbatim from user forms in a health application.",
@@ -394,6 +507,7 @@ export const lessonAiSafetyPrivacyAndData: Lesson = {
   keyTakeaways: [
     "EU GDPR and similar regimes care about purpose limitation and deletion timelines.",
     "Adversarial prompts happen; combine allowlists, output filters, and human review.",
+    "Safety is a system property that includes model choice, tooling, and operational controls.",
   ],
   sections: [
     ...ql(
@@ -409,11 +523,43 @@ export const lessonAiSafetyPrivacyAndData: Lesson = {
       text: "Logging policy sketch",
     },
     {
+      type: "p",
+      text: "Logging should be purpose-limited. Keep only what is needed for reliability, abuse detection, and legal obligations, then define retention windows explicitly. Undisciplined logs become a hidden liability because they combine sensitive content with broad internal access.",
+    },
+    {
       type: "ul",
       items: [
         "Store hashed user ids if you need correlation.",
         "Truncate prompts in logs; keep full text only in encrypted short-term buffers if legally allowed.",
         "Alert on anomalous token usage spikes (possible abuse or loops).",
+      ],
+    },
+    {
+      type: "h2",
+      text: "Threat model starter for AI features",
+    },
+    {
+      type: "ul",
+      items: [
+        "Prompt injection: malicious text tries to override instructions or leak hidden data.",
+        "Data exfiltration: model output includes secrets from context or tool results.",
+        "Tool abuse: model is tricked into unsafe API calls or actions.",
+      ],
+    },
+    {
+      type: "p",
+      text: "For each threat, define prevention, detection, and response. Example: prevent with scoped tool permissions, detect with anomaly alerts, respond with automatic feature disable plus human review.",
+    },
+    {
+      type: "h2",
+      text: "Operational governance essentials",
+    },
+    {
+      type: "ul",
+      items: [
+        "Own a model change log: what changed, why, and expected risk impact.",
+        "Maintain incident severity levels with response timelines and escalation paths.",
+        "Run periodic red-team style tests against current prompts, tools, and policies.",
       ],
     },
     {
