@@ -377,6 +377,189 @@ with open("scratch.txt", encoding="utf-8") as f:
     successCheck: { kind: "stdout_lines_include", lines: ["done"] },
   },
   {
+    id: "f-string-label",
+    title: "Build a labeled line",
+    blurb: "Use an f-string so text and values stay readable.",
+    category: "Warm-up",
+    objectives: [
+      "Set name = \"Ada\" and score = 42.",
+      "Print exactly one line that says Name: Ada, Score: 42.",
+    ],
+    starterCode: `name = "Ada"
+score = 42
+# Print exactly: Name: Ada, Score: 42
+`,
+    hints: [
+      "f-strings start with f before the quotes.",
+      "Shape: print(f\"Name: {name}, Score: {score}\")",
+    ],
+    solutionCode: `name = "Ada"
+score = 42
+print(f"Name: {name}, Score: {score}")`,
+    successCheck: { kind: "stdout_lines_include", lines: ["Name: Ada, Score: 42"] },
+  },
+  {
+    id: "temperature-check",
+    title: "Simple if/else decision",
+    blurb: "Use a condition to pick one of two messages.",
+    category: "Logic",
+    objectives: [
+      "Set temp = 18.",
+      "If temp is at least 20, print Warm. Otherwise print Cool.",
+      "With temp = 18, the output should be Cool.",
+    ],
+    starterCode: `temp = 18
+# If temp >= 20 print "Warm", else print "Cool"
+`,
+    hints: [
+      "Use if temp >= 20: then an else: block.",
+      "Each block needs an indented print line.",
+    ],
+    solutionCode: `temp = 18
+if temp >= 20:
+    print("Warm")
+else:
+    print("Cool")`,
+    successCheck: { kind: "stdout_lines_include", lines: ["Cool"] },
+  },
+  {
+    id: "word-count-loop",
+    title: "Count words with a loop",
+    blurb: "A running counter is a core loop pattern.",
+    category: "Logic",
+    objectives: [
+      "Given words = [\"one\", \"two\", \"three\", \"four\"], count how many items are in the list using a for loop.",
+      "Print the final count (4).",
+    ],
+    starterCode: `words = ["one", "two", "three", "four"]
+count = 0
+# Loop through words, increase count, then print count
+`,
+    hints: [
+      "Inside the loop, write count += 1.",
+      "Print count after the loop finishes.",
+    ],
+    solutionCode: `words = ["one", "two", "three", "four"]
+count = 0
+for _ in words:
+    count += 1
+print(count)`,
+    successCheck: { kind: "stdout_lines_include", lines: ["4"] },
+  },
+  {
+    id: "average-three",
+    title: "Compute an average",
+    blurb: "Use sum and len together on a list.",
+    category: "Data",
+    objectives: [
+      "Use nums = [10, 20, 30].",
+      "Compute the average as sum(nums) / len(nums).",
+      "Print the result as 20.0.",
+    ],
+    starterCode: `nums = [10, 20, 30]
+# Compute average and print it
+`,
+    hints: [
+      "Store the expression in a variable first if it helps readability.",
+      "print(sum(nums) / len(nums))",
+    ],
+    solutionCode: `nums = [10, 20, 30]
+avg = sum(nums) / len(nums)
+print(avg)`,
+    successCheck: { kind: "stdout_lines_include", lines: ["20.0"] },
+  },
+  {
+    id: "dict-default",
+    title: "Safe dict lookup with default",
+    blurb: "dict.get can return a fallback value when a key is missing.",
+    category: "Data",
+    objectives: [
+      "Given profile = {\"name\": \"Mina\"}, print the value for key \"city\".",
+      "Use get with default \"Unknown\" so the output is Unknown.",
+    ],
+    starterCode: `profile = {"name": "Mina"}
+# Print profile.get("city", "Unknown")
+`,
+    hints: [
+      "profile.get(\"city\", \"Unknown\") returns Unknown when city is missing.",
+      "Wrap the result in print(...).",
+    ],
+    solutionCode: `profile = {"name": "Mina"}
+print(profile.get("city", "Unknown"))`,
+    successCheck: { kind: "stdout_lines_include", lines: ["Unknown"] },
+  },
+  {
+    id: "enumerate-lines",
+    title: "Number each item",
+    blurb: "enumerate gives index and value together.",
+    category: "Data",
+    objectives: [
+      "Given fruits = [\"apple\", \"banana\"], print numbered lines starting at 1.",
+      "Print exactly: 1. apple",
+      "Print exactly: 2. banana",
+    ],
+    starterCode: `fruits = ["apple", "banana"]
+# Use enumerate(..., start=1) and print lines like: 1. apple
+`,
+    hints: [
+      "for i, fruit in enumerate(fruits, start=1):",
+      "Use f\"{i}. {fruit}\" in print.",
+    ],
+    solutionCode: `fruits = ["apple", "banana"]
+for i, fruit in enumerate(fruits, start=1):
+    print(f"{i}. {fruit}")`,
+    successCheck: { kind: "stdout_lines_include", lines: ["1. apple", "2. banana"] },
+  },
+  {
+    id: "math-floor-ceil",
+    title: "Round down and up",
+    blurb: "math.floor and math.ceil give predictable integer bounds.",
+    category: "Stdlib",
+    objectives: [
+      "Import math and use value = 7.2.",
+      "Print floor first, then ceil, each on its own line.",
+      "Expected lines are 7 and 8.",
+    ],
+    starterCode: `import math
+value = 7.2
+# Print math.floor(value)
+# Print math.ceil(value)
+`,
+    hints: [
+      "floor means round down, ceil means round up.",
+      "Use two separate print(...) calls.",
+    ],
+    solutionCode: `import math
+value = 7.2
+print(math.floor(value))
+print(math.ceil(value))`,
+    successCheck: { kind: "stdout_lines_include", lines: ["7", "8"] },
+  },
+  {
+    id: "json-array-sum",
+    title: "Sum numbers from JSON",
+    blurb: "Parse JSON text, then work with Python lists.",
+    category: "Stdlib",
+    objectives: [
+      "Use payload = \"{\\\"nums\\\":[3,4,5]}\".",
+      "Parse it with json.loads.",
+      "Print the sum of nums (12).",
+    ],
+    starterCode: `import json
+payload = '{"nums":[3,4,5]}'
+# Parse payload and print the sum of nums
+`,
+    hints: [
+      "data = json.loads(payload)",
+      "Then use sum(data[\"nums\"]).",
+    ],
+    solutionCode: `import json
+payload = '{"nums":[3,4,5]}'
+data = json.loads(payload)
+print(sum(data["nums"]))`,
+    successCheck: { kind: "stdout_lines_include", lines: ["12"] },
+  },
+  {
     id: "free-canvas",
     title: "Free canvas",
     blurb: "No mission text: experiment on your own.",

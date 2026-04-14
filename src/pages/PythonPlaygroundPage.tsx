@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Seo } from "../components/Seo";
 import {
   DEFAULT_PLAYGROUND_CHALLENGE_ID,
@@ -68,6 +68,7 @@ type LoadState = "idle" | "loading" | "ready" | "error";
 const CATEGORY_ORDER = ["Warm-up", "Logic", "Data", "Stdlib"] as const;
 
 export function PythonPlaygroundPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const editorId = useId();
   const [challengeId, setChallengeId] = useState(readActiveChallengeId);
   const challenge = useMemo(() => getPlaygroundChallenge(challengeId), [challengeId]);
@@ -77,7 +78,7 @@ export function PythonPlaygroundPage() {
   );
   const [hintsOpen, setHintsOpen] = useState(0);
   /** Whether the hint list is expanded (hints stay “unlocked” when collapsed). */
-  const [hintsVisible, setHintsVisible] = useState(true);
+  const [hintsVisible, setHintsVisible] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [lastCheck, setLastCheck] = useState<CheckOutcome | null>(null);
 
@@ -87,6 +88,8 @@ export function PythonPlaygroundPage() {
   const [stdout, setStdout] = useState("");
   const [stderr, setStderr] = useState("");
   const [doneIds, setDoneIds] = useState(readDoneIds);
+  const [missionsOpen, setMissionsOpen] = useState(true);
+  const focusMode = searchParams.get("focus") === "1";
 
   const pyodideRef = useRef<Awaited<ReturnType<typeof ensurePyodide>> | null>(null);
 
@@ -151,7 +154,7 @@ export function PythonPlaygroundPage() {
       setChallengeId(id);
       setCode(readCodeDraft(id, next.starterCode));
       setHintsOpen(0);
-      setHintsVisible(true);
+      setHintsVisible(false);
       setShowSolution(false);
       setLastCheck(null);
       setStdout("");
@@ -159,13 +162,6 @@ export function PythonPlaygroundPage() {
     },
     [challengeId, code],
   );
-
-  const loadStarter = useCallback(() => {
-    setCode(challenge.starterCode);
-    setLastCheck(null);
-    setStdout("");
-    setStderr("");
-  }, [challenge.starterCode]);
 
   const preload = useCallback(async () => {
     if (loadState === "ready" || loadState === "loading") return;
@@ -257,6 +253,25 @@ export function PythonPlaygroundPage() {
     setHintsOpen((n) => Math.min(n + 1, challenge.hints.length));
     setHintsVisible(true);
   }, [challenge.hints.length]);
+  const setFocusMode = useCallback(
+    (enabled: boolean) => {
+      const next = new URLSearchParams(searchParams);
+      if (enabled) {
+        next.set("focus", "1");
+      } else {
+        next.delete("focus");
+      }
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams],
+  );
+  const goToNextChallenge = useCallback(() => {
+    const idx = PLAYGROUND_CHALLENGES.findIndex((c) => c.id === challenge.id);
+    const next = PLAYGROUND_CHALLENGES[(idx + 1) % PLAYGROUND_CHALLENGES.length];
+    if (next) {
+      pickChallenge(next.id);
+    }
+  }, [challenge.id, pickChallenge]);
 
   const base = getCanonicalBase();
   const jsonLd = base
@@ -270,6 +285,17 @@ export function PythonPlaygroundPage() {
     : undefined;
 
   const busy = loadState === "loading" || runState === "running";
+  const doneBullet = useMemo(() => {
+    if (challenge.successCheck.kind === "manual") {
+      return "Done check: this mission has no auto-check, compare your output to the task.";
+    }
+    if (challenge.successCheck.kind === "stdout_lines_include") {
+      const lines = challenge.successCheck.lines.map((line) => `"${line}"`).join(", ");
+      return `Done check: Standard output includes these line values: ${lines}.`;
+    }
+    const parts = challenge.successCheck.parts.map((part) => `"${part}"`).join(", ");
+    return `Done check: Standard output includes these text parts (case-insensitive): ${parts}.`;
+  }, [challenge.successCheck]);
 
   return (
     <div className="py-8 lg:py-10">
@@ -279,89 +305,162 @@ export function PythonPlaygroundPage() {
         jsonLd={jsonLd}
       />
 
-      <div className="max-w-6xl">
-        <p className="text-sm font-semibold text-[var(--accent)]">
-          <Link to="/learn" className="no-underline hover:underline">
-            All lessons
-          </Link>
-          <span className="text-[var(--muted)]"> / </span>
-          <span className="text-[var(--text)]">Playground</span>
-        </p>
-        <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight sm:text-4xl">
-          Python playground
-        </h1>
-        <p className="mt-4 max-w-3xl text-base leading-relaxed text-[var(--muted)]">
-          This page runs{" "}
-          <span className="font-semibold text-[var(--text)]">real Python</span> through{" "}
-          <a href="https://pyodide.org/" target="_blank" rel="noreferrer">
-            Pyodide
-          </a>{" "}
-          {PYODIDE_VERSION} (CPython built for WebAssembly) in your browser. Choose a{" "}
-          <span className="font-medium text-[var(--text)]">mini-mission</span> for a clear goal, or open{" "}
-          <span className="font-medium text-[var(--text)]">Free canvas</span> to experiment. Lessons still use
-          type-along mode; this is where you run full programs.
-        </p>
-      </div>
-
-      <div className="mx-auto mt-8 max-w-6xl xl:grid xl:max-w-[1180px] xl:grid-cols-[minmax(200px,240px)_minmax(0,1fr)] xl:items-start xl:gap-8">
-        <aside className="mb-6 xl:sticky xl:top-24 xl:mb-0 xl:self-start">
-          <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-md ring-1 ring-black/5 dark:ring-white/10">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] bg-[var(--surface-2)] px-3 py-2.5 sm:px-4">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">Missions</p>
-              <p className="tabular-nums text-xs font-medium text-[var(--text)]" aria-live="polite">
-                <span className="text-[var(--muted)]">Passed </span>
-                {passedScoredCount}/{scoredMissions.length}
-              </p>
-            </div>
-            <p className="border-b border-[var(--border)] px-3 py-2 text-xs leading-snug text-[var(--muted)] sm:px-4">
-              Choose a goal, then scroll down to the editor on smaller screens.
-            </p>
-            <nav
-              className="max-h-[min(40vh,300px)] space-y-3 overflow-y-auto overscroll-y-contain p-2 sm:p-3 xl:max-h-[min(70vh,600px)]"
-              aria-label="Playground missions"
-            >
-              {groupedChallenges.map(({ category, items }) => (
-                <div key={category}>
-                  <p className="px-1 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">{category}</p>
-                  <ul className="mt-1.5 space-y-1">
-                    {items.map((c) => {
-                      const active = c.id === challengeId;
-                      const done = doneIds.has(c.id);
-                      return (
-                        <li key={c.id}>
-                          <button
-                            type="button"
-                            onClick={() => pickChallenge(c.id)}
-                            className={[
-                              "flex w-full items-center gap-1.5 rounded-lg border px-2.5 py-2 text-left text-xs transition sm:text-[13px]",
-                              active
-                                ? "border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_14%,var(--surface))] font-semibold text-[var(--text)] shadow-sm"
-                                : "border-transparent bg-[var(--surface-2)] text-[var(--muted)] hover:border-[var(--border)] hover:text-[var(--text)]",
-                            ].join(" ")}
-                          >
-                            <span className="min-w-0 flex-1 leading-snug">{c.title}</span>
-                            {done ? (
-                              <span className="shrink-0 text-sm text-[var(--callout-tip-border)]" title="Passed check">
-                                ✓
-                              </span>
-                            ) : null}
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              ))}
-            </nav>
-          </div>
-          <p className="mt-4 hidden text-xs leading-relaxed text-[var(--muted)] xl:block">
-            New to Python? Start with{" "}
-            <Link to="/learn/first-program" className="font-medium text-[var(--text)]">
-              First program
-            </Link>{" "}
-            in the main lessons.
+      {!focusMode ? (
+        <div className="max-w-6xl">
+          <p className="text-sm font-semibold text-[var(--accent)]">
+            <Link to="/learn" className="no-underline hover:underline">
+              All lessons
+            </Link>
+            <span className="text-[var(--muted)]"> / </span>
+            <span className="text-[var(--text)]">Playground</span>
           </p>
-        </aside>
+          <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight sm:text-4xl">
+            Python playground
+          </h1>
+          <p className="mt-4 max-w-3xl text-base leading-relaxed text-[var(--muted)]">
+            This page runs{" "}
+            <span className="font-semibold text-[var(--text)]">real Python</span> through{" "}
+            <a href="https://pyodide.org/" target="_blank" rel="noreferrer">
+              Pyodide
+            </a>{" "}
+            {PYODIDE_VERSION} (CPython built for WebAssembly) in your browser. Choose a{" "}
+            <span className="font-medium text-[var(--text)]">mini-mission</span> for a clear goal, or open{" "}
+            <span className="font-medium text-[var(--text)]">Free canvas</span> to experiment. Lessons still use
+            type-along mode; this is where you run full programs.
+          </p>
+        </div>
+      ) : (
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+            Focus mode
+          </p>
+          <button
+            type="button"
+            onClick={() => setFocusMode(false)}
+            className="inline-flex min-h-[34px] items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] transition hover:bg-[var(--surface-2)]"
+          >
+            Exit focus
+          </button>
+        </div>
+      )}
+
+      <div
+        className={[
+          focusMode
+            ? "mx-auto mt-5 max-w-5xl"
+            : "mx-auto mt-8 max-w-6xl xl:grid xl:max-w-[1180px] xl:items-start xl:gap-8",
+          !focusMode
+            ? missionsOpen
+              ? "xl:grid-cols-[minmax(200px,240px)_minmax(0,1fr)]"
+              : "xl:grid-cols-[56px_minmax(0,1fr)]"
+            : "",
+        ].join(" ")}
+      >
+        {!focusMode ? (
+          <aside className="mb-6 xl:sticky xl:top-24 xl:mb-0 xl:self-start">
+          <div
+            className={[
+              "overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-md ring-1 ring-black/5 transition-[width] duration-200 dark:ring-white/10",
+              missionsOpen ? "xl:w-[240px]" : "xl:w-[56px]",
+            ].join(" ")}
+            id="playground-missions-panel"
+          >
+            <div
+              className={[
+                "border-b border-[var(--border)] bg-[var(--surface-2)] px-3 py-2.5 sm:px-4",
+                missionsOpen ? "flex flex-wrap items-start justify-between gap-2" : "flex items-center justify-center px-2 py-3 sm:px-2",
+              ].join(" ")}
+            >
+              {missionsOpen ? (
+                <>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">Missions</p>
+                  <p className="tabular-nums text-xs font-medium text-[var(--text)]" aria-live="polite">
+                    <span className="text-[var(--muted)]">Passed </span>
+                    {passedScoredCount}/{scoredMissions.length}
+                  </p>
+                </>
+              ) : null}
+              <div className={missionsOpen ? "flex items-center gap-2" : ""}>
+                <button
+                  type="button"
+                  onClick={() => setMissionsOpen((v) => !v)}
+                  aria-expanded={missionsOpen}
+                  aria-controls="playground-missions-content"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] shadow-sm transition hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+                  title={missionsOpen ? "Collapse missions" : "Expand missions"}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d={missionsOpen ? "m15 18-6-6 6-6" : "m9 6 6 6-6 6"}
+                      stroke="currentColor"
+                      strokeWidth="2.25"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <span className="sr-only">{missionsOpen ? "Collapse missions" : "Expand missions"}</span>
+                </button>
+              </div>
+            </div>
+            {missionsOpen ? (
+              <div id="playground-missions-content">
+                <p className="border-b border-[var(--border)] px-3 py-2 text-xs leading-snug text-[var(--muted)] sm:px-4">
+                  Choose a goal, then scroll down to the editor on smaller screens.
+                </p>
+                <nav
+                  className="max-h-[min(40vh,300px)] space-y-3 overflow-y-auto overscroll-y-contain p-2 sm:p-3 xl:max-h-[min(70vh,600px)]"
+                  aria-label="Playground missions"
+                >
+                  {groupedChallenges.map(({ category, items }) => (
+                    <div key={category}>
+                      <p className="px-1 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">{category}</p>
+                      <ul className="mt-1.5 space-y-1">
+                        {items.map((c) => {
+                          const active = c.id === challengeId;
+                          const done = doneIds.has(c.id);
+                          return (
+                            <li key={c.id}>
+                              <button
+                                type="button"
+                                onClick={() => pickChallenge(c.id)}
+                                className={[
+                                  "flex w-full items-center gap-1.5 rounded-lg border px-2.5 py-2 text-left text-xs transition sm:text-[13px]",
+                                  active
+                                    ? "border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_14%,var(--surface))] font-semibold text-[var(--text)] shadow-sm"
+                                    : "border-transparent bg-[var(--surface-2)] text-[var(--muted)] hover:border-[var(--border)] hover:text-[var(--text)]",
+                                ].join(" ")}
+                              >
+                                <span className="min-w-0 flex-1 leading-snug">{c.title}</span>
+                                {done ? (
+                                  <span className="shrink-0 text-sm text-[var(--callout-tip-border)]" title="Passed check">
+                                    ✓
+                                  </span>
+                                ) : null}
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  ))}
+                </nav>
+              </div>
+            ) : (
+              <div id="playground-missions-content" className="flex items-center justify-center px-2 py-4">
+                <span className="select-none text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--muted)] [writing-mode:vertical-rl]">
+                  Playground
+                </span>
+              </div>
+            )}
+          </div>
+          </aside>
+        ) : null}
 
         <div className="flex min-w-0 flex-col gap-6">
           <section
@@ -377,70 +476,82 @@ export function PythonPlaygroundPage() {
                 {challenge.title}
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">{challenge.blurb}</p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {focusMode ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={goToNextChallenge}
+                      className="inline-flex min-h-[34px] items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] transition hover:bg-[var(--surface)]"
+                    >
+                      Next mission
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFocusMode(false)}
+                      className="inline-flex min-h-[34px] items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold text-[var(--muted)] transition hover:text-[var(--text)]"
+                    >
+                      Show full playground
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setFocusMode(true)}
+                    className="inline-flex min-h-[34px] items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] transition hover:bg-[var(--surface)]"
+                  >
+                    Enter focus mode
+                  </button>
+                )}
+              </div>
             </header>
             <div className="space-y-4 p-4 sm:p-5">
               <div>
-                <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Your goal</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Task</h3>
                 <ul className="mt-2 list-disc space-y-2 pl-5 text-sm leading-relaxed text-[var(--text)]">
                   {challenge.objectives.map((line) => (
                     <li key={line}>{line}</li>
                   ))}
+                  <li key="done-check">{doneBullet}</li>
                 </ul>
               </div>
 
-              <div className="rounded-xl border-2 border-[color-mix(in_oklab,var(--accent)_28%,var(--border))] bg-[color-mix(in_oklab,var(--surface-2)_85%,var(--accent)_8%)] p-4 shadow-sm dark:border-[color-mix(in_oklab,var(--accent)_35%,var(--border))]">
-                <p className="text-sm font-semibold text-[var(--text)]">Need help?</p>
-                <p className="mt-1 text-xs leading-relaxed text-[var(--muted)]">
-                  Same mission, same place every time: hints and a sample answer are in this box. The code editor is directly
-                  below.
-                </p>
-                <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-                  <button
-                    type="button"
-                    onClick={() => setShowSolution((s) => !s)}
-                    className={
-                      showSolution
-                        ? "inline-flex min-h-[44px] items-center justify-center rounded-full border-2 border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-2)]"
-                        : "inline-flex min-h-[44px] items-center justify-center rounded-full bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--accent-fg)] shadow-sm transition hover:opacity-90"
-                    }
-                  >
-                    {showSolution ? "Hide sample answer" : "Peek sample answer"}
-                  </button>
+              <div className="space-y-3">
+                <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Mission tools</p>
+                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                   <button
                     type="button"
                     onClick={revealNextHint}
                     disabled={hintsOpen >= challenge.hints.length}
-                    className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-2)] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="inline-flex min-h-[34px] items-center justify-center rounded-full border border-[color-mix(in_oklab,var(--text)_20%,var(--border))] bg-[linear-gradient(180deg,color-mix(in_oklab,var(--surface)_86%,white_14%),var(--surface))] px-3 py-1.5 text-xs font-semibold text-[var(--text)] shadow-[inset_0_1px_0_color-mix(in_oklab,white_65%,transparent)] transition hover:border-[color-mix(in_oklab,var(--text)_28%,var(--border))] hover:bg-[linear-gradient(180deg,color-mix(in_oklab,var(--surface)_80%,white_20%),var(--surface-2))] disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     {hintsOpen >= challenge.hints.length
-                      ? "All hints open"
+                      ? "All hints unlocked"
                       : hintsOpen === 0
-                        ? "Show first hint"
-                        : `Next hint (${hintsOpen}/${challenge.hints.length})`}
+                        ? "Unlock first hint"
+                        : `Unlock next hint (${hintsOpen}/${challenge.hints.length})`}
                   </button>
                   {hintsOpen > 0 ? (
                     <button
                       type="button"
                       onClick={() => setHintsVisible((v) => !v)}
-                      className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-2)]"
+                      className="inline-flex min-h-[34px] items-center justify-center rounded-full border border-[color-mix(in_oklab,var(--text)_20%,var(--border))] bg-[linear-gradient(180deg,color-mix(in_oklab,var(--surface)_86%,white_14%),var(--surface))] px-3 py-1.5 text-xs font-semibold text-[var(--text)] shadow-[inset_0_1px_0_color-mix(in_oklab,white_65%,transparent)] transition hover:border-[color-mix(in_oklab,var(--text)_28%,var(--border))] hover:bg-[linear-gradient(180deg,color-mix(in_oklab,var(--surface)_80%,white_20%),var(--surface-2))]"
                     >
                       {hintsVisible ? "Hide hints" : `Show hints (${hintsOpen})`}
                     </button>
                   ) : null}
                   <button
                     type="button"
-                    onClick={loadStarter}
-                    className="inline-flex min-h-[44px] items-center justify-center rounded-full px-4 py-2.5 text-sm font-medium text-[var(--muted)] underline decoration-dotted underline-offset-4 transition hover:text-[var(--text)]"
+                    onClick={() => setShowSolution((s) => !s)}
+                    className={
+                      showSolution
+                        ? "inline-flex min-h-[34px] items-center justify-center rounded-full border border-[color-mix(in_oklab,var(--text)_30%,var(--border))] bg-[linear-gradient(180deg,color-mix(in_oklab,var(--surface-2)_90%,white_10%),var(--surface-2))] px-3 py-1.5 text-xs font-semibold text-[var(--text)] shadow-[inset_0_1px_0_color-mix(in_oklab,white_62%,transparent)] transition"
+                        : "inline-flex min-h-[34px] items-center justify-center rounded-full border border-[color-mix(in_oklab,var(--text)_20%,var(--border))] bg-[linear-gradient(180deg,color-mix(in_oklab,var(--surface)_86%,white_14%),var(--surface))] px-3 py-1.5 text-xs font-semibold text-[var(--text)] shadow-[inset_0_1px_0_color-mix(in_oklab,white_65%,transparent)] transition hover:border-[color-mix(in_oklab,var(--text)_28%,var(--border))] hover:bg-[linear-gradient(180deg,color-mix(in_oklab,var(--surface)_80%,white_20%),var(--surface-2))]"
+                    }
                   >
-                    Reset to starter code
+                    {showSolution ? "Hide sample answer" : "View sample answer"}
                   </button>
                 </div>
-                {challenge.successCheck.kind !== "manual" ? (
-                  <p className="mt-3 border-t border-[var(--border)] pt-3 text-xs leading-relaxed text-[var(--muted)]">
-                    Auto-check runs on <span className="font-medium text-[var(--text)]">Standard output</span> only when{" "}
-                    <span className="font-medium text-[var(--text)]">Errors / stderr</span> is empty.
-                  </p>
-                ) : null}
               </div>
 
             {showSolution ? (
@@ -453,13 +564,13 @@ export function PythonPlaygroundPage() {
             ) : null}
 
             {hintsOpen > 0 && hintsVisible ? (
-              <div className="mt-3 overflow-hidden rounded-xl border border-[var(--callout-note-border)] bg-[var(--callout-note-bg)]">
-                <div className="flex items-center justify-between gap-2 border-b border-[var(--callout-note-border)] px-3 py-2">
+              <div className="mt-3 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface-2)]">
+                <div className="flex items-center justify-between gap-2 border-b border-[var(--border)] px-3 py-2">
                   <span className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Hints</span>
                   <button
                     type="button"
                     onClick={() => setHintsVisible(false)}
-                    className="shrink-0 rounded-lg px-2 py-1 text-xs font-semibold text-[var(--accent)] transition hover:bg-[color-mix(in_oklab,var(--accent)_12%,transparent)]"
+                    className="shrink-0 rounded-md px-2 py-1 text-xs font-semibold text-[var(--muted)] transition hover:bg-[var(--surface)] hover:text-[var(--text)]"
                     aria-label="Hide hints"
                   >
                     Hide
@@ -468,7 +579,7 @@ export function PythonPlaygroundPage() {
                 <ul className="space-y-2 p-3 text-sm leading-relaxed text-[var(--text)]">
                   {challenge.hints.slice(0, hintsOpen).map((h, i) => (
                     <li key={i}>
-                      <span className="font-semibold text-[var(--accent)]">Hint {i + 1}. </span>
+                      <span className="font-semibold text-[var(--muted)]">Hint {i + 1}. </span>
                       {h}
                     </li>
                   ))}
@@ -489,7 +600,7 @@ export function PythonPlaygroundPage() {
             ) : null}
 
             {lastCheck === "pass" ? (
-              <p className="mt-3 rounded-lg border border-[var(--callout-tip-border)] bg-[var(--callout-tip-bg)] px-3 py-2 text-sm font-medium text-[var(--text)]">
+              <p className="mt-3 rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)]">
                 Nice work: output matches this mission’s goal. Try the next mini-mission when you are ready.
               </p>
             ) : null}
@@ -518,7 +629,7 @@ export function PythonPlaygroundPage() {
             <div className="flex flex-col gap-3 border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-4">
               <div className="min-w-0">
                 <h2 id="playground-editor-heading" className="text-base font-semibold text-[var(--text)]">
-                  Code editor
+                  Code and output
                 </h2>
                 <p className="mt-0.5 text-xs leading-relaxed text-[var(--muted)]">
                   Type below, then <span className="font-medium text-[var(--text)]">Run</span>. Output appears under the
@@ -530,7 +641,7 @@ export function PythonPlaygroundPage() {
                   type="button"
                   onClick={() => void run()}
                   disabled={busy}
-                  className="inline-flex min-h-[44px] min-w-[5.5rem] items-center justify-center rounded-full bg-[var(--text)] px-6 py-2.5 text-sm font-semibold text-[var(--bg)] shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex min-h-[38px] min-w-[5.25rem] items-center justify-center rounded-full border border-[color-mix(in_oklab,var(--text)_24%,var(--border))] bg-[var(--surface)] px-4 py-2 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-2)] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {runState === "running" ? "Running…" : loadState === "loading" ? "Loading…" : "Run"}
                 </button>
@@ -538,7 +649,7 @@ export function PythonPlaygroundPage() {
                   type="button"
                   onClick={() => void preload()}
                   disabled={loadState === "loading" || loadState === "ready"}
-                  className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface)] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex min-h-[38px] items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-semibold text-[var(--muted)] transition hover:bg-[var(--surface-2)] hover:text-[var(--text)] disabled:cursor-not-allowed disabled:opacity-45"
                 >
                   {loadState === "ready" ? "Ready" : "Preload Pyodide"}
                 </button>
@@ -575,16 +686,16 @@ export function PythonPlaygroundPage() {
 
               <div className="mt-6 grid gap-4 lg:grid-cols-2">
                 <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Standard output</h3>
+                  <h3 className="text-xs font-semibold tracking-wide text-[var(--muted)]">Standard output</h3>
                   <pre
-                    className="mt-2 min-h-[140px] overflow-x-auto whitespace-pre-wrap rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-3 font-mono text-sm text-[var(--text)]"
+                    className="mt-2 min-h-[130px] overflow-x-auto whitespace-pre-wrap rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 font-mono text-sm text-[var(--text)]"
                     aria-live="polite"
                   >
                     {stdout || (runState === "running" ? "…" : "—")}
                   </pre>
                 </div>
                 <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Problems</h3>
+                  <h3 className="text-xs font-semibold tracking-wide text-[var(--muted)]">Problems</h3>
                   {stderr.trim() ? (
                     <div className="mt-2 min-h-[140px] overflow-hidden rounded-xl border border-[var(--callout-warn-border)] bg-[var(--callout-warn-bg)]">
                       {stderrFriendly ? (
@@ -615,7 +726,7 @@ export function PythonPlaygroundPage() {
                     </div>
                   ) : (
                     <pre
-                      className="mt-2 min-h-[140px] overflow-x-auto whitespace-pre-wrap rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-3 font-mono text-sm text-[var(--muted)]"
+                      className="mt-2 min-h-[130px] overflow-x-auto whitespace-pre-wrap rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 font-mono text-sm text-[var(--muted)]"
                       aria-live="assertive"
                     >
                       —
@@ -624,18 +735,20 @@ export function PythonPlaygroundPage() {
                 </div>
               </div>
 
-              <p className="mt-4 text-xs leading-relaxed text-[var(--muted)]">
-                This is real Python: functions, loops, <code className="inline-code">import math</code>,{" "}
-                <code className="inline-code">json</code>, and in-memory files with{" "}
-                <code className="inline-code">open()</code> all work. Missions check your answer from Standard output, so
-                use <code className="inline-code">print</code> where the prompt asks. Standard library only (no{" "}
-                <code className="inline-code">pip install</code>). <code className="inline-code">input()</code> does not
-                work in this browser runtime. Long loops can freeze the tab.
-              </p>
+              <details className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--surface)]">
+                <summary className="cursor-pointer list-none px-3 py-2 text-xs font-semibold text-[var(--muted)] marker:content-none [&::-webkit-details-marker]:hidden">
+                  Runtime notes
+                </summary>
+                <div className="border-t border-[var(--border)] px-3 py-2.5 text-xs leading-relaxed text-[var(--muted)]">
+                  Runs real Python in browser (Pyodide). Use <code className="inline-code">print</code> for mission checks.
+                  Standard library only (no <code className="inline-code">pip install</code>).
+                  <code className="inline-code"> input()</code> is not supported. Very long loops can freeze the tab.
+                </div>
+              </details>
             </div>
           </section>
 
-          <p className="text-xs leading-relaxed text-[var(--muted)] xl:hidden">
+          <p className={["text-xs leading-relaxed text-[var(--muted)] xl:hidden", focusMode ? "hidden" : ""].join(" ")}>
             <Link to="/learn/first-program" className="font-medium text-[var(--text)]">
               First program
             </Link>{" "}

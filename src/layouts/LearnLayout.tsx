@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { modules } from "../content/curriculum";
 
 export function LearnLayout() {
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const isPlaygroundFocus =
+    location.pathname === "/learn/playground" && new URLSearchParams(location.search).get("focus") === "1";
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -115,62 +118,64 @@ export function LearnLayout() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 gap-8 px-4 pb-16 sm:px-6 lg:px-8">
-      <aside
-        className={[
-          "hidden shrink-0 transition-[width] duration-200 lg:block",
-          sidebarCollapsed ? "w-16" : "w-72",
-        ].join(" ")}
-      >
-        <div className="sticky top-24 overflow-hidden rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-md ring-1 ring-black/5 dark:ring-white/10">
-          <div
-            className={[
-              "border-b border-[var(--border)] bg-[var(--surface-2)]",
-              sidebarCollapsed ? "px-2 py-3" : "px-3 py-3",
-            ].join(" ")}
-          >
+      {!isPlaygroundFocus ? (
+        <aside
+          className={[
+            "hidden shrink-0 transition-[width] duration-200 lg:block",
+            sidebarCollapsed ? "w-16" : "w-72",
+          ].join(" ")}
+        >
+          <div className="sticky top-24 overflow-hidden rounded-card border border-[var(--border)] bg-[var(--surface)] shadow-md ring-1 ring-black/5 dark:ring-white/10">
             <div
               className={[
-                "flex gap-2",
-                sidebarCollapsed ? "items-center justify-center" : "items-start justify-between",
+                "border-b border-[var(--border)] bg-[var(--surface-2)]",
+                sidebarCollapsed ? "px-2 py-3" : "px-3 py-3",
               ].join(" ")}
             >
-              <div className={sidebarCollapsed ? "sr-only" : ""}>
-                <p className="text-xs font-bold tracking-wide text-[var(--muted)] uppercase">
-                  All lessons
-                </p>
-                <p className="mt-1 text-[11px] leading-snug text-[var(--muted)]">
-                  Click a lesson to jump. Order matters on your first pass.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSidebarCollapsed((prev) => !prev)}
-                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] shadow-sm transition hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
-                aria-label={sidebarCollapsed ? "Expand lessons sidebar" : "Collapse lessons sidebar"}
-                title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              <div
+                className={[
+                  "flex gap-2",
+                  sidebarCollapsed ? "items-center justify-center" : "items-start justify-between",
+                ].join(" ")}
               >
-                {sidebarCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-              </button>
-            </div>
-          </div>
-          {sidebarCollapsed ? (
-            <div className="flex items-center justify-center px-2 py-4">
-              <span className="select-none text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--muted)] [writing-mode:vertical-rl]">
-                Lessons
-              </span>
-            </div>
-          ) : (
-            <div className="p-2">
-              <div className="max-h-[calc(100dvh-10rem)] overflow-y-auto px-1 pb-2">
-                {nav}
+                <div className={sidebarCollapsed ? "sr-only" : ""}>
+                  <p className="text-xs font-bold tracking-wide text-[var(--muted)] uppercase">
+                    All lessons
+                  </p>
+                  <p className="mt-1 text-[11px] leading-snug text-[var(--muted)]">
+                    Click a lesson to jump. Order matters on your first pass.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSidebarCollapsed((prev) => !prev)}
+                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] shadow-sm transition hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+                  aria-label={sidebarCollapsed ? "Expand lessons sidebar" : "Collapse lessons sidebar"}
+                  title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                >
+                  {sidebarCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+                </button>
               </div>
             </div>
-          )}
-        </div>
-      </aside>
+            {sidebarCollapsed ? (
+              <div className="flex items-center justify-center px-2 py-4">
+                <span className="select-none text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--muted)] [writing-mode:vertical-rl]">
+                  Lessons
+                </span>
+              </div>
+            ) : (
+              <div className="p-2">
+                <div className="max-h-[calc(100dvh-10rem)] overflow-y-auto px-1 pb-2">
+                  {nav}
+                </div>
+              </div>
+            )}
+          </div>
+        </aside>
+      ) : null}
 
       <div className="min-w-0 flex-1">
-        <div className="lg:hidden">
+        <div className={isPlaygroundFocus ? "hidden" : "lg:hidden"}>
           <button
             type="button"
             className="mt-4 inline-flex w-full items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-left text-sm font-semibold text-[var(--text)]"
